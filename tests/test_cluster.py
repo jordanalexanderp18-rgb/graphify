@@ -39,6 +39,35 @@ def test_cohesion_score_disconnected():
     score = cohesion_score(G, ["a", "b", "c"])
     assert score == 0.0
 
+def test_cohesion_score_ignores_self_loops():
+    """A recursive function must not push cohesion past 1.0.
+
+    ``build_from_json`` keeps recursive ``calls`` self-edges on purpose, but
+    ``cohesion_score``'s denominator counts distinct node pairs only. Counting
+    the self-loop in the numerator scored a two-node community at 2.0.
+    """
+    G = nx.Graph()
+    G.add_edge("f", "g", relation="calls")
+    G.add_edge("f", "f", relation="calls")  # recursion
+    assert cohesion_score(G, ["f", "g"]) == 1.0
+
+def test_cohesion_score_range_with_self_loops():
+    """The 0..1 invariant holds on a community full of recursive functions."""
+    G = nx.Graph()
+    G.add_edge("a", "b")
+    G.add_edge("b", "c")
+    G.add_edge("a", "c")
+    for node in ("a", "b", "c"):
+        G.add_edge(node, node, relation="calls")
+    assert cohesion_score(G, ["a", "b", "c"]) == 1.0
+
+def test_cohesion_score_self_loops_only_is_zero():
+    """Self-loops alone are no intra-community connection at all."""
+    G = nx.Graph()
+    G.add_nodes_from(["a", "b"])
+    G.add_edge("a", "a", relation="calls")
+    assert cohesion_score(G, ["a", "b"]) == 0.0
+
 def test_cohesion_score_range():
     G = make_graph()
     communities = cluster(G)
@@ -203,3 +232,4 @@ def test_partition_is_invariant_to_edge_endpoint_orientation():
     assert _grouping(_partition(forward, 1.0)) == _grouping(_partition(flipped, 1.0)), (
         "partition drifted with edge-endpoint orientation / insertion order"
     )
+
