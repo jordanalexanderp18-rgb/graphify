@@ -94,6 +94,37 @@ to it by construction.
 
 ## Log
 
+## 2026-09-16 — Vault scaffolding
+
+- **Branch:** `claude/session-history-c0kdq7` (PR #1)
+- **Touched:** [[SESSIONS]], `scripts/vault_scaffold.py`
+
+### Context
+The first vault scan found a star: one note linking four others, three orphans,
+and an empty area folder. A vault with no entry point degrades into a pile —
+notes exist and nothing points at them — so the gap was structural, not content.
+
+### Decisions
+- `scripts/vault_scaffold.py` writes one index note, a map-of-content note per
+  area, and three templates. Templates matter because a note that is not linked
+  when it is created almost never gets linked afterwards.
+- Never overwrite: an existing note is skipped and reported, so the script is
+  safe to re-run and safe against a vault that already has content.
+- Generated artifacts are made reachable by linking *into* `graphify-out/` from
+  a hand-written reference note, never by editing the artifacts.
+- Files are written with `newline="\n"` so a vault synced across machines does
+  not show every line as changed.
+
+### Rejected
+- Writing into the vault from the agent's own container. The vault is on the
+  user's Windows machine and this container is a remote Linux box with no access
+  to it; an installer the user runs is the only path that works.
+
+### Open
+- Verified on a replica of the real vault: 3 orphans and 0 broken links before,
+  0 orphans and 0 broken links after, 8 notes to 17. The four `negocio/` leaves
+  still link nowhere — that needs their content, not more structure.
+
 ## 2026-09-16 — Orphan check for vault notes
 
 - **Branch:** `claude/session-history-c0kdq7` (PR #1)
