@@ -94,6 +94,37 @@ to it by construction.
 
 ## Log
 
+## 2026-09-16 — Vault rules for agents
+
+- **Branch:** `claude/session-history-c0kdq7` (restarted from v8 after PR #1 merged)
+- **Touched:** [[SESSIONS]], `scripts/vault_scaffold.py`
+
+### Context
+An agent opened on the vault knows none of its conventions: it will happily edit
+generated output, leave a note unlinked, or invent content to fill a gap. The
+repo had `AGENTS.md` for exactly this; the vault had nothing.
+
+### Decisions
+- The scaffold now writes `AGENTS.md` and `.cursor/rules/vault.mdc` into the
+  vault, so Claude Code and Cursor get the same rules from their own conventions.
+- Added "do not invent content" as a rule. It comes from a real incident: a note
+  turned out to be a stale duplicate, and the tempting fix was to write a
+  plausible replacement from one line of context. A stub is recoverable; invented
+  detail becomes indistinguishable from real notes within weeks.
+- `--with-tools` copies the checker into the vault's `.tools/`, so an agent
+  verifying its own work runs it from inside its working directory instead of
+  triggering a read-outside-working-directory prompt.
+
+### Rejected
+- Copying graphify's own `.cursor/rules/graphify.mdc` into the vault. It is
+  written for code ("codebase", "symbols", `graphify query`) and a vault of prose
+  notes is not that. Wrong rules are worse than none — the agent follows them.
+
+### Open
+- Verified against a replica matching the live vault exactly (17 notes, 0
+  orphans, 3 leaves, 0 broken links before; 18 and still clean after). The
+  checker copied into `.tools/` runs correctly from inside the vault.
+
 ## 2026-09-16 — Vault scaffolding
 
 - **Branch:** `claude/session-history-c0kdq7` (PR #1)
