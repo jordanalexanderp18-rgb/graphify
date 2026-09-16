@@ -100,10 +100,12 @@ to it by construction.
 - **Touched:** [[SESSIONS]], `scripts/vault_link_check.py`
 
 ### Context
-A log only works while it stays reachable. In a real vault a `LESSONS` note had
-drifted to zero wikilinks — still on disk, unreachable by navigation, so never
-read. That is precisely the failure this file exists to avoid, so it needed a
-check rather than a convention.
+A log only works while it stays reachable, and nothing warns when one stops
+being. The check was prompted by an apparently orphaned `LESSONS` note in a
+vault. Running it corrected that reading: the note is
+`graphify-out/reflections/LESSONS` — generated output, not a hand-maintained log
+that drifted. The check still earns its place, because a committed log can drift
+and nothing else detects it, but the motivating example was misread.
 
 ### Decisions
 - Added `scripts/vault_link_check.py`: reports orphans, leaves and broken links.
@@ -116,11 +118,19 @@ check rather than a convention.
 - Reusing `graphify analyze`. It reports isolated nodes but filters out file
   nodes, and every vault note is a file node, so it structurally cannot see an
   orphan note. Do not retry that path.
+- Hand-adding wikilinks to orphans under `graphify-out/`. That tree is
+  regenerated, so the edit is lost on the next `graphify update`. Reachability
+  for generated artifacts belongs in a hand-written index note that links to
+  them, never in the artifacts themselves.
 
 ### Open
 - This repository is not a wikilink vault: by this measure 360 of its 364 notes
   are orphans, because it uses ordinary markdown links. The check is for an
   Obsidian vault, not for this repo — running it here is expected noise.
+- First real vault scan: 8 notes. 5 under `negocio/` in a star around
+  `prioridades` (4 of them leaves that link nowhere), 3 generated under
+  `graphify-out/`, and `estandares/` holds no notes at all. The leaves are where
+  linking would actually add navigability; the generated orphans are expected.
 
 ## 2026-09-15 — Establish durable session memory
 
