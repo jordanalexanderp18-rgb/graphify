@@ -97,6 +97,18 @@ def main() -> int:
     ap.add_argument("--quiet", action="store_true", help="print only the summary")
     args = ap.parse_args()
 
+    # Note names come from the vault, and vault titles carry emoji, check marks
+    # and other symbols freely. A legacy Windows console is cp1252/cp850, which
+    # encodes Latin accents fine but not those: printing one raises
+    # UnicodeEncodeError and kills the run halfway through the report, so the
+    # offending note is the last thing seen and it reads as a crash the script
+    # caused. Degrade the character instead of the report.
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, OSError):
+            pass
+
     root = args.vault.expanduser()
     if not root.is_dir():
         print(f"error: not a directory: {root}", file=sys.stderr)
