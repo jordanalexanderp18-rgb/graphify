@@ -249,6 +249,67 @@ Por que hubo esta sesion. Una o dos frases.
 [[sesiones|Volver al mapa de sesiones]] · [[plantillas|Plantilla usada]]
 """
 
+
+AGENTS = """# claude-os
+
+Vault de Obsidian: un segundo cerebro, no un repositorio de codigo. Estas reglas
+valen para cualquier agente que trabaje aqui.
+
+## Orientarse
+
+Empieza por [[index]]. Si una nota no se alcanza desde ahi siguiendo enlaces,
+esta perdida aunque exista en disco.
+
+## Al crear una nota
+
+- Sale de una plantilla de `plantillas/`.
+- Se enlaza desde el MOC de su area el mismo momento en que nace. Enlazarla
+  despues casi nunca ocurre.
+- Enlaza al menos a otra nota concreta, no solo al MOC. Una nota que no enlaza a
+  nada es un callejon sin salida para quien navegue.
+
+## Nunca
+
+- **No edites nada dentro de `graphify-out/`.** Es salida generada: se regenera y
+  el cambio se pierde. Para darle alcance en el grafo, enlazalo desde
+  [[referencia]].
+- **No inventes contenido.** Si falta informacion, deja la seccion vacia o escribe
+  un stub y dilo. Una nota vacia es recuperable; una nota con datos supuestos se
+  vuelve indistinguible de la real en cuestion de semanas.
+
+## Antes de terminar
+
+Comprueba que no quedaron notas sueltas:
+
+```sh
+python .tools/vault_link_check.py .
+```
+
+Cero huerfanas y cero enlaces rotos. Las unicas hojas aceptables son las de
+`graphify-out/`.
+"""
+
+CURSOR_RULE = """\
+---
+description: reglas del vault claude-os
+alwaysApply: true
+---
+
+Este directorio es un vault de Obsidian (un segundo cerebro), no un repositorio
+de codigo.
+
+- Empieza por `index.md`. Si una nota no se alcanza desde ahi siguiendo enlaces,
+  esta perdida aunque exista.
+- Toda nota nueva sale de `plantillas/`, se enlaza desde el MOC de su area, y
+  enlaza al menos a otra nota concreta.
+- NUNCA edites archivos dentro de `graphify-out/`: es salida generada y el cambio
+  se pierde en la siguiente regeneracion. Enlazalos desde `referencia.md`.
+- NUNCA inventes contenido. Si falta informacion, deja un stub y dilo. Una nota
+  con datos supuestos se vuelve indistinguible de la real en semanas.
+- Antes de terminar: `python .tools/vault_link_check.py .` debe dar cero
+  huerfanas y cero enlaces rotos.
+"""
+
 FILES = {
     "index.md": INDEX,
     "negocio/negocio.md": NEGOCIO,
@@ -259,6 +320,8 @@ FILES = {
     "plantillas/plantilla-nota.md": PLANTILLA_NOTA,
     "plantillas/plantilla-decision.md": PLANTILLA_DECISION,
     "plantillas/plantilla-sesion.md": PLANTILLA_SESION,
+    "AGENTS.md": AGENTS,
+    ".cursor/rules/vault.mdc": CURSOR_RULE,
 }
 
 
@@ -266,6 +329,8 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="Scaffold index, area and template notes in a vault.")
     ap.add_argument("vault", type=Path, help="path to the vault root")
     ap.add_argument("--dry-run", action="store_true", help="show what would be written, write nothing")
+    ap.add_argument("--with-tools", action="store_true",
+                    help="also copy vault_link_check.py into the vault's .tools/")
     args = ap.parse_args()
 
     for stream in (sys.stdout, sys.stderr):
@@ -293,6 +358,24 @@ def main() -> int:
         # care, but a vault synced between machines otherwise shows every line
         # as changed.
         dest.write_text(body, encoding="utf-8", newline="\n")
+
+    # The checker lives next to this script in the repo. Copying it into the vault
+    # puts it inside the agent's working directory, so an agent asked to verify
+    # its own work can run it without a permission prompt for reading elsewhere.
+    if args.with_tools:
+        src = Path(__file__).resolve().parent / "vault_link_check.py"
+        dest = root / ".tools" / "vault_link_check.py"
+        if not src.is_file():
+            print(f"warning: {src.name} is not next to this script, skipping --with-tools.\n"
+                  f"  fetch it from https://raw.githubusercontent.com/jordanalexanderp18-rgb/"
+                  f"graphify/v8/scripts/vault_link_check.py", file=sys.stderr)
+        elif dest.exists():
+            skipped.append(".tools/vault_link_check.py")
+        else:
+            created.append(".tools/vault_link_check.py")
+            if not args.dry_run:
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                dest.write_text(src.read_text(encoding="utf-8"), encoding="utf-8", newline="\n")
 
     verb = "would create" if args.dry_run else "created"
     if created:
