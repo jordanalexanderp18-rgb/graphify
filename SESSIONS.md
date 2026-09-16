@@ -77,7 +77,50 @@ Pointing `--dir` at an existing vault is safe: graphify tracks the files it owns
 in `.graphify_obsidian_manifest.json` and never overwrites notes it did not
 write, nor your `.obsidian/` config.
 
+### Keeping the log reachable
+
+A note nothing links to and that links nowhere is invisible in Obsidian's graph.
+It still exists on disk, but navigating never arrives at it, so it quietly stops
+being memory. A log that reaches that state has failed without any error.
+
+```sh
+python scripts/vault_link_check.py ~/vault           # orphans, leaves, broken links
+python scripts/vault_link_check.py ~/vault --strict  # exit 1 if any orphan exists
+```
+
+`graphify analyze` does not cover this. It reports isolated nodes but filters out
+file nodes, and every vault note is a file node, so an orphan note is invisible
+to it by construction.
+
 ## Log
+
+## 2026-09-16 — Orphan check for vault notes
+
+- **Branch:** `claude/session-history-c0kdq7` (PR #1)
+- **Touched:** [[SESSIONS]], `scripts/vault_link_check.py`
+
+### Context
+A log only works while it stays reachable. In a real vault a `LESSONS` note had
+drifted to zero wikilinks — still on disk, unreachable by navigation, so never
+read. That is precisely the failure this file exists to avoid, so it needed a
+check rather than a convention.
+
+### Decisions
+- Added `scripts/vault_link_check.py`: reports orphans, leaves and broken links.
+  Stdlib only, so it runs against a vault on a machine without graphify.
+- Code fences and inline code are stripped before scanning. The entry template
+  above contains example wikilinks that are not links; counting them would
+  invent edges and mask a real orphan.
+
+### Rejected
+- Reusing `graphify analyze`. It reports isolated nodes but filters out file
+  nodes, and every vault note is a file node, so it structurally cannot see an
+  orphan note. Do not retry that path.
+
+### Open
+- This repository is not a wikilink vault: by this measure 360 of its 364 notes
+  are orphans, because it uses ordinary markdown links. The check is for an
+  Obsidian vault, not for this repo — running it here is expected noise.
 
 ## 2026-09-15 — Establish durable session memory
 
