@@ -94,6 +94,42 @@ to it by construction.
 
 ## Log
 
+## 2026-10-02 — Command board across agents
+
+- **Branch:** `claude/session-history-c0kdq7` (restarted from v8 after PR #2 merged)
+- **Touched:** [[SESSIONS]], `scripts/mando_install.py`
+
+### Context
+Three agents — Claude Code, Cursor, Gemini — on the same project, each starting
+cold from its own idea of what matters, quietly contradicting each other. The
+ask was a command centre with one of them in charge.
+
+### Decisions
+- One board, `MANDO.md`, versioned in the repo: orders in, status out. It
+  travels with the clone, so the agents share it without depending on any
+  conversation.
+- Per-agent hooks generated from that one source — `AGENTS.md` (Claude),
+  `.cursor/rules/mando.mdc` (Cursor), `GEMINI.md` (Gemini) — so there is one
+  place to change what all three are told.
+- Hooks are spliced between `<!-- mando:begin/end -->` markers, so a file the
+  user also edits by hand keeps everything outside them and the generated text
+  never duplicates.
+- A blocked task must be marked `[!]` with a reason. An agent stopping silently
+  is the expensive failure: the next one re-walks the same dead end.
+
+### Rejected
+- A live control channel from the cloud session to Cursor or Gemini on the
+  user's machine. No bridge exists between this container and their Windows box.
+  Orders travel through git; the local Claude Code is the only thing that can
+  actually execute. Do not promise otherwise.
+
+### Open
+- Verified: installs onto a project with an existing `AGENTS.md` without losing
+  its content, is idempotent, replaces a stale block between markers, and keeps
+  hand-written text outside them.
+- The board is written once and then left alone; nothing yet prunes finished
+  tasks out of it.
+
 ## 2026-09-16 — Vault rules for agents
 
 - **Branch:** `claude/session-history-c0kdq7` (restarted from v8 after PR #1 merged)
