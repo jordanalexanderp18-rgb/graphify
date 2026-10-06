@@ -94,6 +94,34 @@ to it by construction.
 
 ## Log
 
+## 2026-10-06 — Design skills for a client mockup (not persisted)
+
+- **Branch:** `ccr-93eb32ac-4jqou0`
+- **Touched:** [[SESSIONS]] only. No graphify code changed.
+
+### Context
+The user asked for the design skills from a reel (Taste Skill, Impeccable, Emil
+Kowalski's skills) and used them to build an HTML mockup for a client's jewelry
+store. The mockup is unrelated to graphify. It was delivered as a file and kept
+out of the repo.
+
+### Decisions
+- The skills were copied into `.claude/skills/` for this session only, from
+  `pbakaus/impeccable@cf3d2fa` (Apache-2.0), `Leonxlnx/taste-skill@ce26fc2`
+  (MIT) and `emilkowalski/skills@e8a175d` (MIT). Only the web skills were copied.
+- `.claude/` is in `.gitignore` (line 19), so those copies never reach the
+  remote. To keep them, either sync them to the claude.ai account or force-add
+  them deliberately. That is the user's call; it was still pending at session end.
+- Large single-file HTML deliverables can fail to open in the app viewer. 2.6 MB
+  did not load; 1.3 MB was sent as the fix (not yet confirmed by the user). To
+  stay small, inline each image once and reuse it from JS.
+
+### Rejected
+- `npx skills add …`: installs into the container's home directory and is lost
+  when the session ends.
+- Committing the third-party skill code: blocked by the session's auto-mode
+  permission check pending explicit user approval. Do not retry without it.
+
 ## 2026-10-02 — Command board across agents
 
 - **Branch:** `claude/session-history-c0kdq7` (restarted from v8 after PR #2 merged)
