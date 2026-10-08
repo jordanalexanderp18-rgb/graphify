@@ -72,6 +72,10 @@ first set (3 levels of squat) is the reference: one idea in three formats.
 
 ## 4. Clients
 
+- **Selling:** prices, packages, costs, equipment, the sales steps, the contract
+  checklist and how to register with Chile's tax service (SII) are in `VENTAS.md`.
+  Quote from it, and update it when the real prices change.
+
 - Jordan is client zero: `clientes/jordan/MARCA.md`.
 - **This repository is public.** A real client's profile, footage, voice or avatar
   IDs and contact details go in a private repository, created by Jordan, with the

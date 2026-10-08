@@ -120,6 +120,13 @@ production studio) and authorized downloading every skill it needs.
   and the CRF 19 copy capped at 9 Mbit/s is 16 MB with SSIM 0.99.
 - First repurpose: the squat reel also became a 7-slide carousel and a reel cover. Both
   designs live in `productora/templates/`.
+- The user wants to sell the productora as a service. `productora/VENTAS.md` holds the
+  price list in CLP: per piece, with a launch price and a normal price, plus 3 monthly plans
+  from $180.000 to $600.000. It also covers costs (Claude Max and HeyGen Creator, about
+  $116.000 a month), equipment (a phone kit for about $40.000), the sales steps, a contract
+  checklist and SII registration. The prices come from public October 2026 sources (Chile
+  and LatAm) at about $900 per dollar, and the file cites them. The tax points are general
+  guidance only: confirm with an accountant before the first sale.
 
 ### Rejected
 - marcolang/marketing-skills (instagram-carousel) and hoodini/ai-agents-skills
