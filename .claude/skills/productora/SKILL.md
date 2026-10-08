@@ -30,6 +30,7 @@ piece looks like it came from the same studio.
 | Afiche o pieza especial | Idea | `/canvas-design` | PNG or PDF | Free |
 | Tarifario | Prices from `VENTAS.md` | `templates/tarifario.html` + `render_slides.sh` (a design with `@page` also gets `slides.pdf`) | 5 PNG at 1080x1350 + PDF | Free |
 | Guía de grabación | — | `templates/guia-grabacion.html` + `render_slides.sh <html> <dir> 1080 1920` | PNG | Free |
+| Guion para el cliente | Topic | `templates/guion.html` (card 1: what they say, recorded later in a quiet room; card 2: shot list for the location) + the same renderer at 1080x1920 | 2 PNG | Free |
 | Documentos para clientes | Brief | `/theme-factory` + the docx, pptx and pdf skills | File | Free |
 
 **Repurpose by default.** When one piece works, offer the rest of the set: a reel

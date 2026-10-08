@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Guion: día de pierna</title>
+    <style>
+      @font-face {
+        font-family: "Anton";
+        src: url("assets/fonts/anton-latin-400-normal.woff2") format("woff2");
+      }
+      @font-face {
+        font-family: "JetBrains Mono";
+        src: url("assets/fonts/JetBrainsMono-400.woff2") format("woff2");
+        font-weight: 400;
+      }
+      @font-face {
+        font-family: "JetBrains Mono";
+        src: url("assets/fonts/JetBrainsMono-700.woff2") format("woff2");
+        font-weight: 700;
+      }
+      :root {
+        --bg: #15100c;
+        --card: #211913;
+        --fg: #f7efe6;
+        --dim: #c4b9b0;
+        --accent: #ff5400;
+        --m: 64px;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: var(--bg);
+      }
+      .slide {
+        position: relative;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: "Anton", sans-serif;
+      }
+      .mono {
+        font-family: "JetBrains Mono", monospace;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+      .accent {
+        color: var(--accent);
+      }
+      .glow {
+        position: absolute;
+        width: 900px;
+        height: 900px;
+        right: -420px;
+        top: -360px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255, 84, 0, 0.5) 0%, rgba(255, 84, 0, 0) 66%);
+      }
+      .grain {
+        position: absolute;
+        inset: 0;
+        opacity: 0.06;
+        mix-blend-mode: overlay;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.6'/></svg>");
+      }
+      header {
+        position: absolute;
+        left: var(--m);
+        right: var(--m);
+        top: 90px;
+      }
+      header .kicker {
+        font-size: 26px;
+      }
+      header .big {
+        display: block;
+        margin-top: 20px;
+        font-size: 136px;
+        line-height: 0.9;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      header .sub {
+        display: block;
+        margin-top: 20px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 30px;
+        line-height: 1.35;
+        color: var(--dim);
+      }
+      .list {
+        position: absolute;
+        left: var(--m);
+        right: var(--m);
+        top: 520px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .b {
+        display: flex;
+        gap: 24px;
+        padding: 18px 24px;
+        border-radius: 22px;
+        background: var(--card);
+      }
+      .b.hot {
+        border: 3px solid var(--accent);
+      }
+      .b .n {
+        flex: none;
+        width: 66px;
+        height: 66px;
+        border-radius: 14px;
+        background: var(--accent);
+        color: var(--bg);
+        font-size: 46px;
+        line-height: 66px;
+        text-align: center;
+      }
+      .b .k {
+        display: block;
+        font-size: 22px;
+        color: var(--dim);
+      }
+      .b .say {
+        display: block;
+        margin-top: 6px;
+        font-family: "JetBrains Mono", monospace;
+        font-weight: 700;
+        font-size: 31px;
+        line-height: 1.3;
+      }
+      .b .t {
+        display: block;
+        font-size: 42px;
+        line-height: 1;
+        text-transform: uppercase;
+      }
+      .b .d {
+        display: block;
+        margin-top: 8px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 25px;
+        line-height: 1.32;
+        color: var(--dim);
+      }
+      .tips {
+        position: absolute;
+        left: var(--m);
+        right: var(--m);
+        bottom: 130px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 26px;
+        line-height: 1.4;
+        color: var(--dim);
+      }
+      .tips b {
+        color: var(--accent);
+      }
+      .foot {
+        position: absolute;
+        left: var(--m);
+        right: var(--m);
+        bottom: 60px;
+        display: flex;
+        justify-content: space-between;
+        font-size: 26px;
+        color: var(--dim);
+      }
+      .foot b {
+        color: var(--fg);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 1 · lo que ella dice -->
+    <section class="slide">
+      <div class="glow"></div>
+      <header>
+        <span class="kicker mono accent">Pincheira Studio · Guion 1/2</span>
+        <span class="big">Día de pierna</span>
+        <span class="big accent">Lo que dices</span>
+        <span class="sub">Lo grabas en casa, después de entrenar, con calma. Unos 30 segundos.</span>
+      </header>
+      <div class="list">
+        <div class="b hot"><span class="n">0</span><div><span class="k mono">Gancho, con energía</span><span class="say">"Día de pierna con mi personal trainer… que también es mi pareja."</span></div></div>
+        <div class="b"><span class="n">1</span><div><span class="k mono">Sentadilla</span><span class="say">"Uno: sentadilla. Pecho arriba y baja controlado."</span></div></div>
+        <div class="b"><span class="n">2</span><div><span class="k mono">Peso muerto rumano</span><span class="say">"Dos: peso muerto rumano. Cadera atrás y la barra pegada a las piernas."</span></div></div>
+        <div class="b"><span class="n">3</span><div><span class="k mono">Hip thrust</span><span class="say">"Tres: hip thrust. Aprieta el glúteo arriba un segundo."</span></div></div>
+        <div class="b"><span class="n">4</span><div><span class="k mono">Búlgaras</span><span class="say">"Cuatro: búlgaras. La rodilla de adelante sigue la punta del pie."</span></div></div>
+        <div class="b hot"><span class="n">5</span><div><span class="k mono">Cierre, sonriendo</span><span class="say">"¿Te animas? Guárdala para tu próximo día de pierna."</span></div></div>
+      </div>
+      <p class="tips"><b>Cómo grabar la voz:</b> en una pieza silenciosa, con el micrófono de solapa o el celular a un palmo de la boca. Grábalo como video, no como audio de WhatsApp. Lee todo 2 o 3 veces, con una pausa entre frase y frase.</p>
+      <div class="foot mono"><b>@jordan_pincheira</b><span>Guarda esta imagen</span></div>
+      <div class="grain"></div>
+    </section>
+
+    <!-- 2 · lo que grabamos en el gimnasio -->
+    <section class="slide">
+      <div class="glow"></div>
+      <header>
+        <span class="kicker mono accent">Pincheira Studio · Guion 2/2</span>
+        <span class="big">En el gimnasio</span>
+        <span class="big accent">Lo que grabamos</span>
+        <span class="sub">Aquí no hablas: hay música y ruido. Solo entrenas, y Jordan graba.</span>
+      </header>
+      <div class="list">
+        <div class="b"><span class="n">1</span><div><span class="t">La llegada</span><span class="d">Entrando o atándote las zapatillas. 3 segundos.</span></div></div>
+        <div class="b hot"><span class="n">2</span><div><span class="t">El gancho</span><span class="d">Miras a la cámara y sonríes. Jordan entra al cuadro por un lado.</span></div></div>
+        <div class="b"><span class="n">3</span><div><span class="t">Los 4 ejercicios</span><span class="d">Cada uno de lado, a la altura de la cadera, de pies a cabeza. 2 o 3 repeticiones por toma.</span></div></div>
+        <div class="b"><span class="n">4</span><div><span class="t">Una toma más de cerca</span><span class="d">De cada ejercicio, en diagonal: así se ve mejor la técnica.</span></div></div>
+        <div class="b"><span class="n">5</span><div><span class="t">Detalles</span><span class="d">Manos en la barra, discos, zapatillas, el esfuerzo. 2 a 3 segundos cada uno.</span></div></div>
+        <div class="b hot"><span class="n">6</span><div><span class="t">El cierre</span><span class="d">Chocan las manos, o tú cansada y sonriendo a la cámara.</span></div></div>
+      </div>
+      <p class="tips"><b>Siempre:</b> celular vertical y quieto, en el trípode. Sin otras personas reconocibles en el cuadro. Después, sube los videos originales a la carpeta "Reels" de Drive.</p>
+      <div class="foot mono"><b>@jordan_pincheira</b><span>Guarda esta imagen</span></div>
+      <div class="grain"></div>
+    </section>
+
+    <script>
+      const n = parseInt(new URLSearchParams(location.search).get("slide") || "0", 10);
+      if (n > 0) document.querySelectorAll(".slide").forEach((s, i) => { if (i + 1 !== n) s.style.display = "none"; });
+    </script>
+  </body>
+</html>

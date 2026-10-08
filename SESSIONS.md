@@ -135,8 +135,13 @@ production studio) and authorized downloading every skill it needs.
   published prices.
 
 ### Open (added later the same day)
-- The user's first test client is their partner, the next day. Their business or topic is
-  still unknown. Write the script once the user says it, then follow the footage route.
+- The first test client is the user's partner, filmed during a leg day at the gym. The script
+  cards are already sent (`templates/guion.html`): a hook ("Día de pierna con mi personal
+  trainer… que también es mi pareja"), then squat, Romanian deadlift, hip thrust and Bulgarian
+  split squat with one cue each, then a save CTA. She records the voice afterwards at home as a
+  video, because the gym plays music. The gym clips get no dialogue and stay muted. When the
+  files land in "Reels", follow the footage route with her voice in place of the cloned voice.
+  Sets and reps come from the user.
 
 ### Rejected
 - marcolang/marketing-skills (instagram-carousel) and hoodini/ai-agents-skills
