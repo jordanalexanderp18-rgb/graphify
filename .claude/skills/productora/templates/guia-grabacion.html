@@ -76,7 +76,7 @@
         position: absolute;
         left: var(--m);
         right: var(--m);
-        top: 90px;
+        top: 64px;
       }
       header .kicker {
         font-size: 26px;
@@ -88,6 +88,10 @@
         line-height: 0.9;
         text-transform: uppercase;
         white-space: nowrap;
+      }
+      /* Accents on the first title line (DÍA, CÓMO) rise above its line box: keep them off the kicker. */
+      header .kicker + .big {
+        margin-top: 46px;
       }
       header .sub {
         display: block;

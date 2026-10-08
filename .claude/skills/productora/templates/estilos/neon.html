@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Estilo Neón</title>
+    <!-- Neón: deep black, one neon accent, oversized ultra-heavy type, every slide a poster.
+         Photos go grayscale and dark so the neon stays the only colour. -->
+    <style>
+      @font-face { font-family: "Boldonse"; src: url("assets/fonts/Boldonse-Regular.ttf"); }
+      @font-face { font-family: "Geist Mono"; src: url("assets/fonts/GeistMono-Regular.ttf"); }
+      @font-face { font-family: "Geist Mono"; src: url("assets/fonts/GeistMono-Bold.ttf"); font-weight: 700; }
+      @page { size: 1080px 1350px; margin: 0; }
+      :root { --bg: #0b0b0c; --fg: #f4f4f2; --neon: #c6ff00; --dim: #8a8a86; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1350px; overflow: hidden; background: var(--bg); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      @media print { html, body { height: auto; overflow: visible; } .slide { break-after: page; } }
+      .slide { position: relative; width: 1080px; height: 1350px; overflow: hidden; background: var(--bg); color: var(--fg); font-family: "Geist Mono", monospace; }
+      .disp { font-family: "Boldonse", sans-serif; text-transform: uppercase; line-height: 1.34; }
+      /* Boldonse caps stand 1.19 em tall: keep display line-height at 1.34 or more, 1.55 with accents. */
+      .neon { color: var(--neon); }
+      .bgphoto { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: grayscale(1) contrast(1.3) brightness(0.45); }
+      .shade { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(11, 11, 12, 0.2), rgba(11, 11, 12, 0.92) 70%); }
+      .meta { position: absolute; left: 80px; right: 80px; top: 76px; display: flex; justify-content: space-between; font-size: 26px; letter-spacing: 0.08em; text-transform: uppercase; }
+      .four { position: absolute; left: 66px; top: 230px; font-size: 330px; line-height: 1; }
+      .stack { position: absolute; left: 80px; right: 80px; top: 640px; }
+      .stack span { display: block; font-size: 92px; }
+      .bar { position: absolute; left: 80px; bottom: 150px; width: 240px; height: 14px; background: var(--neon); }
+      .foot { position: absolute; left: 80px; right: 80px; bottom: 80px; display: flex; justify-content: space-between; font-size: 26px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim); }
+      .top-photo { position: absolute; left: 0; top: 0; width: 100%; height: 740px; object-fit: cover; filter: grayscale(1) contrast(1.3) brightness(0.7); }
+      .edge { position: absolute; left: 0; top: 740px; width: 100%; height: 10px; background: var(--neon); }
+      .n { position: absolute; left: 80px; top: 800px; font-size: 34px; font-weight: 700; letter-spacing: 0.1em; }
+      .t { position: absolute; left: 80px; top: 850px; font-size: 96px; line-height: 1.3; }
+      .cue { position: absolute; left: 80px; right: 80px; top: 1020px; font-size: 36px; line-height: 1.4; }
+      .q { position: absolute; left: 80px; right: 80px; top: 200px; }
+      .q span { display: block; font-size: 88px; line-height: 1.7; }
+      .boxes { position: absolute; left: 80px; top: 780px; display: flex; gap: 26px; }
+      .boxes span { width: 210px; height: 210px; border: 6px solid var(--neon); display: flex; align-items: center; justify-content: center; font-family: "Boldonse", sans-serif; font-size: 110px; color: var(--neon); }
+      .ask { position: absolute; left: 80px; top: 1060px; font-size: 34px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+    </style>
+  </head>
+  <body>
+    <section class="slide">
+      <img class="bgphoto" src="assets/c-1350.jpg" alt="" />
+      <div class="shade"></div>
+      <div class="meta"><span>@jordan_pincheira</span><span class="neon">Día de pierna</span></div>
+      <span class="four disp neon">4</span>
+      <div class="stack disp"><span>Ejercicios</span><span>para piernas</span><span class="neon">fuertes</span></div>
+      <span class="bar"></span>
+      <div class="foot"><span>Guárdalo</span><span>Desliza →</span></div>
+    </section>
+    <section class="slide">
+      <img class="top-photo" src="assets/b-1350.jpg" alt="" style="object-position: 50% 60%" />
+      <span class="edge"></span>
+      <span class="n neon">01 / 04</span>
+      <span class="t disp">Sentadilla</span>
+      <p class="cue">Pecho arriba, rodillas hacia afuera y baja controlado.</p>
+      <div class="foot"><span>@jordan_pincheira</span><span>02 / 06</span></div>
+    </section>
+    <section class="slide">
+      <div class="meta"><span>@jordan_pincheira</span><span>06 / 06</span></div>
+      <div class="q disp"><span>¿Cuál te</span><span>cuesta</span><span class="neon">más?</span></div>
+      <div class="boxes"><span>1</span><span>2</span><span>3</span><span>4</span></div>
+      <p class="ask">Comenta tu número</p>
+      <div class="foot"><span>Guarda este post</span><span class="neon">●</span></div>
+    </section>
+    <script>
+      const n = parseInt(new URLSearchParams(location.search).get("slide") || "0", 10);
+      if (n > 0) document.querySelectorAll(".slide").forEach((s, i) => { if (i + 1 !== n) s.style.display = "none"; });
+    </script>
+  </body>
+</html>

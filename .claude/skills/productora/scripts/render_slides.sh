@@ -5,7 +5,8 @@
 #
 # The page holds one or more <section class="slide"> elements of the given size
 # (default 1080x1350, Instagram's 4:5) and shows only the one named by
-# ?slide=N (1-based), as templates/carousel.html and templates/cover.html do.
+# ?slide=N (1-based), as templates/carousel.html and templates/cover.html do. A slide
+# can carry extra classes (class="slide dark").
 # Fonts and images load from local files, so no network is needed. Writes
 # 01.png, 02.png, ... into <out-dir>.
 set -euo pipefail
@@ -20,7 +21,7 @@ chrome="${CHROME:-/opt/pw-browsers/chromium_headless_shell-1194/chrome-linux/hea
 [ -x "$chrome" ] || chrome="$(command -v chromium || command -v google-chrome || true)"
 [ -n "$chrome" ] && [ -x "$chrome" ] || { echo "no headless Chromium found; set CHROME=<path>" >&2; exit 1; }
 
-n="$(grep -o 'class="slide"' "$html" | wc -l)"
+n="$(grep -oE 'class="slide( [^"]*)?"' "$html" | wc -l)"
 [ "$n" -gt 0 ] || { echo "no <section class=\"slide\"> in $html" >&2; exit 1; }
 
 mkdir -p "$out"

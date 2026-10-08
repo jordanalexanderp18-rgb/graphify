@@ -94,6 +94,50 @@ to it by construction.
 
 ## Log
 
+## 2026-10-08 — Trending style library and a layout check that measures ink
+
+- **Branch:** `claude/skin-analysis-9qepkz`
+- **Touched:** `.claude/skills/productora/` (SKILL.md section 7, `templates/estilos/`,
+  `scripts/check_layout.cjs`, `scripts/new_job.sh`, `scripts/render_slides.sh`, fixes in
+  `templates/carousel.html`, `templates/guion.html` and `templates/guia-grabacion.html`)
+
+### Context
+The user asked for more designs that are on trend, "busca por Instagram o todo lados".
+Instagram cannot be browsed from here, so the research came from 2026 trend articles.
+
+### Decisions
+- Six 3-slide styles (papel, neón, collage, pop, notas, revista), all with the same sample
+  content, plus a 10-slide catalogue that doubles as a sales piece: one page per style, two
+  pages of reel caption looks over the user's own footage, and a close with two CTAs. It went
+  to the user as PNG and as a 1.6 MB PDF.
+- `check_layout.cjs` builds one ink box per character from canvas metrics
+  (`fontBoundingBox*` against `actualBoundingBox*`) and reports EDGE, OVERLAP, COVERED
+  (whatever `elementsFromPoint` finds above a glyph's centre, skipping full-slide layers and
+  gradients) and FONT (a web font that failed to load). On its first run it found three
+  defects in pieces already delivered and passed by eye: the accents of DÍA and CÓMO touched
+  the kicker on the guion and the guía, and ESTÁS TÚ touched the line above on carousel
+  slide 7. All three were fixed and re-sent.
+- `new_job.sh` copies a template plus every font it references, searched under
+  `.claude/skills/`, because the fonts live in canvas-design, embedded-captions and
+  hyperframes-creative. A job copy renders pixel-identical to the original.
+- `render_slides.sh` counts slides that carry extra classes (`class="slide pink"`). Before,
+  it silently rendered only the plain ones.
+- A PDF printed from a page of PNG renders weighed 25 MB. Printing a page of JPEG q88 copies
+  of the same slides gives 1.6 MB.
+
+### Rejected
+- Overlap tests on whole line boxes flag every line with an accent. Line boxes shrunk by 22%
+  missed Boldonse lines that really touched. Per-character ink boxes catch both, with no false
+  alarms on the current templates.
+- Erica One numerals: its 1 reads as a plain block. Numerals use Outfit Bold.
+- Moving a title down to clear its accents pushed the subtitle under the first box; raising
+  the whole header fixed it. COVERED exists because of that.
+
+### Open
+- The user picks a style for the next carousel, or sends screenshots of designs they like.
+- For a client, re-render the catalogue with their photos, frames and brand.
+- "Pincheira Studio" is the working name; the older entry's "no name yet" is superseded.
+
 ## 2026-10-08 — La productora: one front door for every content piece
 
 - **Branch:** `claude/skin-analysis-9qepkz`

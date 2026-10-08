@@ -1,6 +1,6 @@
 ---
 name: productora
-description: Jordan's content production studio, "la productora". It takes any content request (a reel, a carousel, a reel cover, stories, a caption, a weekly plan, or a batch for a client) and runs it end to end through the installed skills, using brand profiles, briefs, quality gates and delivery specs. Use when Jordan (@jordan_pincheira) asks for content ("hazme contenido", "un carrusel", "la portada", "algo para un cliente"), asks for several pieces at once, or asks what the productora can make.
+description: Jordan's content production studio, "la productora". It takes any content request (a reel, a carousel in one of six trending styles, a reel cover, stories, a caption, a weekly plan, or a batch for a client) and runs it end to end through the installed skills, using brand profiles, briefs, quality gates and delivery specs. Use when Jordan (@jordan_pincheira) asks for content ("hazme contenido", "un carrusel", "la portada", "algo para un cliente"), asks for new or trending designs ("diseños nuevos", "en tendencia"), asks for several pieces at once, or asks what the productora can make.
 ---
 
 # La productora
@@ -19,6 +19,8 @@ piece looks like it came from the same studio.
 | Reel animado (sin grabar) | Topic | `/reel-studio` section 3 (`template`) | MP4 | Free with the local voice, 1 credit with his cloned voice |
 | Subtítulos | A clip of him talking | `/embedded-captions` | MP4 | Free |
 | Carrusel | Topic, or an existing reel | `/ig-carousel` for the copy, then `templates/carousel.html` + `scripts/render_slides.sh` | PNG 1080x1350 | Free |
+| Carrusel en un estilo de tendencia | Topic and photos | `/ig-carousel` for the copy, then one of the six styles in `templates/estilos/` (section 7) + `render_slides.sh` | PNG 1080x1350 + PDF | Free |
+| Catálogo de estilos | — | `templates/estilos/catalogo.html` (section 7) + `render_slides.sh` | 10 PNG + PDF | Free |
 | Portada de reel | The reel | `templates/cover.html` + `render_slides.sh <html> <dir> 1080 1920` | PNG 1080x1920 | Free |
 | Historias | Topic | `/ig-story`, then the same renderer at 1080x1920 | PNG | Free |
 | Texto de publicación | Any piece | `/ig-caption`, then `/ig-human` | Text | Free |
@@ -51,11 +53,16 @@ first set (3 levels of squat) is the reference: one idea in three formats.
 4. **Credits.** Any HeyGen call that spends credits needs his explicit OK in the
    conversation first. The auto-mode classifier blocks it otherwise, and he is paying.
    Report the credits used at delivery.
-5. **Build** along the route.
+5. **Build** along the route. Start a static piece with
+   `scripts/new_job.sh <template.html> <job-dir>`: it copies the template and every font it
+   loads (a missing font renders silently in a fallback), and lists the photos to add.
 6. **Quality gates.** Do not deliver until these pass:
    - Video: `hyperframes check` with 0 errors, then a snapshot contact sheet that you
      have looked at frame by frame.
-   - Statics: render the slides and look at every one.
+   - Statics: `node scripts/check_layout.cjs <design.html>` (add `--h 1920` for 9:16
+     pieces) prints ok. It flags text near or past an edge, text touching other text
+     (accents included) and text hidden under a box. Then render the slides and look at
+     every one.
    - Always: text inside the safe zones, readable contrast, Spanish accents correct,
      and the handle spelled right.
 7. **Finish.** For video, `scripts/finish_reel.sh <render.mp4> <out.mp4>` sets −14 LUFS
@@ -102,7 +109,8 @@ first set (3 levels of squat) is the reference: one idea in three formats.
   `create_video_from_avatar` takes an exact script. Studio and Video Agent URL inputs
   stop at 32 MB per video; `create_asset_upload` takes direct uploads up to 200 MB.
 - **Render:** HyperFrames for video. For statics, `scripts/render_slides.sh` runs the
-  preinstalled headless Chromium and needs no network.
+  preinstalled headless Chromium and needs no network. `scripts/check_layout.cjs` drives
+  the same browser through the preinstalled global Playwright.
 - **Canva:** the connector can generate and export designs when a client works in Canva.
 
 ## 6. Rules
@@ -114,3 +122,39 @@ first set (3 levels of squat) is the reference: one idea in three formats.
   videos rendered by HeyGen. Never download commercial tracks.
 - Renders, footage and voice files stay in the scratchpad and out of git.
 - The templates are the first jobs. Adapt them, but never ship one twice.
+
+## 7. Estilos 2026
+
+Six carousel looks from the October 2026 trend research. Each is a 3-slide template in
+`templates/estilos/` (cover, one content slide, CTA) with the same sample content, so they
+compare side by side; a real job adds the middle slides. `catalogo.html` gathers them in a
+10-slide catalogue with the reel caption looks. It is a sales piece and can go to clients as
+is: render each style to `out/<estilo>/` next to it first, and put four 1080x1920 frames of
+the client's footage in `assets/frames/`.
+
+| Estilo | File | Look | Ideal para | Letras |
+| --- | --- | --- | --- | --- |
+| Papel | `papel.html` | Warm off-white paper, serif headline with one italic accent, one accent colour | Tips, lists, personal brand | Instrument Serif + Instrument Sans |
+| Neón | `neon.html` | Black, one neon accent, poster-size type, grayscale photos | Routines, challenges, gym | Boldonse + Geist Mono |
+| Collage | `collage.html` | Kraft paper, taped polaroids, handwriting, a rubber stamp | Progress, behind the scenes | Bricolage Grotesque + Nothing You Could Do |
+| Pop | `pop.html` | Yellow and hot pink, puffy outlined letters, blob photos, stickers | Quick tips, humour, a younger audience | Erica One + Outfit |
+| Notas | `notas.html` | A note on a phone: highlighter, checklist, a redacted list as the hook | Lists, opinions | Instrument Sans |
+| Revista | `editorial.html` | Magazine cover and feature pages, pull quote, folio | Premium brands, transformations | Gloock + Instrument Serif |
+
+- All the fonts are SIL OFL. The styles' fonts ship in `canvas-design/canvas-fonts/`, and the
+  catalogue's Anton and JetBrains Mono ship with the video skills; `new_job.sh` finds and
+  copies them all.
+- Boldonse caps stand 1.19 em tall: keep its display line-height at 1.34 or more, and 1.7
+  when a line carries accents. Erica One draws its 1 as a plain block, so numerals use
+  Outfit Bold.
+- The notes look is generic on purpose: no real app's icons or toolbar.
+- Caption looks for reels (catalogue slides 8 and 9): karaoke de marca (the spoken word
+  turns the brand colour), minimal dinámico (clean lowercase, two or three words at a time),
+  caja semitransparente (a dark box, for busy footage) and palabra clave (only the key word,
+  huge). For talking-head video, `/embedded-captions` has 35 more caption identities.
+- Instagram is out of reach. When the user likes a design there, ask for a screenshot and
+  turn it into a new file here, keeping the layout idea and never another creator's brand,
+  photos or copy.
+- Sources: carousel guides from PostNitro, ContentStudio and PostEverywhere; design trend
+  reports from Picsart, Adobe and Krumzi; caption trends from Blitzcut, OpusClip and Subclip;
+  Pantone's 2026 colour (Cloud Dancer).
