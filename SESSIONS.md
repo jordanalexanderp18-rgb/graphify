@@ -94,6 +94,59 @@ to it by construction.
 
 ## Log
 
+## 2026-10-08 — Free local video editing: HyperFrames, video-use, reel-studio
+
+- **Branch:** `claude/skin-analysis-9qepkz`
+- **Touched:** `.claude/skills/hyperframes*`, `media-use`, `general-video`,
+  `embedded-captions`, `talking-head-recut`, `motion-graphics`, `video-use`,
+  `.claude/skills/reel-studio/`, `.claude/skills/_vendor/`
+
+### Context
+The user asked to stop paying for editors (CapCut Pro) and have Claude do the
+editing, using "the best skills". Paying for the avatar and voice (HeyGen) stays
+open for them to decide.
+
+### Decisions
+- Researched the zhuyansen/awesome-claude-video-skills list (252 repos, each
+  security-graded). Chose heygen-com/hyperframes (Apache-2.0, about 57k stars):
+  14 skills, the core set plus the general-video, embedded-captions,
+  talking-head-recut and motion-graphics workflows. Also chose browser-use/video-use
+  (MIT) for cutting raw takes. Both were audited and vendored unmodified;
+  the audited commits are in `_vendor/*/UPSTREAM`.
+- HyperFrames telemetry is anonymous and documented; turn it off with
+  `HYPERFRAMES_NO_TELEMETRY=1`. Set `HYPERFRAMES_SKIP_SKILLS=1` so `init` stops
+  syncing skills into `~/.claude/skills`, because the project copies are canonical.
+- huggingface.co is blocked by this environment's network policy. Parakeet v3
+  (Spanish ASR) comes from the k2-fsa GitHub release instead. Its 4 files match
+  the sha256 values HyperFrames pins byte for byte; `setup.sh` verifies them.
+  Parakeet transcribes 30 s of Spanish in about 9.5 s on CPU, with word timings.
+- video-use needs ElevenLabs Scribe, but `reel-studio/parakeet_to_scribe.py`
+  writes a Scribe-shaped transcript and video-use's cache then skips the upload.
+  Tested through `pack_transcripts.py`.
+- Built a 15 s demo reel: Kokoro `em_alex` voice, round-trip-transcribed to verify
+  the words, mastered to −13.6 LUFS, rendered in 39 s. `check` passes (layout,
+  motion, 42/42 contrast). It is now `reel-studio/template/`.
+- Brand: bg `#15100c`, fg `#f7efe6`, accent `#ff5400`, Anton plus JetBrains Mono.
+  Inter is on HyperFrames' generic-font list.
+
+### Rejected
+- calesthio/OpenMontage (about 64k stars): AGPL and very large (700+ files). It
+  wraps HyperFrames/Remotion, which we now use directly.
+- remotion-dev/skills: no LICENSE (see the entry below). HyperFrames covers the same ground.
+- The default whisper models (`small.en` and the rest) are English only and their
+  downloads 403 here. Use `--engine parakeet --language es`.
+- A Studio preview before render: it runs on this server and the user's phone
+  cannot reach it. Send the MP4 with SendUserFile.
+
+### Open
+- Not yet tested on the user's own footage. `embedded-captions` matting
+  (u2net from a GitHub release, reachable) has not run yet. Ask for a 10–20 s clip.
+- Lint warns `nested_structure_needs_subcomposition` for the single-file template.
+  That only affects how Studio displays the timeline; the render is correct.
+- `pytest` here: test_skillgen fails because the clone is shallow (baseline
+  commit 47042beb missing), and test_ollama_retry_cap fails because `openai`
+  is not installed. Both are environmental: 5489 other tests pass, and CI runs `uv sync --all-extras`.
+
 ## 2026-10-08 — HeyGen and social/video skills, AI avatar route
 
 - **Branch:** `claude/skin-analysis-9qepkz`

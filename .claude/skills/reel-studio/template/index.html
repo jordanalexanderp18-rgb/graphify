@@ -1,0 +1,645 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>Sentadilla: rodillas afuera</title>
+    <script src="assets/gsap.min.js"></script>
+    <style>
+      @font-face {
+        font-family: "Anton";
+        src: url("assets/fonts/anton-latin-400-normal.woff2") format("woff2");
+        font-weight: 400;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: "JetBrains Mono";
+        src: url("assets/fonts/JetBrainsMono-400.woff2") format("woff2");
+        font-weight: 400;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: "JetBrains Mono";
+        src: url("assets/fonts/JetBrainsMono-700.woff2") format("woff2");
+        font-weight: 700;
+        font-style: normal;
+      }
+      :root {
+        --bg: #15100c;
+        --fg: #f7efe6;
+        --dim: #8f857d;
+        --accent: #ff5400;
+        --col-left: 72px;
+        --col-width: 778px;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: var(--bg);
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: "Anton", sans-serif;
+      }
+      .layer {
+        position: absolute;
+        inset: 0;
+      }
+      .mono {
+        font-family: "JetBrains Mono", monospace;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      /* ---------- background ---------- */
+      .glow {
+        position: absolute;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255, 84, 0, 0.9) 0%, rgba(255, 84, 0, 0) 68%);
+      }
+      #glow-a {
+        left: -180px;
+        top: 420px;
+        width: 960px;
+        height: 960px;
+        opacity: 0.2;
+      }
+      #glow-b {
+        left: 520px;
+        top: 1080px;
+        width: 760px;
+        height: 760px;
+        opacity: 0.12;
+      }
+      #glow-beat {
+        left: -80px;
+        top: 360px;
+        width: 1040px;
+        height: 1040px;
+        opacity: 0;
+      }
+      #ghost {
+        position: absolute;
+        right: -36px;
+        top: 260px;
+        writing-mode: vertical-rl;
+        font-size: 330px;
+        line-height: 1;
+        color: var(--fg);
+        opacity: 0.07;
+        letter-spacing: 0.02em;
+      }
+      #grain {
+        position: absolute;
+        inset: -120px;
+        opacity: 0.13;
+        mix-blend-mode: overlay;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.6'/></svg>");
+        background-size: 240px 240px;
+      }
+
+      /* ---------- top meta bar (also the progress bar) ---------- */
+      #meta {
+        position: absolute;
+        left: var(--col-left);
+        top: 236px;
+        width: var(--col-width);
+        height: 72px;
+      }
+      #meta .row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 26px;
+        height: 44px;
+      }
+      #meta .tag {
+        color: var(--accent);
+      }
+      #meta .track {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 60px;
+        height: 4px;
+        background: rgba(247, 239, 230, 0.18);
+      }
+      #meta .fill {
+        display: block;
+        width: 100%;
+        height: 100%;
+        background: var(--accent);
+        transform-origin: left center;
+      }
+
+      /* ---------- shared stage ---------- */
+      .stage {
+        position: absolute;
+        left: var(--col-left);
+        top: 340px;
+        width: var(--col-width);
+        height: 860px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+      }
+      .line {
+        display: block;
+        line-height: 0.92;
+        letter-spacing: 0.005em;
+        white-space: nowrap;
+        text-transform: uppercase;
+      }
+      .accent {
+        color: var(--accent);
+      }
+      .word {
+        display: inline-block;
+      }
+
+      /* hook A */
+      #hA1 { font-size: 200px; }
+      #hA2 { font-size: 158px; }
+      #hA3 { font-size: 138px; }
+      #hA-rule {
+        display: block;
+        width: 100%;
+        height: 12px;
+        margin-top: 26px;
+        background: var(--accent);
+        transform-origin: left center;
+      }
+
+      /* hook B */
+      #hB1 { font-size: 140px; position: relative; }
+      #hB2 { font-size: 190px; margin-top: 34px; }
+      #hB3 { font-size: 222px; }
+      #peso {
+        position: relative;
+      }
+      #peso-strike {
+        position: absolute;
+        left: -8px;
+        right: -8px;
+        top: 50%;
+        height: 14px;
+        background: var(--accent);
+        transform-origin: left center;
+      }
+
+      /* diagram */
+      #diagram {
+        position: absolute;
+        left: var(--col-left);
+        top: 390px;
+        width: var(--col-width);
+        height: 800px;
+      }
+      #diagram #legs {
+        position: absolute;
+        left: 0;
+        top: 80px;
+        width: 778px;
+        height: 720px;
+        overflow: visible;
+      }
+      .state {
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        font-size: 34px;
+        padding: 0 26px 0 18px;
+        border: 4px solid currentColor;
+        border-radius: 999px;
+      }
+      .state svg {
+        position: static;
+        width: 34px;
+        height: 34px;
+        overflow: visible;
+      }
+      #state-bad {
+        color: var(--dim);
+      }
+      #state-good {
+        color: var(--accent);
+      }
+      .limb {
+        fill: none;
+        stroke-linecap: round;
+      }
+      .thigh { stroke-width: 44px; }
+      .shin { stroke-width: 36px; }
+      .foot { stroke-width: 30px; stroke: var(--fg); fill: none; stroke-linecap: round; }
+      .guide {
+        fill: none;
+        stroke: var(--accent);
+        stroke-width: 6px;
+        stroke-linecap: round;
+      }
+      .arrow {
+        fill: none;
+        stroke: var(--accent);
+        stroke-width: 12px;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      /* benefit */
+      #benefit {
+        top: 360px;
+        height: 820px;
+      }
+      #b-label { font-size: 40px; color: var(--fg); margin-bottom: 44px; }
+      #b-hero { font-size: 270px; }
+      #b-bar {
+        display: block;
+        width: 100%;
+        margin-top: 34px;
+      }
+      #b-bar .mono { font-size: 28px; color: var(--fg); display: block; margin-bottom: 12px; }
+      #b-bar .track {
+        display: block;
+        width: 100%;
+        height: 30px;
+        border-radius: 15px;
+        background: rgba(247, 239, 230, 0.16);
+        overflow: hidden;
+      }
+      #b-bar .fill {
+        display: block;
+        width: 100%;
+        height: 100%;
+        border-radius: 15px;
+        background: var(--accent);
+        transform-origin: left center;
+      }
+      #b-up {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        margin-top: 46px;
+        font-size: 144px;
+      }
+      #b-up svg {
+        display: block;
+        width: 82px;
+        height: 110px;
+      }
+
+      /* CTA */
+      #cta {
+        top: 330px;
+        height: 960px;
+      }
+      #cta-icon {
+        display: block;
+        width: 128px;
+        height: 166px;
+        margin-bottom: 34px;
+      }
+      #c1 { font-size: 250px; }
+      #c2 { font-size: 182px; }
+      #c-sub {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0 18px;
+        margin-top: 30px;
+        font-size: 36px;
+        color: var(--fg);
+      }
+      #c-sub span { display: inline-block; }
+      #c-handle {
+        display: inline-flex;
+        align-items: center;
+        margin-top: 46px;
+        height: 76px;
+        padding: 0 34px;
+        border-radius: 999px;
+        background: var(--accent);
+        color: var(--bg);
+        font-size: 32px;
+      }
+
+      /* captions rail */
+      #captions {
+        position: absolute;
+        left: var(--col-left);
+        top: 1236px;
+        width: var(--col-width);
+        height: 168px;
+      }
+      .cap {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0 34px;
+        font-size: 86px;
+        line-height: 1;
+        text-transform: uppercase;
+        opacity: 0;
+        text-shadow: 0 6px 0 rgba(0, 0, 0, 0.35);
+      }
+      .cap .w {
+        display: inline-block;
+        color: #a39a93;
+        transform-origin: 50% 60%;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-width="1080"
+      data-height="1920"
+      data-duration="15"
+    >
+      <!-- background: glows, ghost word, grain -->
+      <div id="bg" class="layer clip" data-start="0" data-duration="15" data-track-index="0">
+        <div id="glow-a" class="glow" data-layout-allow-overflow></div>
+        <div id="glow-b" class="glow" data-layout-allow-overflow></div>
+        <div id="glow-beat" class="glow" data-layout-allow-overflow></div>
+        <div id="ghost" aria-hidden="true" data-layout-allow-overflow>PIERNA</div>
+        <div id="grain"></div>
+      </div>
+
+      <!-- meta bar with progress -->
+      <div id="meta-clip" class="layer clip" data-start="0" data-duration="15" data-track-index="1">
+        <div id="meta" class="mono">
+          <div class="row"><span id="handle">@jordan_pincheira</span><span class="tag">Técnica · 01</span></div>
+          <div class="track"><span id="progress" class="fill"></span></div>
+        </div>
+      </div>
+
+      <!-- hook A: 0.0 – 2.05 -->
+      <section id="s-hookA" class="layer clip" data-start="0" data-duration="1.92" data-track-index="2">
+        <div id="hookA" class="stage">
+          <span id="hA1" class="line">El error</span>
+          <span id="hA2" class="line">que arruina</span>
+          <span id="hA3" class="line">tu <span class="accent">sentadilla</span></span>
+          <span id="hA-rule"></span>
+        </div>
+      </section>
+
+      <!-- hook B: 1.9 – 4.35 -->
+      <section id="s-hookB" class="layer clip" data-start="1.9" data-duration="2.45" data-track-index="3">
+        <div id="hookB" class="stage">
+          <span id="hB1" class="line">No es el <span id="peso" class="word">peso<span id="peso-strike"></span></span></span>
+          <span id="hB2" class="line">Son tus</span>
+          <span id="hB3" class="line accent">rodillas</span>
+        </div>
+      </section>
+
+      <!-- diagram: 4.1 – 8.0 -->
+      <section id="s-diagram" class="layer clip" data-start="4.1" data-duration="3.9" data-track-index="4">
+        <div id="diagram">
+          <div id="state-bad" class="state mono">
+            <svg viewBox="0 0 34 34" aria-hidden="true"><path d="M7 7 L27 27 M27 7 L7 27" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" /></svg>
+            <span>Rodillas adentro</span>
+          </div>
+          <div id="state-good" class="state mono">
+            <svg viewBox="0 0 34 34" aria-hidden="true"><path d="M5 18 L13 26 L29 8" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            <span>Rodillas afuera</span>
+          </div>
+          <svg id="legs" viewBox="0 0 778 720" aria-hidden="true">
+            <g id="legs-body">
+              <rect x="246" y="84" width="286" height="52" rx="26" fill="#f7efe6" />
+              <line id="thigh-l" class="limb thigh" x1="279" y1="110" x2="339" y2="370" stroke="#8f857d" />
+              <line id="thigh-r" class="limb thigh" x1="499" y1="110" x2="439" y2="370" stroke="#8f857d" />
+              <line id="shin-l" class="limb shin" x1="339" y1="370" x2="219" y2="600" stroke="#8f857d" />
+              <line id="shin-r" class="limb shin" x1="439" y1="370" x2="559" y2="600" stroke="#8f857d" />
+              <line class="foot" x1="219" y1="600" x2="167" y2="662" />
+              <line class="foot" x1="559" y1="600" x2="611" y2="662" />
+              <line id="guide-l" class="guide" x1="189" y1="382" x2="169" y2="656" />
+              <line id="guide-r" class="guide" x1="589" y1="382" x2="609" y2="656" />
+              <circle id="toe-l" cx="167" cy="662" r="20" fill="none" stroke="#ff5400" stroke-width="6" />
+              <circle id="toe-r" cx="611" cy="662" r="20" fill="none" stroke="#ff5400" stroke-width="6" />
+              <circle id="knee-l" cx="339" cy="370" r="27" fill="#8f857d" />
+              <circle id="knee-r" cx="439" cy="370" r="27" fill="#8f857d" />
+            </g>
+            <g id="arrow-l"><path class="arrow" d="M 150 352 L 64 352 M 94 322 L 64 352 L 94 382" /></g>
+            <g id="arrow-r"><path class="arrow" d="M 628 352 L 714 352 M 684 322 L 714 352 L 684 382" /></g>
+          </svg>
+        </div>
+      </section>
+
+      <!-- benefit: 7.85 – 11.45 -->
+      <section id="s-benefit" class="layer clip" data-start="7.85" data-duration="3.6" data-track-index="5">
+        <div id="benefit" class="stage">
+          <span id="b-label" class="mono">Vas a sentir el</span>
+          <span id="b-hero" class="line accent">glúteo</span>
+          <div id="b-bar">
+            <span class="mono">Activación</span>
+            <span class="track"><span id="b-fill" class="fill"></span></span>
+          </div>
+          <div id="b-up" class="line">
+            <svg viewBox="0 0 82 110" aria-hidden="true"><path d="M41 6 L76 50 L54 50 L54 104 L28 104 L28 50 L6 50 Z" fill="#ff5400" /></svg>
+            <span>Más fuerte</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- CTA: 11.3 – 15.0 -->
+      <section id="s-cta" class="layer clip" data-start="11.3" data-duration="3.7" data-track-index="6">
+        <div id="cta" class="stage">
+          <svg id="cta-icon" viewBox="0 0 128 166" aria-hidden="true">
+            <path d="M10 12 Q10 4 18 4 L110 4 Q118 4 118 12 L118 158 L64 120 L10 158 Z" fill="#ff5400" />
+          </svg>
+          <span id="c1" class="line">Guarda</span>
+          <span id="c2" class="line">este video</span>
+          <div id="c-sub" class="mono">
+            <span id="cs1">para</span><span id="cs2">tu</span><span id="cs3">próximo</span><span id="cs4">día</span><span id="cs5">de</span><span id="cs6" class="accent">pierna</span>
+          </div>
+          <div id="c-handle" class="mono">@jordan_pincheira</div>
+        </div>
+      </section>
+
+      <!-- captions rail: 4.16 – 11.36, word-synced from the transcript -->
+      <div id="captions-clip" class="layer clip" data-start="4.1" data-duration="7.3" data-track-index="7">
+        <div id="captions">
+          <div class="cap" id="g1"><span class="w" data-s="4.16" data-e="4.40">Cuando</span><span class="w" data-s="4.40" data-e="4.80">bajas,</span></div>
+          <div class="cap" id="g2"><span class="w" data-s="4.88" data-e="5.52">empújalas</span></div>
+          <div class="cap" id="g3"><span class="w" data-s="5.52" data-e="5.76">hacia</span><span class="w" data-s="5.76" data-e="6.16">afuera,</span></div>
+          <div class="cap" id="g4"><span class="w" data-s="6.16" data-e="6.32">en</span><span class="w" data-s="6.32" data-e="6.64">línea</span><span class="w" data-s="6.64" data-e="6.80">con</span></div>
+          <div class="cap" id="g5"><span class="w" data-s="6.80" data-e="6.96">la</span><span class="w" data-s="6.96" data-e="7.28">punta</span></div>
+          <div class="cap" id="g6"><span class="w" data-s="7.28" data-e="7.44">del</span><span class="w" data-s="7.44" data-e="7.92">pie.</span></div>
+          <div class="cap" id="g7"><span class="w" data-s="7.92" data-e="8.24">vas</span><span class="w" data-s="8.24" data-e="8.32">a</span><span class="w" data-s="8.32" data-e="8.56">sentir</span></div>
+          <div class="cap" id="g8"><span class="w" data-s="8.56" data-e="8.72">el</span><span class="w" data-s="8.72" data-e="9.28">glúteo</span></div>
+          <div class="cap" id="g9"><span class="w" data-s="9.28" data-e="9.76">trabajando</span></div>
+          <div class="cap" id="g10"><span class="w" data-s="9.76" data-e="9.92">y</span><span class="w" data-s="9.92" data-e="10.16">vas</span><span class="w" data-s="10.16" data-e="10.24">a</span></div>
+          <div class="cap" id="g11"><span class="w" data-s="10.24" data-e="10.64">subir</span><span class="w" data-s="10.64" data-e="10.80">más</span><span class="w" data-s="10.80" data-e="11.36">fuerte.</span></div>
+        </div>
+      </div>
+
+      <audio id="vo" src="assets/voz.wav" data-start="0" data-duration="14" data-track-index="9" data-volume="1"></audio>
+    </div>
+
+    <script>
+      const DURATION = 15;
+      const tl = gsap.timeline({ paused: true });
+
+      // ---- word onsets from the Parakeet transcript (seconds) — the beat array ----
+      const W = {
+        el: 0.08, error: 0.24, que: 0.48, arruina: 0.56, tu: 1.04, sentadilla: 1.12,
+        no: 1.92, peso: 2.4, son: 2.96, rodillas: 3.44,
+        cuando: 4.16, bajas: 4.4, empujalas: 4.88, hacia: 5.52, afuera: 5.76,
+        en: 6.16, punta: 6.96, pie: 7.44,
+        vas: 7.92, gluteo: 8.72, trabajando: 9.28, subir: 10.24, fuerte: 10.8,
+        guarda: 11.36, este: 11.84, video: 12.08,
+        para: 12.4, tu2: 12.64, proximo: 12.8, dia: 13.2, de: 13.44, pierna: 13.52,
+      };
+
+      // ---- ambient: glows breathe, ghost drifts, grain crawls, progress fills ----
+      const breathe = (sel, from, to, cycle) =>
+        tl.fromTo(sel, { scale: from }, {
+          scale: to, duration: cycle / 2, ease: "sine.inOut", yoyo: true,
+          repeat: Math.max(0, Math.floor(DURATION / cycle) - 1),
+        }, 0);
+      breathe("#glow-a", 0.92, 1.08, 2.6);
+      breathe("#glow-b", 1.06, 0.94, 3.3);
+      tl.fromTo("#ghost", { y: 0 }, { y: -140, duration: DURATION, ease: "none" }, 0);
+      tl.fromTo("#grain", { x: 0, y: 0 }, { x: 96, y: 48, duration: DURATION, ease: "steps(45)" }, 0);
+      tl.fromTo("#progress", { scaleX: 0 }, { scaleX: 1, duration: DURATION, ease: "none" }, 0);
+      tl.fromTo("#meta", { y: -24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, 0);
+
+      // beat glow: blooms with the three hero words, decays to a low rest (peak ≤ 0.45)
+      const bloom = (t) => {
+        tl.fromTo("#glow-beat", { opacity: 0, scale: 0.85 }, { opacity: 0.4, scale: 1, duration: 0.35, ease: "power3.out", immediateRender: false }, t);
+        tl.to("#glow-beat", { opacity: 0.12, duration: 0.9, ease: "sine.out" }, t + 0.35);
+      };
+      bloom(W.rodillas);
+      bloom(W.gluteo);
+      bloom(W.guarda);
+
+      // ---- hook A: kinetic beat slam, a distinct entrance per line ----
+      tl.fromTo("#hA1", { scale: 1.5, filter: "blur(16px)", opacity: 0 }, { scale: 1, filter: "blur(0px)", opacity: 1, duration: 0.42, ease: "power4.out" }, W.el);
+      tl.fromTo("#hA2", { x: -320, opacity: 0 }, { x: 0, opacity: 1, duration: 0.38, ease: "expo.out" }, W.que);
+      tl.fromTo("#hA3", { y: 90, rotation: 5, opacity: 0 }, { y: 0, rotation: 0, opacity: 1, duration: 0.48, ease: "circ.out" }, W.tu);
+      tl.fromTo("#hA-rule", { scaleX: 0 }, { scaleX: 1, duration: 0.4, ease: "expo.inOut" }, W.sentadilla + 0.12);
+      tl.to("#hookA", { y: -80, opacity: 0, duration: 0.14, ease: "power2.in" }, 1.76);
+
+      // ---- hook B ----
+      tl.fromTo("#hB1", { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 0.34, ease: "power3.out" }, W.no);
+      tl.fromTo("#peso-strike", { scaleX: 0 }, { scaleX: 1, duration: 0.28, ease: "expo.out" }, W.peso + 0.1);
+      tl.to("#peso", { color: "#8f857d", duration: 0.25, ease: "power1.out" }, W.peso + 0.18);
+      tl.fromTo("#hB2", { x: 320, opacity: 0 }, { x: 0, opacity: 1, duration: 0.34, ease: "expo.out" }, W.son);
+      tl.fromTo("#hB3", { scale: 1.6, filter: "blur(18px)", opacity: 0 }, { scale: 1, filter: "blur(0px)", opacity: 1, duration: 0.45, ease: "power4.out" }, W.rodillas);
+      tl.to("#hookB", { y: -80, opacity: 0, duration: 0.18, ease: "power2.in" }, 4.08);
+
+      // ---- diagram: knees cave in, then push out over the toes ----
+      tl.fromTo("#diagram", { opacity: 0, scale: 0.94 }, { opacity: 1, scale: 1, duration: 0.36, ease: "power3.out" }, 4.12);
+      tl.fromTo("#state-bad", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: "power2.out" }, 4.2);
+      tl.fromTo("#legs-body", { y: 0 }, { y: 14, duration: 0.34, ease: "sine.inOut" }, W.bajas);
+      tl.set(["#state-good", "#arrow-l", "#arrow-r"], { opacity: 0 }, 0);
+      tl.set(["#guide-l", "#guide-r"], { strokeDasharray: 276, strokeDashoffset: 276 }, 0);
+      tl.set(["#toe-l", "#toe-r"], { opacity: 0, transformOrigin: "50% 50%" }, 0);
+
+      // push out on "empújalas"
+      tl.fromTo("#arrow-l", { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.3, ease: "back.out(1.7)" }, W.empujalas);
+      tl.fromTo("#arrow-r", { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.3, ease: "back.out(1.7)" }, W.empujalas);
+      const KNEE = { duration: 0.62, ease: "power3.inOut" };
+      tl.fromTo("#thigh-l", { attr: { x2: 339 } }, { attr: { x2: 189 }, ...KNEE }, W.empujalas + 0.06);
+      tl.fromTo("#thigh-r", { attr: { x2: 439 } }, { attr: { x2: 589 }, ...KNEE }, W.empujalas + 0.06);
+      tl.fromTo("#shin-l", { attr: { x1: 339 } }, { attr: { x1: 189 }, ...KNEE }, W.empujalas + 0.06);
+      tl.fromTo("#shin-r", { attr: { x1: 439 } }, { attr: { x1: 589 }, ...KNEE }, W.empujalas + 0.06);
+      tl.fromTo("#knee-l", { attr: { cx: 339 } }, { attr: { cx: 189 }, ...KNEE }, W.empujalas + 0.06);
+      tl.fromTo("#knee-r", { attr: { cx: 439 } }, { attr: { cx: 589 }, ...KNEE }, W.empujalas + 0.06);
+      tl.fromTo(["#thigh-l", "#thigh-r", "#shin-l", "#shin-r"], { stroke: "#8f857d" }, { stroke: "#f7efe6", duration: 0.5, ease: "power1.inOut" }, W.empujalas + 0.1);
+      tl.fromTo(["#knee-l", "#knee-r"], { fill: "#8f857d" }, { fill: "#ff5400", duration: 0.4, ease: "power1.inOut" }, W.empujalas + 0.3);
+      tl.to(["#arrow-l", "#arrow-r"], { opacity: 0, duration: 0.25, ease: "power1.in" }, W.afuera + 0.2);
+
+      // state label swap on "hacia afuera"
+      tl.to("#state-bad", { y: -16, opacity: 0, duration: 0.2, ease: "power2.in" }, W.hacia);
+      tl.fromTo("#state-good", { y: 22, opacity: 0, scale: 0.9 }, { y: 0, opacity: 1, scale: 1, duration: 0.34, ease: "back.out(1.6)" }, W.hacia + 0.12);
+
+      // knee-to-toe guides draw on "en línea con la punta del pie"
+      tl.to("#guide-l", { strokeDashoffset: 0, duration: 0.6, ease: "power2.out" }, W.en);
+      tl.to("#guide-r", { strokeDashoffset: 0, duration: 0.6, ease: "power2.out" }, W.en + 0.45);
+      tl.fromTo(["#toe-l", "#toe-r"], { opacity: 0, scale: 0.3 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(1.8)" }, W.punta);
+      tl.to(["#toe-l", "#toe-r"], { scale: 1.35, duration: 0.24, ease: "sine.inOut", yoyo: true, repeat: 1 }, W.pie);
+      tl.to("#diagram", { y: -60, opacity: 0, duration: 0.18, ease: "power2.in" }, 7.78);
+
+      // ---- benefit ----
+      tl.fromTo("#b-label", { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: "power2.out" }, W.vas);
+      tl.fromTo("#b-hero", { scale: 1.5, filter: "blur(16px)", opacity: 0 }, { scale: 1, filter: "blur(0px)", opacity: 1, duration: 0.42, ease: "power4.out" }, W.gluteo);
+      tl.fromTo("#b-bar", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: "power2.out" }, W.trabajando - 0.1);
+      tl.fromTo("#b-fill", { scaleX: 0 }, { scaleX: 1, duration: 0.7, ease: "power2.out" }, W.trabajando);
+      tl.fromTo("#b-up", { y: 90, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "circ.out" }, W.subir);
+      tl.fromTo("#b-up svg", { y: 16 }, { y: -10, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1 }, W.fuerte);
+      tl.to("#benefit", { y: -60, opacity: 0, duration: 0.16, ease: "power2.in" }, 11.24);
+
+      // ---- CTA ----
+      tl.fromTo("#cta-icon", { scale: 0, opacity: 0, transformOrigin: "50% 50%" }, { scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.7)" }, W.guarda);
+      tl.fromTo("#c1", { scale: 1.5, filter: "blur(16px)", opacity: 0 }, { scale: 1, filter: "blur(0px)", opacity: 1, duration: 0.42, ease: "power4.out" }, W.guarda);
+      tl.fromTo("#c2", { x: -320, opacity: 0 }, { x: 0, opacity: 1, duration: 0.36, ease: "expo.out" }, W.este);
+      [["#cs1", W.para], ["#cs2", W.tu2], ["#cs3", W.proximo], ["#cs4", W.dia], ["#cs5", W.de], ["#cs6", W.pierna]].forEach(([sel, t]) => {
+        tl.fromTo(sel, { y: 26, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power3.out" }, t);
+      });
+      tl.fromTo("#c-handle", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "power3.out" }, 13.95);
+      tl.fromTo("#cta", { scale: 1 }, { scale: 1.015, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 0 }, 14.4);
+
+      // ---- captions rail: hard swaps per group + karaoke envelope per word ----
+      const groups = ["#g1", "#g2", "#g3", "#g4", "#g5", "#g6", "#g7", "#g8", "#g9", "#g10", "#g11"];
+      const starts = groups.map((g) => parseFloat(document.querySelector(g + " .w").dataset.s));
+      groups.forEach((g, i) => {
+        tl.set(g, { opacity: 1 }, starts[i]);
+        tl.fromTo(g, { y: 16, scale: 0.96 }, { y: 0, scale: 1, duration: 0.16, ease: "power2.out", immediateRender: false }, starts[i]);
+        const end = i + 1 < groups.length ? starts[i + 1] : 11.36;
+        tl.set(g, { opacity: 0 }, end);
+      });
+
+      const ATTACK = 0.08, RELEASE = 0.25, REST = 0.05, BOOST = 0.08;
+      const PENDING = [163, 154, 147], DONE = [247, 239, 230], ACTIVE = [255, 84, 0];
+      const capWords = Array.from(document.querySelectorAll("#captions .w")).map((el) => ({
+        el, s: parseFloat(el.dataset.s), e: parseFloat(el.dataset.e),
+      }));
+      const env = (t, s, e) => {
+        if (t < s) return -1;
+        if (t < e) return Math.min((t - s) / ATTACK, 1);
+        if (t < e + RELEASE) return 1 - ((t - e) / RELEASE) * (1 - REST);
+        return REST;
+      };
+      const mix = (a, b, k) => `rgb(${a.map((v, i) => Math.round(v + (b[i] - v) * k)).join(",")})`;
+      const driver = { t: 0 };
+      tl.fromTo(driver, { t: 0 }, {
+        t: DURATION, duration: DURATION, ease: "none",
+        onUpdate: () => {
+          for (const w of capWords) {
+            const k = env(driver.t, w.s, w.e);
+            if (k < 0) {
+              w.el.style.color = mix(PENDING, PENDING, 0);
+              w.el.style.transform = "scale(1)";
+            } else {
+              w.el.style.color = mix(DONE, ACTIVE, k);
+              w.el.style.transform = `scale(${1 + BOOST * k})`;
+            }
+          }
+        },
+      }, 0);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>
