@@ -94,17 +94,54 @@ to it by construction.
 
 ## Log
 
+## 2026-10-08 — HeyGen and social/video skills, AI avatar route
+
+- **Branch:** `claude/skin-analysis-9qepkz`
+- **Touched:** `.claude/skills/heygen-*`, `.claude/skills/social`, `.claude/skills/video`, `.claude/skills/_vendor/`
+
+### Context
+The user (fitness account, wants content and AI rather than sales) asked for
+every skill covering Instagram, WhatsApp and Facebook. They also want an AI
+avatar that explains workouts for them, because they find talking on camera hard.
+
+### Decisions
+- Vendored `heygen-avatar` and `heygen-video` from heygen-com/skills (the
+  official vendor, MIT). They talk only to the HeyGen MCP
+  (`mcp.heygen.com`, OAuth, uses the user's paid plan credits).
+  `update-check.sh` only curls the VERSION file from GitHub.
+- Vendored `social` and `video` from coreyhaines31/marketingskills (MIT). Both
+  are text only. The `curl` recipes in `social` read public APIs (Reddit, HN,
+  Bluesky) and nothing else.
+- License and audited commit for each source go in `.claude/skills/_vendor/<source>/`.
+  `instagram-agent/` moved there too, so `.claude/skills/` holds only real skills.
+- The auto-mode classifier blocks copying third-party code into the repo until
+  the user approves it explicitly. Ask first.
+
+### Rejected
+- lharries/whatsapp-mcp: it reads every personal chat into local SQLite, needs a
+  Go bridge on the user's machine, and is unofficial, so the number risks a ban.
+  Do not install it without the user accepting those risks explicitly.
+- The Facebook Graph skill on claudskills.com: unknown author, needs a Page
+  token, and `social` already covers writing Facebook content.
+
+### Open
+- HeyGen is not connected yet. The user needs a HeyGen plan and
+  `claude mcp add --transport http heygen https://mcp.heygen.com/mcp/v1/` on
+  their own machine, then `/heygen-avatar` with a photo.
+- The user has not applied the profile rewrite yet: name "Jordan Pincheira | Fitness",
+  public creator account, highlights by topic.
+
 ## 2026-10-08 — Vendored instagram-agent-skill
 
 - **Branch:** `claude/skin-analysis-9qepkz`
-- **Touched:** `.claude/skills/ig-*`, `.claude/skills/instagram-agent/`, `.gitignore`
+- **Touched:** `.claude/skills/ig-*`, `.claude/skills/_vendor/instagram-agent/`, `.gitignore`
 
 ### Context
 The user found Jake Schincariol's instagram-agent-skill (13 Claude skills, MIT)
 in an Instagram reel and asked for a malware check, then a copy in this repo.
 
 ### Decisions
-- Audited upstream at the commit in `.claude/skills/instagram-agent/UPSTREAM`
+- Audited upstream at the commit in `.claude/skills/_vendor/instagram-agent/UPSTREAM`
   before copying. Python is stdlib only, with no network, subprocess or eval.
   It only reads input you pass it and writes to `~/.claude/instagram/`. No
   hooks and no hidden Unicode. The SKILL.md files forbid auto-posting, DM
