@@ -148,7 +148,8 @@ open for them to decide.
   to paste the links again; they are deliberately not stored here, because this repo is
   public and the files are shared by link. Download with
   `curl -L "https://drive.usercontent.google.com/download?id=<ID>&export=download&confirm=t"`.
-  The Drive connector's `download_file_content` returns base64 inline, which is unusable for video.
+  The Drive connector works with the user's account (metadata, permissions, search),
+  but `download_file_content` refuses files over 10 MB, so it cannot carry video.
 - The chat upload limit is about 30 MB. Original clips trimmed to 15–20 s at 1080p fit;
   screen recordings carry phone UI and lose quality, so ask for the original file.
 - HeyGen is live: the user is on the Creator plan (600 credits a month) and owns a digital-twin
@@ -160,6 +161,16 @@ open for them to decide.
   The HeyGen media hosts (`*.heygen.ai`) are blocked here, so HeyGen renders cannot be downloaded
   for our own captions until the user allows those domains (then start a new session).
   IDs are deliberately not stored here.
+- The user expected reels cut from their own gym footage, not a talking avatar. To get
+  footage into HeyGen without passing it through the container: `create_video_from_studio`,
+  `create_video_agent` and `create_ai_clipping` accept `{"type":"url"}` sources, and the
+  user shares Drive files as "anyone with the link", so HeyGen could fetch them itself.
+  This is untested, and one report on HeyGen's forum says a Drive direct link failed (for
+  audio). The documented route is `create_asset_upload`, then a PUT to the presigned S3 URL
+  (`*.s3.amazonaws.com` answers from here), then `complete_asset_upload`. That route needs
+  the bytes in the container.
+- The auto-mode classifier blocks HeyGen renders as "Real-World Transactions" until the
+  user OKs spending credits in the conversation. Ask before rendering, even for a test.
 - Lint warns `nested_structure_needs_subcomposition` for the single-file template.
   That only affects how Studio displays the timeline; the render is correct.
 - `pytest` here: test_skillgen fails because the clone is shallow (baseline
