@@ -41,6 +41,7 @@ in a local venv. Telemetry stays off (`HYPERFRAMES_NO_TELEMETRY=1`).
 | A talking clip; wants graphic cards and lower-thirds | `/talking-head-recut` |
 | Several raw takes to cut (pauses, retakes, mistakes) | `/video-use`, with `parakeet_to_scribe.py` instead of an ElevenLabs key |
 | A HeyGen avatar video | `/heygen-video`, then `/embedded-captions` |
+| His own gym clips, narrated with his cloned voice | Section 4 (`new-reel.sh <dir> template-footage`) |
 | A short title or sting, no voice | `/motion-graphics` |
 
 ## 3. Script-only route, end to end
@@ -61,6 +62,34 @@ in a local venv. Telemetry stays off (`HYPERFRAMES_NO_TELEMETRY=1`).
    Verify it with `ffprobe` and `ffmpeg -af ebur128=peak=true`; the target is about −14 LUFS.
 7. **Deliver.** Send the MP4 with `SendUserFile`. Jordan posts it himself.
 
+## 4. Footage route: his clips and his cloned voice
+
+1. **Get the clips.** He puts the originals (not screen recordings) in a Google Drive
+   folder shared as "Lector", meaning anyone with the link can view. Find the file IDs
+   with the Google Drive connector (`search_files` with `parentId = '<folder id>'`). Then download them into the
+   scratchpad with `curl -L "https://drive.usercontent.google.com/download?id=<ID>&export=download&confirm=t"`.
+   The environment's allowlist covers that host. The connector's own download stops at 10 MB.
+2. **Look before cutting.** His phone records 4K HEVC at 60 fps with a −90° rotation
+   flag. Build contact sheets (`ffmpeg -ss <t> -t 12 -i clip.mp4 -vf "fps=2,scale=180:320,tile=6x4"`)
+   and time each rep by eye.
+3. **Proxy.** Transcode each clip to 1080x1920 H.264 at 30 fps with no audio:
+   `-vf "scale=1080:1920:flags=lanczos,fps=30,eq=contrast=1.05:saturation=1.08,format=yuv420p" -c:v libx264 -crf 18 -g 15 -an`.
+   Chromium may not decode HEVC, and the gym music on the clips is not his to publish.
+4. **Voice.** Use HeyGen `create_speech` with his cloned voice "Jor"; look up the ID
+   with `list_voices`, because it is not stored here. The call returns an audio URL on
+   `resource2.heygen.ai` and word timestamps. Drive the captions from those timestamps and
+   confirm the words with Parakeet. It cost 1 credit for 23 s. Get his OK before you spend credits.
+5. **Compose.** Run `new-reel.sh <dir> template-footage`. These rules come from the first reel:
+   - A timed `<video>` must not sit inside a timed element, or lint fails with
+     `video_nested_in_timed_element`. Put camera moves on untimed wrappers:
+     `.shot > .kb > .punch > video`. Mark `.kb` with `data-layout-allow-overflow`.
+   - Cut in the gaps between words. Set `data-media-start` so the movement matches the cue:
+     he stands on "pecho arriba" and goes down on "baja".
+   - In low-angle footage the heads sit near the top. Shift `.kb` down (`y: 260`) so the dark
+     background becomes a header and the labels clear the faces.
+   - Put the caption rail at `top: 1290px`, below the knees and above Instagram's caption area.
+6. **Check, snapshot, render and deliver** as in section 3.
+
 ## Reels delivery spec
 
 - 1080x1920, 30 fps, H.264 + AAC, 15–45 s.
@@ -77,4 +106,5 @@ in a local venv. Telemetry stays off (`HYPERFRAMES_NO_TELEMETRY=1`).
 - The HyperFrames Studio preview runs on this server and his phone cannot
   reach it, so send the rendered MP4 instead.
 - Keep renders, voice files and his footage out of git; work in the scratchpad.
-- `template/` is the first demo (squat, knees out). Adapt it; do not ship it twice.
+- `template/` is the first demo (squat, knees out) and `template-footage/` is the first
+  reel from his clips (3 levels of squat). Adapt them, but never ship either one twice.

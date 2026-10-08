@@ -94,6 +94,51 @@ to it by construction.
 
 ## Log
 
+## 2026-10-08 — First reel cut from the user's own footage
+
+- **Branch:** `claude/skin-analysis-9qepkz`
+- **Touched:** `.claude/skills/reel-studio/` (SKILL.md section 4, `new-reel.sh` template
+  argument, `template-footage/`)
+
+### Context
+The user disliked the talking-avatar test and wanted reels made from their real gym
+videos. They put 3 originals in a Drive folder: 2019 clips, 4K HEVC, about 30 s and
+145 MB each. For the topic and script they said "elige tú".
+
+### Decisions
+- The reel was edited locally with HyperFrames, not with HeyGen's Video Agent. Locally we
+  can see the footage, cut on the reps and keep the brand captions. HeyGen supplies only the
+  voice: `create_speech` with the cloned voice "Jor" cost 1 credit for 23 s and returns
+  word timestamps.
+- The footage set the topic. The clips are a bodyweight squat, a barbell back squat and a heavy
+  squat with a spotter, so the reel is "3 levels of squat" and opens on the heaviest clip.
+  It uses standard coaching cues only.
+- The environment's network access is now Custom: package managers plus
+  `drive.usercontent.google.com`, `drive.google.com` and `*.heygen.ai`. The user set it at
+  claude.ai/code in the phone's browser, under session menu → "Editar entorno de nube".
+  The Android app has no such option. The running container picked up the change within a minute.
+- `template-footage/` keeps the composition, and `new-reel.sh <dir> template-footage`
+  scaffolds a new project from it.
+
+### Rejected
+- HeyGen URL inputs (`files[]` with `url`, or a scene's `source.url`) are capped at 32 MB per
+  video, so the 145 MB originals fail with `invalid_parameter`. HeyGen itself did fetch the
+  public Drive link.
+- A helper session from `create_session` cannot move the bytes from Drive to HeyGen's S3. It
+  runs in the same environment and got the same policy denial. Fix the allowlist instead.
+- Trimming the clips under the 30 MB chat limit was rejected because the user wanted the whole
+  videos used.
+- On the first try the user pasted the domains into "Script de configuración", the setup
+  script, which would break session startup. Domains go in "Dominios permitidos" under
+  "Personalizado".
+
+### Open
+- The Drive folder is shared as "Editor", so anyone with the link can edit it. The user was
+  asked to switch it to "Lector".
+- Three HeyGen direct-upload slots were created and never completed. They expire on their own.
+- The reel has voice only. The user can add a track from Instagram's library at low volume.
+- The render and the final MP4 live only in the scratchpad, not in git.
+
 ## 2026-10-08 — Free local video editing: HyperFrames, video-use, reel-studio
 
 - **Branch:** `claude/skin-analysis-9qepkz`
@@ -145,8 +190,8 @@ open for them to decide.
   had added the Drive domains to the environment's allowlist. The edit never took effect:
   this container and a brand-new helper session in the same environment (the account has
   only one, "Predeterminado") both got a 403 policy denial at CONNECT for
-  `drive.usercontent.google.com`. Ask the user to add `drive.usercontent.google.com` and
-  `drive.google.com` under Allowed domains, then start a new session. Their links are
+  `drive.usercontent.google.com`. Resolved later that day: the domains are now under Allowed
+  domains (see the entry above). Their links are
   deliberately not stored here, because this repo is public and the files are shared by
   link. Download with
   `curl -L "https://drive.usercontent.google.com/download?id=<ID>&export=download&confirm=t"`.
@@ -160,8 +205,8 @@ open for them to decide.
   "HyperFrames by HeyGen", which has no avatar tools. For an exact script use
   `create_video_from_avatar`; the Video Agent rewrites scripts. The cloned voice also runs on
   the ElevenLabs engines inside HeyGen, so a separate ElevenLabs plan is not needed.
-  The HeyGen media hosts (`*.heygen.ai`) are blocked here, so HeyGen renders cannot be downloaded
-  for our own captions until the user allows those domains (then start a new session).
+  The HeyGen media hosts (`*.heygen.ai`) were blocked at first. They are now allowed (see
+  the entry above), so HeyGen audio and renders can be downloaded here.
   IDs are deliberately not stored here.
 - The user expected reels cut from their own gym footage, not a talking avatar.
   `create_video_from_studio`, `create_video_agent` and `create_ai_clipping` accept
