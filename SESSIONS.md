@@ -141,6 +141,16 @@ open for them to decide.
 ### Open
 - Not yet tested on the user's own footage. `embedded-captions` matting
   (u2net from a GitHub release, reachable) has not run yet. Ask for a 10–20 s clip.
+- The user put 2 clips on Google Drive (59 MB and 76 MB screen recordings) and added
+  the Drive domains to the environment's allowlist mid-session. The running container
+  still got 403 at CONNECT for `drive.google.com` and `drive.usercontent.google.com`,
+  so network edits seem to apply only to new sessions. In a new session, ask the user
+  to paste the links again; they are deliberately not stored here, because this repo is
+  public and the files are shared by link. Download with
+  `curl -L "https://drive.usercontent.google.com/download?id=<ID>&export=download&confirm=t"`.
+  The Drive connector's `download_file_content` returns base64 inline, which is unusable for video.
+- The chat upload limit is about 30 MB. Original clips trimmed to 15–20 s at 1080p fit;
+  screen recordings carry phone UI and lose quality, so ask for the original file.
 - Lint warns `nested_structure_needs_subcomposition` for the single-file template.
   That only affects how Studio displays the timeline; the render is correct.
 - `pytest` here: test_skillgen fails because the clone is shallow (baseline
