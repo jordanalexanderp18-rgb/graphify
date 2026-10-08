@@ -151,6 +151,15 @@ open for them to decide.
   The Drive connector's `download_file_content` returns base64 inline, which is unusable for video.
 - The chat upload limit is about 30 MB. Original clips trimmed to 15–20 s at 1080p fit;
   screen recordings carry phone UI and lose quality, so ask for the original file.
+- HeyGen is live: the user is on the Creator plan (600 credits a month) and owns a digital-twin
+  avatar "Jor" with a cloned Spanish voice "Jor". The connector is the custom one at
+  `https://mcp.heygen.com/mcp/v1` (tools `mcp__HeyGen__*`); the claude.ai directory only lists
+  "HyperFrames by HeyGen", which has no avatar tools. For an exact script use
+  `create_video_from_avatar`; the Video Agent rewrites scripts. The cloned voice also runs on
+  the ElevenLabs engines inside HeyGen, so a separate ElevenLabs plan is not needed.
+  The HeyGen media hosts (`*.heygen.ai`) are blocked here, so HeyGen renders cannot be downloaded
+  for our own captions until the user allows those domains (then start a new session).
+  IDs are deliberately not stored here.
 - Lint warns `nested_structure_needs_subcomposition` for the single-file template.
   That only affects how Studio displays the timeline; the render is correct.
 - `pytest` here: test_skillgen fails because the clone is shallow (baseline
