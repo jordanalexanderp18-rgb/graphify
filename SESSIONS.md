@@ -130,6 +130,14 @@ avatar that explains workouts for them, because they find talking on camera hard
   their own machine, then `/heygen-avatar` with a photo.
 - The user has not applied the profile rewrite yet: name "Jordan Pincheira | Fitness",
   public creator account, highlights by topic.
+- Proposed stack, awaiting the user's yes or no: HeyGen Creator, about US$29/month
+  billed monthly. CapCut Pro is deferred. ElevenLabs is not needed because HeyGen
+  clones the voice. Start with the account private and go public once videos work.
+- Longer-term goal: use this content channel to promote the user's
+  "Smart"/PowerPoint app. That app is not in this repo or on their GitHub
+  (list_repos shows graphify only), so ask for it when that work starts.
+- remotion-dev/skills has no LICENSE. Do not vendor it; install it with
+  `npx skills add remotion-dev/skills` on the user's machine.
 
 ## 2026-10-08 — Vendored instagram-agent-skill
 
