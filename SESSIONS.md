@@ -97,7 +97,8 @@ to it by construction.
 ## 2026-10-08 — Trending style library and a layout check that measures ink
 
 - **Branch:** `claude/skin-analysis-9qepkz`
-- **Touched:** `.claude/skills/productora/` (SKILL.md section 7, `templates/estilos/`,
+- **Touched:** `AGENTS.md`, `.claude/skills/reel-studio/SKILL.md`,
+  `.claude/skills/productora/` (SKILL.md section 7, `templates/estilos/`,
   `scripts/check_layout.cjs`, `scripts/new_job.sh`, `scripts/render_slides.sh`, fixes in
   `templates/carousel.html`, `templates/guion.html` and `templates/guia-grabacion.html`)
 
@@ -106,6 +107,11 @@ The user asked for more designs that are on trend, "busca por Instagram o todo l
 Instagram cannot be browsed from here, so the research came from 2026 trend articles.
 
 ### Decisions
+- Standing rule from the user: "No ocupes la HeyGen, siempre pregúntame". Ask before every
+  HeyGen call, free calls included, and treat each OK as covering one job only. It lives in
+  `AGENTS.md`, which every session reads at start, and in the productora and reel-studio
+  skills, the brief template and Jordan's `MARCA.md`. Footage reels now default to a recorded
+  voice or the local voice; the cloned voice is the exception.
 - Six 3-slide styles (papel, neón, collage, pop, notas, revista), all with the same sample
   content, plus a 10-slide catalogue that doubles as a sales piece: one page per style, two
   pages of reel caption looks over the user's own footage, and a close with two CTAs. It went

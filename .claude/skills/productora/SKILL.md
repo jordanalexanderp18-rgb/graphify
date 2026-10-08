@@ -14,9 +14,9 @@ piece looks like it came from the same studio.
 
 | Pieza | He brings | Route | Delivers | Cost |
 | --- | --- | --- | --- | --- |
-| Reel con tus videos | Original clips in his Drive folder "Reels" | `/reel-studio` section 4 (`template-footage`) | MP4 | About 1 HeyGen credit per 25 s of cloned voice |
-| Reel con tu avatar | Topic or script | `/heygen-video`; for an exact script use `create_video_from_avatar` | HeyGen MP4, then optional `/embedded-captions` | HeyGen credits; check `get_current_user` before and after |
-| Reel animado (sin grabar) | Topic | `/reel-studio` section 3 (`template`) | MP4 | Free with the local voice, 1 credit with his cloned voice |
+| Reel con tus videos | Original clips in his Drive folder "Reels" | `/reel-studio` section 4 (`template-footage`) | MP4 | Free with a recorded voice or the local voice. His cloned voice is HeyGen: ask first (about 1 credit per 25 s) |
+| Reel con tu avatar | Topic or script | `/heygen-video`; for an exact script use `create_video_from_avatar` | HeyGen MP4, then optional `/embedded-captions` | HeyGen credits: ask first; with his OK, check `get_current_user` before and after |
+| Reel animado (sin grabar) | Topic | `/reel-studio` section 3 (`template`) | MP4 | Free with the local voice. His cloned voice is HeyGen: ask first (1 credit) |
 | Subtítulos | A clip of him talking | `/embedded-captions` | MP4 | Free |
 | Carrusel | Topic, or an existing reel | `/ig-carousel` for the copy, then `templates/carousel.html` + `scripts/render_slides.sh` | PNG 1080x1350 | Free |
 | Carrusel en un estilo de tendencia | Topic and photos | `/ig-carousel` for the copy, then one of the six styles in `templates/estilos/` (section 7) + `render_slides.sh` | PNG 1080x1350 + PDF | Free |
@@ -28,7 +28,7 @@ piece looks like it came from the same studio.
 | Revisión de perfil o resultados | Screenshots or insights | `/ig-profile`, `/ig-audit` | Report | Free |
 | Comentarios y mensajes | Pasted comments or DMs | `/ig-reply`, `/ig-comment`, `/ig-dm` | Drafts | Free |
 | Video largo a reels | A long video | `/ig-repurpose` + `/video-use` | MP4s | Free |
-| Video traducido | One of his videos | HeyGen `create_video_translation` | MP4 | Credits |
+| Video traducido | One of his videos | HeyGen `create_video_translation` | MP4 | Credits: ask first |
 | Afiche o pieza especial | Idea | `/canvas-design` | PNG or PDF | Free |
 | Tarifario | Prices from `VENTAS.md` | `templates/tarifario.html` + `render_slides.sh` (a design with `@page` also gets `slides.pdf`) | 5 PNG at 1080x1350 + PDF | Free |
 | Guía de grabación | — | `templates/guia-grabacion.html` + `render_slides.sh <html> <dir> 1080 1920` | PNG | Free |
@@ -50,9 +50,10 @@ first set (3 levels of squat) is the reference: one idea in three formats.
    client who has one.
 3. **Copy.** Write the script or the slides with the owning skill. Run the copy through
    `/ig-human` and use no invented numbers. Use standard coaching cues and nothing medical.
-4. **Credits.** Any HeyGen call that spends credits needs his explicit OK in the
-   conversation first. The auto-mode classifier blocks it otherwise, and he is paying.
-   Report the credits used at delivery.
+4. **HeyGen.** Ask Jordan before every HeyGen call, every time, free calls included: it is
+   his standing rule ("No ocupes la HeyGen, siempre pregúntame", also in `AGENTS.md`). An OK
+   covers only the job it was given for. Without one, use a recorded voice (his or the
+   client's) or the local voice. Report the credits used at delivery.
 5. **Build** along the route. Start a static piece with
    `scripts/new_job.sh <template.html> <job-dir>`: it copies the template and every font it
    loads (a missing font renders silently in a fallback), and lists the photos to add.
@@ -105,7 +106,8 @@ first set (3 levels of squat) is the reference: one idea in three formats.
   out of reach, and nobody logs into it for him.
 - **Drive:** the Google Drive connector lists folders and checks sharing. Download
   with curl from public "Lector" links, because the connector stops at 10 MB.
-- **HeyGen:** `create_speech` returns his cloned voice with word timestamps.
+- **HeyGen** (only after asking, see section 2 step 4): `create_speech` returns his cloned
+  voice with word timestamps.
   `create_video_from_avatar` takes an exact script. Studio and Video Agent URL inputs
   stop at 32 MB per video; `create_asset_upload` takes direct uploads up to 200 MB.
 - **Render:** HyperFrames for video. For statics, `scripts/render_slides.sh` runs the

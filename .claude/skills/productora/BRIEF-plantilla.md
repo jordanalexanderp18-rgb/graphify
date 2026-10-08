@@ -12,7 +12,8 @@ Lo que el cliente no dijo se decide con su MARCA.md, y la decisión se le cuenta
 - **Voz:** <su voz grabada | su voz clonada (créditos) | voz local gratis | sin voz>
 - **Duración o número de láminas:** <15 a 45 s | 6 a 10 láminas>
 - **Llamado a la acción (uno solo):** <...>
-- **Créditos autorizados:** <0 | hasta N créditos de HeyGen>, con el OK escrito en la conversación
+- **HeyGen:** <no | sí, hasta N créditos>. Solo con su OK escrito en la conversación para este
+  trabajo: preguntar siempre antes de cualquier llamada a HeyGen
 - **Entrega:** <MP4 | PNG | texto> y texto de publicación
 
 ## Decisiones tomadas

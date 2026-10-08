@@ -41,7 +41,7 @@ in a local venv. Telemetry stays off (`HYPERFRAMES_NO_TELEMETRY=1`).
 | A talking clip; wants graphic cards and lower-thirds | `/talking-head-recut` |
 | Several raw takes to cut (pauses, retakes, mistakes) | `/video-use`, with `parakeet_to_scribe.py` instead of an ElevenLabs key |
 | A HeyGen avatar video | `/heygen-video`, then `/embedded-captions` |
-| His own gym clips, narrated with his cloned voice | Section 4 (`new-reel.sh <dir> template-footage`) |
+| His own gym clips with a voice-over | Section 4 (`new-reel.sh <dir> template-footage`) |
 | A short title or sting, no voice | `/motion-graphics` |
 
 ## 3. Script-only route, end to end
@@ -64,7 +64,7 @@ in a local venv. Telemetry stays off (`HYPERFRAMES_NO_TELEMETRY=1`).
    once the render makes it stereo. It also writes a copy of about 16 MB for his phone.
 7. **Deliver.** Send the finished MP4 with `SendUserFile`. Jordan posts it himself.
 
-## 4. Footage route: his clips and his cloned voice
+## 4. Footage route: his clips and a voice-over
 
 1. **Get the clips.** He puts the originals (not screen recordings) in a Google Drive
    folder shared as "Lector", meaning anyone with the link can view. Find the file IDs
@@ -77,10 +77,13 @@ in a local venv. Telemetry stays off (`HYPERFRAMES_NO_TELEMETRY=1`).
 3. **Proxy.** Transcode each clip to 1080x1920 H.264 at 30 fps with no audio:
    `-vf "scale=1080:1920:flags=lanczos,fps=30,eq=contrast=1.05:saturation=1.08,format=yuv420p" -c:v libx264 -crf 18 -g 15 -an`.
    Chromium may not decode HEVC, and the gym music on the clips is not his to publish.
-4. **Voice.** Use HeyGen `create_speech` with his cloned voice "Jor"; look up the ID
-   with `list_voices`, because it is not stored here. The call returns an audio URL on
-   `resource2.heygen.ai` and word timestamps. Drive the captions from those timestamps and
-   confirm the words with Parakeet. It cost 1 credit for 23 s. Get his OK before you spend credits.
+4. **Voice.** By default, use a voice recorded by the person on screen (as a video, in a
+   quiet room) or the local voice from section 3, and take word timings with Parakeet.
+   His cloned voice "Jor" is HeyGen `create_speech`: ask him first, every time, before any
+   HeyGen call, `list_voices` included (his standing rule, in `AGENTS.md`). With his OK, look
+   up the ID with `list_voices`, because it is not stored here. The call returns an audio URL
+   on `resource2.heygen.ai` and word timestamps. Drive the captions from those timestamps and
+   confirm the words with Parakeet. It cost 1 credit for 23 s.
 5. **Compose.** Run `new-reel.sh <dir> template-footage`. These rules come from the first reel:
    - A timed `<video>` must not sit inside a timed element, or lint fails with
      `video_nested_in_timed_element`. Put camera moves on untimed wrappers:
