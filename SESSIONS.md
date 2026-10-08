@@ -94,6 +94,31 @@ to it by construction.
 
 ## Log
 
+## 2026-10-08 — Vendored instagram-agent-skill
+
+- **Branch:** `claude/skin-analysis-9qepkz`
+- **Touched:** `.claude/skills/ig-*`, `.claude/skills/instagram-agent/`, `.gitignore`
+
+### Context
+The user found Jake Schincariol's instagram-agent-skill (13 Claude skills, MIT)
+in an Instagram reel and asked for a malware check, then a copy in this repo.
+
+### Decisions
+- Audited upstream at the commit in `.claude/skills/instagram-agent/UPSTREAM`
+  before copying. Python is stdlib only, with no network, subprocess or eval.
+  It only reads input you pass it and writes to `~/.claude/instagram/`. No
+  hooks and no hidden Unicode. The SKILL.md files forbid auto-posting, DM
+  automation and asking for passwords.
+- `.gitignore`: `.claude/` became `.claude/*` with `!.claude/skills/**`, so only
+  the skills are tracked. `settings.json` and other local state stay ignored.
+- Vendored as-is, with no edits, so a re-audit against upstream is a plain diff.
+
+### Open
+- Hook scoring is tuned for English. Spanish hooks score lower. The same
+  "lost $18,000" hook scored 81 in English and 60 in Spanish. A Spanish lexicon is
+  possible follow-up work.
+- These are not graphify code. Keep them out of `graphify/skills/` and skillgen.
+
 ## 2026-10-02 — Command board across agents
 
 - **Branch:** `claude/session-history-c0kdq7` (restarted from v8 after PR #2 merged)
