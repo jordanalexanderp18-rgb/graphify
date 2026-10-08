@@ -141,12 +141,14 @@ open for them to decide.
 ### Open
 - Not yet tested on the user's own footage. `embedded-captions` matting
   (u2net from a GitHub release, reachable) has not run yet. Ask for a 10–20 s clip.
-- The user put 2 clips on Google Drive (59 MB and 76 MB screen recordings) and added
-  the Drive domains to the environment's allowlist mid-session. The running container
-  still got 403 at CONNECT for `drive.google.com` and `drive.usercontent.google.com`,
-  so network edits seem to apply only to new sessions. In a new session, ask the user
-  to paste the links again; they are deliberately not stored here, because this repo is
-  public and the files are shared by link. Download with
+- The user put 2 clips on Google Drive (59 MB and 76 MB screen recordings) and said they
+  had added the Drive domains to the environment's allowlist. The edit never took effect:
+  this container and a brand-new helper session in the same environment (the account has
+  only one, "Predeterminado") both got a 403 policy denial at CONNECT for
+  `drive.usercontent.google.com`. Ask the user to add `drive.usercontent.google.com` and
+  `drive.google.com` under Allowed domains, then start a new session. Their links are
+  deliberately not stored here, because this repo is public and the files are shared by
+  link. Download with
   `curl -L "https://drive.usercontent.google.com/download?id=<ID>&export=download&confirm=t"`.
   The Drive connector works with the user's account (metadata, permissions, search),
   but `download_file_content` refuses files over 10 MB, so it cannot carry video.
@@ -161,14 +163,16 @@ open for them to decide.
   The HeyGen media hosts (`*.heygen.ai`) are blocked here, so HeyGen renders cannot be downloaded
   for our own captions until the user allows those domains (then start a new session).
   IDs are deliberately not stored here.
-- The user expected reels cut from their own gym footage, not a talking avatar. To get
-  footage into HeyGen without passing it through the container: `create_video_from_studio`,
-  `create_video_agent` and `create_ai_clipping` accept `{"type":"url"}` sources, and the
-  user shares Drive files as "anyone with the link", so HeyGen could fetch them itself.
-  This is untested, and one report on HeyGen's forum says a Drive direct link failed (for
-  audio). The documented route is `create_asset_upload`, then a PUT to the presigned S3 URL
-  (`*.s3.amazonaws.com` answers from here), then `complete_asset_upload`. That route needs
-  the bytes in the container.
+- The user expected reels cut from their own gym footage, not a talking avatar.
+  `create_video_from_studio`, `create_video_agent` and `create_ai_clipping` accept
+  `{"type":"url"}` sources, and HeyGen does fetch a public Drive direct link (it reported
+  the file's exact size). URL inputs are capped at 32 MB per video, though, and the user's
+  originals are about 145 MB each. Larger files go through `create_asset_upload`: PUT the
+  bytes to the presigned URL on `heygen-resources-prod.s3-accelerate.amazonaws.com`
+  (reachable here, valid 24 h), sending `Content-Type: video/mp4` and
+  `x-amz-server-side-encryption: AES256`, then call `complete_asset_upload`. That needs the
+  bytes in a container that can reach Drive. A helper session from `create_session` can do
+  the transfer, but it cannot message back, so read its result with `list_events`.
 - The auto-mode classifier blocks HeyGen renders as "Real-World Transactions" until the
   user OKs spending credits in the conversation. Ask before rendering, even for a test.
 - Lint warns `nested_structure_needs_subcomposition` for the single-file template.
