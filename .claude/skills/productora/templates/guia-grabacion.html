@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Guía de grabación: Pincheira Studio</title>
+    <style>
+      @font-face {
+        font-family: "Anton";
+        src: url("assets/fonts/anton-latin-400-normal.woff2") format("woff2");
+      }
+      @font-face {
+        font-family: "JetBrains Mono";
+        src: url("assets/fonts/JetBrainsMono-400.woff2") format("woff2");
+        font-weight: 400;
+      }
+      @font-face {
+        font-family: "JetBrains Mono";
+        src: url("assets/fonts/JetBrainsMono-700.woff2") format("woff2");
+        font-weight: 700;
+      }
+      :root {
+        --bg: #15100c;
+        --card: #211913;
+        --fg: #f7efe6;
+        --dim: #c4b9b0;
+        --accent: #ff5400;
+        --m: 64px;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: var(--bg);
+      }
+      .slide {
+        position: relative;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: "Anton", sans-serif;
+      }
+      .mono {
+        font-family: "JetBrains Mono", monospace;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+      .accent {
+        color: var(--accent);
+      }
+      .glow {
+        position: absolute;
+        width: 900px;
+        height: 900px;
+        right: -420px;
+        top: -360px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255, 84, 0, 0.5) 0%, rgba(255, 84, 0, 0) 66%);
+      }
+      .grain {
+        position: absolute;
+        inset: 0;
+        opacity: 0.06;
+        mix-blend-mode: overlay;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.6'/></svg>");
+      }
+      header {
+        position: absolute;
+        left: var(--m);
+        right: var(--m);
+        top: 90px;
+      }
+      header .kicker {
+        font-size: 26px;
+      }
+      header .big {
+        display: block;
+        margin-top: 20px;
+        font-size: 136px;
+        line-height: 0.9;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      header .sub {
+        display: block;
+        margin-top: 22px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 32px;
+      }
+      .blocks {
+        position: absolute;
+        left: var(--m);
+        right: var(--m);
+        top: 480px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .b {
+        display: flex;
+        gap: 24px;
+        padding: 18px 24px;
+        border-radius: 22px;
+        background: var(--card);
+      }
+      .b .n {
+        flex: none;
+        width: 66px;
+        height: 66px;
+        border-radius: 14px;
+        background: var(--accent);
+        color: var(--bg);
+        font-size: 48px;
+        line-height: 66px;
+        text-align: center;
+      }
+      .b .t {
+        display: block;
+        font-size: 44px;
+        line-height: 1;
+        text-transform: uppercase;
+      }
+      .b .d {
+        display: block;
+        margin-top: 10px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 25px;
+        line-height: 1.32;
+        color: var(--dim);
+      }
+      .foot {
+        position: absolute;
+        left: var(--m);
+        right: var(--m);
+        bottom: 60px;
+        display: flex;
+        justify-content: space-between;
+        font-size: 26px;
+        color: var(--dim);
+      }
+      .foot b {
+        color: var(--fg);
+      }
+    </style>
+  </head>
+  <body>
+    <section class="slide">
+      <div class="glow"></div>
+      <header>
+        <span class="kicker mono accent">Pincheira Studio · Guía</span>
+        <span class="big">Cómo grabar</span>
+        <span class="big accent">tu video</span>
+        <span class="sub">Con tu celular, en 15 minutos.</span>
+      </header>
+      <div class="blocks">
+        <div class="b"><span class="n">1</span><div><span class="t">El celular</span><span class="d">Vertical y con la cámara de atrás. 1080p o 4K, 30 cuadros, sin HDR. Lente limpio y modo avión.</span></div></div>
+        <div class="b"><span class="n">2</span><div><span class="t">La luz</span><span class="d">De frente a una ventana, de día. Nunca con la luz detrás. La luz LED, al lado del celular y un poco más alta que los ojos.</span></div></div>
+        <div class="b"><span class="n">3</span><div><span class="t">El sonido</span><span class="d">Un lugar silencioso y sin eco. Micrófono a un palmo de la boca. Sin música: se pone después.</span></div></div>
+        <div class="b"><span class="n">4</span><div><span class="t">El encuadre</span><span class="d">Trípode a la altura de los ojos. De la cintura hacia arriba. Fondo ordenado que muestre tu trabajo.</span></div></div>
+        <div class="b"><span class="n">5</span><div><span class="t">Al hablar</span><span class="d">Mira el lente, no la pantalla. Parte con la frase fuerte. Si te equivocas, pausa y repite la frase entera. De 30 a 45 segundos.</span></div></div>
+        <div class="b"><span class="n">6</span><div><span class="t">Tomas extra</span><span class="d">6 clips de 3 a 5 segundos: tus manos, el lugar, el producto, los detalles. Celular quieto.</span></div></div>
+        <div class="b"><span class="n">7</span><div><span class="t">El envío</span><span class="d">Sube los videos originales a Drive, no grabaciones de pantalla, y avisa.</span></div></div>
+      </div>
+      <div class="foot mono"><b>@jordan_pincheira</b><span>Guarda esta imagen</span></div>
+      <div class="grain"></div>
+    </section>
+    <script>
+      const n = parseInt(new URLSearchParams(location.search).get("slide") || "0", 10);
+      if (n > 0) document.querySelectorAll(".slide").forEach((s, i) => { if (i + 1 !== n) s.style.display = "none"; });
+    </script>
+  </body>
+</html>

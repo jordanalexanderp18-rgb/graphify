@@ -127,6 +127,16 @@ production studio) and authorized downloading every skill it needs.
   checklist and SII registration. The prices come from public October 2026 sources (Chile
   and LatAm) at about $900 per dollar, and the file cites them. The tax points are general
   guidance only: confirm with an accountant before the first sale.
+- The studio's working name is "Pincheira Studio": the user said Pincheira should be in it,
+  and they left the choice to me. The price list (`templates/tarifario.html`, 5 slides,
+  "con video" and "sin video") and the recording guide for clients
+  (`templates/guia-grabacion.html`) render with `render_slides.sh`. When the HTML has an
+  `@page` rule, the script also prints `slides.pdf`. VENTAS.md now lists exactly the
+  published prices.
+
+### Open (added later the same day)
+- The user's first test client is their partner, the next day. Their business or topic is
+  still unknown. Write the script once the user says it, then follow the footage route.
 
 ### Rejected
 - marcolang/marketing-skills (instagram-carousel) and hoodini/ai-agents-skills

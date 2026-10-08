@@ -28,6 +28,8 @@ piece looks like it came from the same studio.
 | Video largo a reels | A long video | `/ig-repurpose` + `/video-use` | MP4s | Free |
 | Video traducido | One of his videos | HeyGen `create_video_translation` | MP4 | Credits |
 | Afiche o pieza especial | Idea | `/canvas-design` | PNG or PDF | Free |
+| Tarifario | Prices from `VENTAS.md` | `templates/tarifario.html` + `render_slides.sh` (a design with `@page` also gets `slides.pdf`) | 5 PNG at 1080x1350 + PDF | Free |
+| Guía de grabación | — | `templates/guia-grabacion.html` + `render_slides.sh <html> <dir> 1080 1920` | PNG | Free |
 | Documentos para clientes | Brief | `/theme-factory` + the docx, pptx and pdf skills | File | Free |
 
 **Repurpose by default.** When one piece works, offer the rest of the set: a reel
@@ -39,6 +41,8 @@ first set (3 levels of squat) is the reference: one idea in three formats.
 1. **Brief.** Copy `BRIEF-plantilla.md` into the job folder in the scratchpad and
    fill it in. Ask at most two questions. Jordan usually answers "elige tú": then
    decide, write the decision in the brief and tell him what you chose when you deliver.
+   Before anyone records, send them the guía de grabación image and a short script
+   to read: one hook, three points and one call to action.
 2. **Brand.** Load `clientes/<slug>/MARCA.md`. Never invent a palette for a
    client who has one.
 3. **Copy.** Write the script or the slides with the owning skill. Run the copy through

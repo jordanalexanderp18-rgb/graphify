@@ -21,29 +21,44 @@ Por pieza:
   Business, este último desde US$149). Verifica en heygen.com/pricing cuando llegue el
   primer cliente que lo pida.
 
-## 2. Lista de precios sugerida
+## 2. Lista de precios (la del tarifario)
 
-Por pieza. Si facturas con IVA, el precio es "+ IVA".
+Estos son los precios publicados en `templates/tarifario.html` ("Pincheira Studio",
+octubre de 2026). Si cambias uno, cámbialo en los dos archivos. El precio de lanzamiento
+es solo para los 3 primeros clientes, a cambio de un testimonio, y no va impreso en el
+tarifario. Si facturas con IVA, cotiza "+ IVA".
 
-| Pieza | Lanzamiento | Normal |
+**Con video**
+
+| Pieza | Tarifario | Lanzamiento |
 | --- | --- | --- |
-| Reel con sus videos (hasta 45 s, con subtítulos, gráficos y voz) | $35.000 | $45.000–70.000 |
-| Reel con avatar IA del cliente (hasta 60 s) | $50.000 | $60.000–90.000 |
-| Creación del avatar y la voz del cliente (una sola vez) | $50.000 | $60.000–90.000 |
-| Video para empresa, explicativo o institucional (1 min) | $100.000 | $120.000–250.000; cada minuto extra $50.000–80.000 |
-| Carrusel (6 a 10 láminas) | $20.000 | $25.000–40.000 |
-| Portada o pieza estática | $8.000 | $10.000–15.000 |
-| Subtítulos para un video existente (por minuto) | $12.000 | $15.000–25.000 |
-| Video traducido con su voz (por minuto) | $30.000 | $30.000–50.000 |
-| Grabación en terreno con tu equipo (por hora) | $25.000 | $30.000–50.000 |
+| Reel con tus videos (hasta 45 s, con subtítulos, gráficos y voz) | desde $45.000 | $35.000 |
+| Reel con tu avatar IA (hasta 60 s) | desde $60.000 | $50.000 |
+| Tu avatar y tu voz con IA (una sola vez, con autorización) | desde $60.000 | $50.000 |
+| Video para empresa (1 min) | desde $120.000; cada minuto extra $50.000 | $100.000 |
+| Subtítulos a tu video (por minuto) | desde $15.000 | $12.000 |
+| Video traducido con tu voz (por minuto) | desde $30.000 | $30.000 |
+| Grabación en terreno (por hora) | desde $30.000 | $25.000 |
 
-Planes mensuales. Son lo que más conviene vender, porque dan un ingreso fijo:
+**Sin video**
 
-| Plan | Incluye | Precio al mes |
+| Pieza | Tarifario | Lanzamiento |
 | --- | --- | --- |
-| Básico | 4 reels, 4 carruseles y los textos | $180.000–220.000 |
-| Pro | 8 reels, 4 carruseles, portadas, textos y el plan del mes | $320.000–380.000 |
-| Premium | 12 reels (también con avatar), 6 carruseles, historias y un reporte | $500.000–600.000 |
+| Carrusel (6 a 10 láminas) | desde $25.000 | $20.000 |
+| Portada de reel o post | desde $10.000 | $8.000 |
+| Pack de 5 historias | desde $20.000 | $15.000 |
+| Texto para publicación | desde $5.000 | $4.000 |
+| Plan de contenido del mes | desde $30.000 | $25.000 |
+| Revisión de tu perfil | desde $25.000 | $20.000 |
+
+**Planes mensuales.** Son lo que más conviene vender, porque dan un ingreso fijo:
+
+| Plan | Incluye | Tarifario | Lanzamiento |
+| --- | --- | --- | --- |
+| Básico (con video) | 4 reels, 4 carruseles y textos | $200.000 | $180.000 |
+| Pro (con video, el más pedido) | 8 reels, 4 carruseles y portadas, textos y plan del mes | $350.000 | $320.000 |
+| Premium (con video) | 12 reels con avatar, 6 carruseles e historias, textos, plan y reporte | $550.000 | $500.000 |
+| Diseño (sin video) | 6 carruseles, 8 historias, textos y plan del mes | $150.000 | $130.000 |
 
 **Por qué esos números.** En Latinoamérica, un reel básico se cobra entre US$15 y 40 y
 uno con motion graphics entre US$40 y 120. Un paquete de 20 a 30 piezas al mes va de

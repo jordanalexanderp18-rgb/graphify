@@ -34,3 +34,12 @@ for i in $(seq 1 "$n"); do
   [ -s "$f" ] || { echo "render failed for slide $i" >&2; exit 1; }
 done
 echo "$n slide(s) -> $out"
+
+# A design with an @page rule also gets one PDF of every slide, handy for email.
+if grep -q '@page' "$html"; then
+  rm -f "$out/slides.pdf"
+  "$chrome" --headless --no-sandbox --disable-gpu --no-pdf-header-footer --print-to-pdf-no-header \
+    --virtual-time-budget=4000 --print-to-pdf="$out/slides.pdf" "file://$html" >/dev/null 2>&1 || true
+  [ -s "$out/slides.pdf" ] || { echo "pdf render failed" >&2; exit 1; }
+  echo "pdf -> $out/slides.pdf"
+fi
