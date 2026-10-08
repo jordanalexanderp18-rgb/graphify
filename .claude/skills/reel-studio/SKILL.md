@@ -59,8 +59,10 @@ in a local venv. Telemetry stays off (`HYPERFRAMES_NO_TELEMETRY=1`).
    `/hyperframes` → `/general-video`. That covers the BRIEF.md, the design gate,
    lint and check, and the snapshot contact sheet, which you inspect before any render.
 6. **Render.** `hyperframes render --fps 30 --quality delivery -o renders/<name>.mp4`.
-   Verify it with `ffprobe` and `ffmpeg -af ebur128=peak=true`; the target is about −14 LUFS.
-7. **Deliver.** Send the MP4 with `SendUserFile`. Jordan posts it himself.
+   Then run `bash .claude/skills/productora/scripts/finish_reel.sh renders/<name>.mp4 renders/<name>-final.mp4`.
+   It sets −14 LUFS on the final mix: a mono voice mastered alone reads about −11 LUFS
+   once the render makes it stereo. It also writes a copy of about 16 MB for his phone.
+7. **Deliver.** Send the finished MP4 with `SendUserFile`. Jordan posts it himself.
 
 ## 4. Footage route: his clips and his cloned voice
 

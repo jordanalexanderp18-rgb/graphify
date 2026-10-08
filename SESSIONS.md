@@ -94,6 +94,47 @@ to it by construction.
 
 ## Log
 
+## 2026-10-08 — La productora: one front door for every content piece
+
+- **Branch:** `claude/skin-analysis-9qepkz`
+- **Touched:** `.claude/skills/productora/`, `.claude/skills/canvas-design/`,
+  `.claude/skills/theme-factory/`, `.claude/skills/_vendor/anthropic-skills/`,
+  `.claude/skills/reel-studio/SKILL.md`
+
+### Context
+After the first reel from the user's own footage, they asked for "una productora" (a
+production studio) and authorized downloading every skill it needs.
+
+### Decisions
+- `productora` is an umbrella skill. It has a service menu that routes each piece to the
+  skill that owns it, a brief template, a brand profile per client under `clientes/`,
+  quality gates and delivery specs. Jordan is client zero.
+- canvas-design and theme-factory were vendored from anthropics/skills under Apache-2.0;
+  the fonts are SIL OFL. The audit found instructions only, and the showcase PDF has no
+  actions. The commit is recorded in `_vendor/anthropic-skills/UPSTREAM`.
+- Static pieces render with `scripts/render_slides.sh`. It uses the headless Chromium that
+  ships in the image, opens `?slide=N` once per slide, and sets `--virtual-time-budget` so
+  the fonts load. Seven slides take about 6 s.
+- `scripts/finish_reel.sh` replaces mastering the voice alone. A mono voice mastered to
+  −14 LUFS measured −11 LUFS once rendered as stereo. Mastering the final mix fixes that,
+  and the CRF 19 copy capped at 9 Mbit/s is 16 MB with SSIM 0.99.
+- First repurpose: the squat reel also became a 7-slide carousel and a reel cover. Both
+  designs live in `productora/templates/`.
+
+### Rejected
+- marcolang/marketing-skills (instagram-carousel) and hoodini/ai-agents-skills
+  (yuv-reel-covers) were not vendored because neither has a LICENSE. The cover skill is
+  also built around another person's face and brand.
+- The third-party music skills (ElevenLabs and inference.sh generators) need paid APIs.
+  Music comes from Instagram's in-app library instead.
+
+### Open
+- Client work needs a private repo, because this one is public. The user has to create it
+  and grant the Claude GitHub App access.
+- The productora has no name yet. Ask the user.
+- The carousel copy was rendered without approval, under the user's "elige tú". Adjust it
+  if they ask.
+
 ## 2026-10-08 — First reel cut from the user's own footage
 
 - **Branch:** `claude/skin-analysis-9qepkz`
