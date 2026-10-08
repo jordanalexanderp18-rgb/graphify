@@ -199,6 +199,12 @@ avatar that explains workouts for them, because they find talking on camera hard
 - Longer-term goal: use this content channel to promote the user's
   "Smart"/PowerPoint app. That app is not in this repo or on their GitHub
   (list_repos shows graphify only), so ask for it when that work starts.
+  Update, 2026-10-08: Smart generates .pptx decks with AI for students and teachers
+  in Chile (school talks, "disertaciones"). It starts from scratch in its own private repo,
+  `smart-presentaciones`, kept separate from graphify. The GitHub integration cannot
+  create repos (403 "Resource not accessible by integration"), so the user creates it
+  and grants the Claude GitHub App access. The MVP plan (PLAN.md) goes in that repo:
+  Netlify Function → claude-opus-5-5 structured output → PptxGenJS in the browser.
 - remotion-dev/skills has no LICENSE. Do not vendor it; install it with
   `npx skills add remotion-dev/skills` on the user's machine.
 
