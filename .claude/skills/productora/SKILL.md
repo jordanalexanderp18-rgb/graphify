@@ -122,8 +122,9 @@ first set (3 levels of squat) is the reference: one idea in three formats.
 ## 5. Tools and limits here
 
 - **Network:** Custom allowlist with the package managers, Google Drive
-  (`drive.usercontent.google.com`, `drive.google.com`) and `*.heygen.ai`. Instagram is
-  out of reach, and nobody logs into it for him.
+  (`drive.usercontent.google.com`, `drive.google.com`) and `*.heygen.ai`. YouTube and
+  Instagram stay blocked until their domains are allowed (`/ver-links` lists them); even then
+  nobody logs into Instagram for him.
 - **Drive:** the Google Drive connector lists folders and checks sharing. Download
   with curl from public "Lector" links, because the connector stops at 10 MB.
 - **HeyGen** (only after asking, see section 2 step 4): `create_speech` returns his cloned

@@ -94,6 +94,34 @@ to it by construction.
 
 ## Log
 
+## 2026-10-09 — Watching videos from links: ver-links
+
+- **Branch:** `claude/skin-analysis-9qepkz`
+- **Touched:** `.claude/skills/ver-links/` (SKILL.md, `bajar.py`), `.claude/skills/productora/SKILL.md`
+
+### Context
+The user sends Instagram links and wants Claude to watch them. Their own account skill
+`ver-videos-y-audios` reads uploaded files (local Whisper plus frame sheets) but says links
+cannot be downloaded in the cloud.
+
+### Decisions
+- `ver-links` turns a link into a file: `bajar.py` runs yt-dlp with no login and no cookies,
+  720p at most, drops tracking parameters, saves YouTube subtitles, and reports `ok`,
+  `bloqueado`, `login` or `error`. The file then goes through `ver-videos-y-audios`.
+- The web fetch tool (Parallel) reads an Instagram page from outside the container even while
+  instagram.com is blocked here: author and caption, not the video.
+- YouTube downloads get `--js-runtimes node:<path>`, because yt-dlp needs a JavaScript runtime
+  for YouTube's player challenge and the image has Node, not Deno.
+
+### Rejected
+- Logging in, browser cookies, proxies or downloader websites to get past a `login` answer.
+  The fallback is a screen recording.
+
+### Open
+- Both test links came back `bloqueado`: youtube.com and instagram.com are outside the
+  environment's allowlist. The `ok` path is untested until the user adds the domains listed
+  in the skill.
+
 ## 2026-10-09 — Sales skills, a photographer partner and two ways to film
 
 - **Branch:** `claude/skin-analysis-9qepkz`
