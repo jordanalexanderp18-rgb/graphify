@@ -121,6 +121,13 @@ cannot be downloaded in the cloud.
 - Both test links came back `bloqueado`: youtube.com and instagram.com are outside the
   environment's allowlist. The `ok` path is untested until the user adds the domains listed
   in the skill.
+- New sessions start from the default branch, `v8`, which had none of this work. The user
+  asked to leave everything ready for a new chat, so this branch went up as a pull request to
+  `v8`. Until it is merged, a new session has to check out `claude/skin-analysis-9qepkz`.
+  Local CI run before opening it: all five skillgen checks pass with full history; pytest
+  passes 5500 tests, and the 4 in `test_ollama_retry_cap.py` fail only because the optional
+  `openai` extra is not installed here (CI installs every extra). The branch changes nothing
+  under `graphify/`, `tests/` or `tools/`.
 
 ## 2026-10-09 — Sales skills, a photographer partner and two ways to film
 
