@@ -27,6 +27,9 @@ piece looks like it came from the same studio.
 | Plan de la semana | Goals | `/ig-plan`, plus `/ig-viral` for evidence | Plan | Free |
 | Revisión de perfil o resultados | Screenshots or insights | `/ig-profile`, `/ig-audit` | Report | Free |
 | Comentarios y mensajes | Pasted comments or DMs | `/ig-reply`, `/ig-comment`, `/ig-dm` | Drafts | Free |
+| Ideas desde tus comentarios | Pasted comments or DMs | `/comment-mining` | Questions, objections, their exact words and ranked reel ideas | Free |
+| Serie de contenido | Niche and how often he can post | `/series-planner`, then `/ig-plan` | A named series with 12 episodes | Free |
+| Testimonios y resultados | Client messages and results, with permission | `/social-proof-mining` | Proof cards with the consent status and the claim each one supports | Free |
 | Video largo a reels | A long video | `/ig-repurpose` + `/video-use` | MP4s | Free |
 | Video traducido | One of his videos | HeyGen `create_video_translation` | MP4 | Credits: ask first |
 | Afiche o pieza especial | Idea | `/canvas-design` | PNG or PDF | Free |

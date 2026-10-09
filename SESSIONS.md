@@ -94,6 +94,43 @@ to it by construction.
 
 ## Log
 
+## 2026-10-09 — The "52 skills" reel: Ootto's pack audited, three skills vendored
+
+- **Branch:** `claude/skin-analysis-9qepkz`
+- **Touched:** `.claude/skills/series-planner/`, `.claude/skills/comment-mining/`,
+  `.claude/skills/social-proof-mining/`, `.claude/skills/_vendor/ootto-content-skills/`,
+  `.claude/skills/productora/SKILL.md`
+
+### Context
+The user sent a screen recording of an Instagram reel that advertises "52 Claude skills"
+(Ootto-AI/claude-content-skills, MIT; the repo actually holds 53). The reel says they make
+reels, carousels and captions, fix the bio, answer comments and post to Instagram on their own.
+
+### Decisions
+- Vendored only series-planner, comment-mining and social-proof-mining. They are plain prompt
+  text, and nothing already installed covers them. The Ootto ad lines were removed and the
+  links re-pointed; `_vendor/ootto-content-skills/UPSTREAM` records the changes and the audit.
+- The reel's five headline skills map to what is already here: content-factory to reel-studio
+  plus ig-reel, carousel-builder to ig-carousel plus the six styles, caption-and-hashtags to
+  ig-caption, bio-profile-optimizer to ig-profile, comment-responder to ig-reply plus ig-dm.
+
+### Rejected
+- Auto-posting and unattended DM loops (content-factory, comment-responder, viral-carousel).
+  They need Composio or Ootto's paid service holding the user's Instagram connection, and they
+  break the house rule that the user posts. Instagram is outside the network allowlist anyway.
+- agent-reach: cookie logins, residential proxies, anti-bot workarounds and downloads of other
+  people's content.
+- reel-builder: wants a paid Runway key and renders with Remotion, not HyperFrames.
+- install.sh and the marketplace entry: both install all 53 skills globally, agent-reach
+  included.
+
+### Open
+- The reel's edit style (talking head, full-screen dark UI cutaways, a "SKILL 1/5" progress
+  pill, captions with coloured keywords, a "Comentá PALABRA" ending) can be built with
+  /talking-head-recut over a clip of the user talking. Offered, not started.
+- A comment-keyword-to-DM automation is a ManyChat-type tool that the user would connect
+  themselves. Offered only to write the messages.
+
 ## 2026-10-08 — Trending style library and a layout check that measures ink
 
 - **Branch:** `claude/skin-analysis-9qepkz`
