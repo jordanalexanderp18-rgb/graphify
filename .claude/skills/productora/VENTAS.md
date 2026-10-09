@@ -136,6 +136,27 @@ Confírmalo con un contador antes de la primera venta.
 - Autorización escrita antes de clonar a cualquier persona.
 - Los datos de los clientes van en un repositorio privado, nunca en este.
 
+## 10. Con un socio fotógrafo
+
+Jordan arma el estudio con un compañero de trabajo que es fotógrafo. Él hace las fotos y los
+videos cuando Jordan dice "lo graba mi socio"; cuando Jordan dice "lo hago yo", Jordan graba
+solo con la guía paso a paso. Antes de venderle al primer cliente juntos, acuerden por escrito
+(un documento firmado por los dos basta para partir; un contador lo formaliza):
+
+- **Quién hace qué:** por ejemplo, él fotos y video; Jordan guiones, edición con IA, entregas y
+  ventas.
+- **Cómo se reparte cada trabajo:** un porcentaje por trabajo, o un pago fijo por sesión a quien
+  graba. Digan si los costos (Claude, HeyGen, traslados) se descuentan antes de repartir.
+- **Quién emite la boleta o la factura** a cada cliente, y cómo le pasa su parte al otro.
+- **El equipo:** de quién es cada cosa y quién paga si se rompe.
+- **El material:** lo entregado es del cliente según su contrato. Cada uno lo muestra en su
+  portafolio solo si el cliente lo permite.
+- **Si uno se va:** qué pasa con los clientes, la marca y los trabajos pendientes.
+- **El nombre:** si el estudio es de los dos, conversen si sigue siendo "Pincheira Studio".
+
+Las fotos (sesión, fotos de producto, eventos) todavía no están en la lista de precios. Se
+agregan cuando el socio defina su precio por sesión.
+
 ## Fuentes (octubre de 2026)
 
 - Reels en Latinoamérica: prolatamwork.com/en/blog/how-much-video-editor-freelancer-latin-america-2026

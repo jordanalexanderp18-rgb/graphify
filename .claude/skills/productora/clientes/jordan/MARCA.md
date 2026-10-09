@@ -2,8 +2,10 @@
 
 - **Cuenta:** @jordan_pincheira (Instagram). Por ahora es privada; la va a abrir cuando
   el contenido esté andando.
-- **Quién es:** personal trainer en Chile. Quiere hacer contenido, no vender. Le interesa
-  la IA y le cuesta hablar a cámara, así que usa su voz y su avatar clonados.
+- **Quién es:** personal trainer en Chile. Hace contenido para su cuenta y, desde octubre de
+  2026, vende la productora junto a un socio: un compañero de trabajo que es fotógrafo
+  (`VENTAS.md`, sección 10). Le interesa la IA. Le cuesta hablar a cámara: guiones cortos,
+  frase por frase. Su voz y su avatar clonados existen, pero HeyGen se usa solo con su OK.
 - **Temas:** técnica de ejercicios, rutinas, progreso y la IA aplicada al entrenamiento.
   Más adelante: promover su app "Smart" (presentaciones con IA para estudiantes).
 

@@ -9,6 +9,9 @@ Lo que el cliente no dijo se decide con su MARCA.md, y la decisión se le cuenta
 - **Objetivo:** <qué tiene que pasar después de verla: guardar, comentar, seguir...>
 - **Tema y mensaje en una frase:** <...>
 - **Material de entrada:** <links o archivos; originales, no grabaciones de pantalla>
+- **Quién graba:** <el socio fotógrafo | Jordan solo | el cliente>. Decide qué se manda antes
+  de grabar: al socio, la lista de tomas con los datos de cámara; a Jordan, los pasos para
+  grabarse solo; al cliente, la guía de grabación
 - **Voz:** <su voz grabada | su voz clonada (créditos) | voz local gratis | sin voz>
 - **Duración o número de láminas:** <15 a 45 s | 6 a 10 láminas>
 - **Llamado a la acción (uno solo):** <...>

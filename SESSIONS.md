@@ -94,6 +94,46 @@ to it by construction.
 
 ## Log
 
+## 2026-10-09 — Sales skills, a photographer partner and two ways to film
+
+- **Branch:** `claude/skin-analysis-9qepkz`
+- **Touched:** `.claude/skills/{offers,prospecting,sales-enablement,ad-creative,referrals,lead-magnets}/`,
+  `.claude/skills/_vendor/marketingskills/UPSTREAM`, `.claude/skills/productora/`
+  (SKILL.md, VENTAS.md section 10, BRIEF-plantilla.md, `clientes/jordan/MARCA.md`,
+  `templates/guion-auto.html`)
+
+### Context
+The user asked what else could be downloaded to sell videos "de cualquier cosa". They are
+partnering with a coworker who is a photographer. When the user says "lo graba mi socio",
+the partner films; when the user says "lo hago yo", Claude teaches them to film alone. As the
+example, the user asked for a script while driving to work.
+
+### Decisions
+- Vendored six skills from coreyhaines31/marketingskills at 1efedbc, unmodified: offers,
+  prospecting, sales-enablement, ad-creative, referrals and lead-magnets. They are Markdown
+  plus one HTML template with inline scripts only. `UPSTREAM` lists what was skipped and why.
+- "Who films" is now a brief field and a step in the productora. The partner gets a shot list
+  with camera settings, Jordan gets solo steps for the place, and a client gets the guía.
+  Nothing is ever scripted to be filmed while driving: the car example says to film parked.
+- The car example became `templates/guion-auto.html`: card 1 has the script; card 2 has the
+  solo steps (mount, light, sound, framing, extra shots) plus the partner's version.
+- `VENTAS.md` section 10 lists what the partners must agree in writing before the first joint
+  sale: roles, split, who invoices, equipment, rights to the material, exit, and the name.
+
+### Rejected
+- `ig-reel`'s `hookscore.py` and `beats.py` are tuned for English. Their word regex has no
+  accented letters, and their number and stakes lists are English, so Spanish hooks score
+  under 50 and words like "repetición" count twice. Read their flags as hints, not verdicts.
+- From marketingskills: pricing (built for SaaS; VENTAS.md has the prices), cold-email
+  (`ig-dm` covers Instagram), ads (full campaign management), copywriting and launch (wait
+  for a website), and image (generative APIs).
+
+### Open
+- Photo services (session, product, events) are not on the price list until the partner sets
+  his rate. The partner's name is unknown.
+- `~/.claude/instagram/voice.md` does not exist; `ig-reel` wants one. Build it from three of
+  the user's own reels once the account has them.
+
 ## 2026-10-09 — The "52 skills" reel: Ootto's pack audited, three skills vendored
 
 - **Branch:** `claude/skin-analysis-9qepkz`

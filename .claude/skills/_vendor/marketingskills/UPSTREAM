@@ -1,2 +1,26 @@
-b9ba399dd88b082b926e261e8ccfb843d20aa066
-https://github.com/coreyhaines31/marketingskills
+source: https://github.com/coreyhaines31/marketingskills
+license: MIT (LICENSE here, Copyright (c) 2025 Corey Haines)
+
+social, video
+  commit: b9ba399dd88b082b926e261e8ccfb843d20aa066
+  fetched: 2026-10-08
+
+offers, prospecting, sales-enablement, ad-creative, referrals, lead-magnets
+  commit: 1efedbc (shallow clone)
+  fetched: 2026-10-09, when the user asked for skills to sell the productora with a
+    photographer partner
+  copied unmodified from skills/<name>/ (SKILL.md, references/, evals/, and
+    ad-creative/assets/creative-review-template.html)
+  audit: Markdown and JSON only, plus one HTML template whose scripts are inline (no
+    remote src). No installers. Reference docs name paid tools (Apollo, Clay, Replicate,
+    Remotion, voice APIs); none are set up here, and nothing runs without a key.
+    prospecting is explicit about not scraping LinkedIn or bulk-pulling Google Maps; its
+    local-business branch says to research Maps by hand.
+  why: the productora sells to local businesses. offers builds the packages,
+    prospecting finds and qualifies local leads, sales-enablement writes one-pagers,
+    pitch scripts and objection handling, ad-creative writes paid-ad variations (a
+    service to sell and for the studio's own ads), referrals sets up word of mouth, and
+    lead-magnets designs the free resource behind a "comenta PALABRA" call to action.
+  skipped from the same repo for now: pricing (SaaS-shaped; VENTAS.md holds the prices),
+    cold-email (email-first B2B; ig-dm covers Instagram), ads (full campaign management),
+    copywriting and launch (for when there is a website), image (generative APIs).

@@ -36,6 +36,7 @@ piece looks like it came from the same studio.
 | Tarifario | Prices from `VENTAS.md` | `templates/tarifario.html` + `render_slides.sh` (a design with `@page` also gets `slides.pdf`) | 5 PNG at 1080x1350 + PDF | Free |
 | Guía de grabación | — | `templates/guia-grabacion.html` + `render_slides.sh <html> <dir> 1080 1920` | PNG | Free |
 | Guion para el cliente | Topic | `templates/guion.html` (card 1: what they say, recorded later in a quiet room; card 2: shot list for the location) + the same renderer at 1080x1920 | 2 PNG | Free |
+| Guion para grabarse solo | Topic and place | `templates/guion-auto.html` (card 1: what he says; card 2: how to film it alone, or what the partner films) + the same renderer at 1080x1920 | 2 PNG | Free |
 | Documentos para clientes | Brief | `/theme-factory` + the docx, pptx and pdf skills | File | Free |
 
 **Repurpose by default.** When one piece works, offer the rest of the set: a reel
@@ -49,6 +50,15 @@ first set (3 levels of squat) is the reference: one idea in three formats.
    decide, write the decision in the brief and tell him what you chose when you deliver.
    Before anyone records, send them the guía de grabación image and a short script
    to read: one hook, three points and one call to action.
+   **Who films** decides what goes with the script. Take it from his words or ask once:
+   - "Lo graba mi socio": the photographer partner films. Send him the shot list with
+     camera settings (4K at 30 fps, locked exposure and white balance, extra shots).
+   - "Lo hago yo": Jordan films alone. Send the solo steps for the place: phone mount at
+     eye level, light, sound, framing and extra shots, as in
+     `templates/guion-auto.html` (a car talk, filmed parked; card 2 also has the
+     partner's version).
+   - A client films: `templates/guia-grabacion.html`.
+   - Never script anything filmed while driving. Car videos are recorded parked.
 2. **Brand.** Load `clientes/<slug>/MARCA.md`. Never invent a palette for a
    client who has one.
 3. **Copy.** Write the script or the slides with the owning skill. Run the copy through
@@ -89,8 +99,15 @@ first set (3 levels of squat) is the reference: one idea in three formats.
 ## 4. Clients
 
 - **Selling:** prices, packages, costs, equipment, the sales steps, the contract
-  checklist and how to register with Chile's tax service (SII) are in `VENTAS.md`.
-  Quote from it, and update it when the real prices change.
+  checklist, how to register with Chile's tax service (SII) and what to agree with the
+  photographer partner are in `VENTAS.md`. Quote from it, and update it when the real
+  prices change.
+- **Sales skills:** `/offers` builds the packages, `/prospecting` finds and qualifies local
+  businesses (researching Maps by hand, never scraping), `/sales-enablement` writes the
+  one-pager, the pitch and the answers to objections, `/ad-creative` writes ad variations,
+  `/referrals` sets up word of mouth, `/lead-magnets` designs the free resource behind a
+  "comenta PALABRA", and `/social-proof-mining` keeps client results with their consent.
+  They write in English by default: ask for Chilean Spanish.
 
 - Jordan is client zero: `clientes/jordan/MARCA.md`.
 - **This repository is public.** A real client's profile, footage, voice or avatar
