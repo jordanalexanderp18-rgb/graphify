@@ -17,12 +17,14 @@
       .accent { color: var(--accent); }
       .glow { position: absolute; width: 900px; height: 900px; right: -420px; top: -420px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 84, 0, 0.45) 0%, rgba(255, 84, 0, 0) 66%); }
       .grain { position: absolute; inset: 0; opacity: 0.06; mix-blend-mode: overlay; pointer-events: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.6'/></svg>"); }
-      .kicker { position: absolute; left: var(--m); top: 60px; font-size: 23px; }
-      .title { position: absolute; left: var(--m); top: 108px; }
-      .title span { display: block; font-size: 100px; line-height: 0.92; text-transform: uppercase; white-space: nowrap; }
-      .sub { position: absolute; left: var(--m); top: 312px; font-family: "JetBrains Mono", monospace; font-size: 25px; color: var(--dim); }
-      .grid { position: absolute; left: var(--m); top: 372px; width: 952px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-      .tile { position: relative; height: 228px; border-radius: 22px; overflow: hidden; box-shadow: 0 16px 34px rgba(0, 0, 0, 0.45); }
+      .kicker { position: absolute; left: var(--m); top: 50px; font-size: 23px; }
+      .title { position: absolute; left: var(--m); top: 128px; }
+      .title span { display: block; line-height: 0.92; text-transform: uppercase; white-space: nowrap; }
+      .title .l1 { font-size: 132px; }
+      .title .l2 { margin-top: 10px; font-size: 80px; }
+      .sub { position: absolute; left: var(--m); top: 344px; font-family: "JetBrains Mono", monospace; font-size: 25px; color: var(--dim); }
+      .grid { position: absolute; left: var(--m); top: 396px; width: 952px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+      .tile { position: relative; height: 222px; border-radius: 22px; overflow: hidden; box-shadow: 0 16px 34px rgba(0, 0, 0, 0.45); }
       .tile svg.icon { position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%); width: 96px; height: 96px; }
       .tile .lab { position: absolute; left: 20px; bottom: 16px; font-size: 34px; line-height: 1; text-transform: uppercase; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.25); }
       .tile .dur { position: absolute; right: 14px; top: 14px; padding: 4px 10px; border-radius: 8px; background: rgba(0, 0, 0, 0.45); font-family: "JetBrains Mono", monospace; font-size: 18px; font-weight: 700; }
@@ -34,10 +36,10 @@
       .t4 { background: linear-gradient(135deg, #1f5fbf, #55a8ff); }
       .t5 { background: linear-gradient(135deg, #d42f6a, #ff83ac); }
       .t6 { background: linear-gradient(135deg, #2f6f2f, #7fc35b); }
-      .price { position: absolute; left: var(--m); top: 878px; }
+      .price { position: absolute; left: var(--m); top: 884px; }
       .price .from { display: block; font-family: "JetBrains Mono", monospace; font-weight: 700; font-size: 22px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--dim); }
       .price .v { display: block; font-size: 78px; line-height: 1; color: var(--accent); }
-      .chip { position: absolute; right: var(--m); top: 912px; display: inline-flex; align-items: center; height: 64px; padding: 0 28px; border-radius: 999px; background: var(--accent); color: var(--bg); font-size: 24px; }
+      .chip { position: absolute; right: var(--m); top: 916px; display: inline-flex; align-items: center; height: 64px; padding: 0 28px; border-radius: 999px; background: var(--accent); color: var(--bg); font-size: 24px; }
       .foot { position: absolute; left: var(--m); right: var(--m); bottom: 44px; display: flex; justify-content: space-between; font-size: 21px; color: var(--dim); }
     </style>
   </head>
@@ -45,8 +47,8 @@
     <section class="slide">
       <div class="glow"></div>
       <span class="kicker mono accent">Pincheira Studio · Edición y producción de video</span>
-      <div class="title"><span>Editamos tu video</span><span class="accent">para lo que necesites</span></div>
-      <p class="sub">Reels, publicidad, productos, eventos y más.</p>
+      <div class="title"><span class="l1">Tú grabas.</span><span class="l2 accent">Nosotros hacemos el resto</span></div>
+      <p class="sub">Guion, edición, subtítulos y gráficos para tu negocio.</p>
       <div class="grid">
         <div class="tile t1"><span class="dur">0:30</span>
           <svg class="icon" viewBox="0 0 100 100" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M30 12 V44 M22 12 V36 Q22 44 30 44 Q38 44 38 36 V12 M30 44 V88" /><path d="M70 12 Q58 24 58 46 Q58 56 70 56 V88 M70 12 V56" /></svg>
@@ -69,7 +71,7 @@
       </div>
       <div class="price"><span class="from">Precio de lanzamiento, desde</span><span class="v">$35.000</span></div>
       <span class="chip mono">Escríbeme por interno</span>
-      <div class="foot mono"><span>Con los videos de tu celular</span><span>Santiago</span></div>
+      <div class="foot mono"><span>Ves una versión antes de la entrega</span><span>Santiago</span></div>
       <div class="grain"></div>
     </section>
     <script>

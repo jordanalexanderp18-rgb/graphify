@@ -113,6 +113,11 @@ The user asked to test the studio by selling through Facebook Marketplace.
   any identifiable person in it, since someone could ask to have it deleted. Done as three
   1080x1080 cards with flat icon tiles for six kinds of business (`templates/aviso-video.html`,
   `aviso-video-extra.html`). The rule is in Jordan's `MARCA.md`.
+- Second pass on the user's brief ("también podemos hacerte un guion... lo puedes verificar...
+  un adicional si quieres la IA de voz... un buen marketing"): headline "Tú grabas. Nosotros
+  hacemos el resto", script included, a version to approve before delivery, and the AI voice as
+  a +$10.000 add-on. That price is a proposal recorded in `VENTAS.md`. Filming is paused, so
+  the ads say "te enseño a grabarlos" instead of "vamos a grabar".
 
 ### Rejected
 - Marketplace: Meta's Commerce Policies ban selling services there, except through the WhatsApp

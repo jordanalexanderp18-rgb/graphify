@@ -40,6 +40,12 @@ tarifario. Si facturas con IVA, cotiza "+ IVA".
 | Video traducido con tu voz (por minuto) | desde $30.000 | $30.000 |
 | Grabación en terreno (por hora). En pausa desde el 10 de octubre de 2026: no se ofrece en avisos hasta que Jordan diga | desde $30.000 | $25.000 |
 
+**Lo que va con cada video editado** (aviso de octubre de 2026): el guion si el cliente no sabe
+qué decir, y una versión para aprobar antes de la entrega, con 2 rondas de cambios. La voz con IA
+(una voz genérica, no la del cliente) es un adicional de $10.000 por video: precio propuesto el
+10 de octubre de 2026, Jordan puede cambiarlo. Clonar la voz del propio cliente es el servicio
+"Tu avatar y tu voz con IA", con su autorización escrita.
+
 **Sin video**
 
 | Pieza | Tarifario | Lanzamiento |
