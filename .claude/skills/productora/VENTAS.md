@@ -38,7 +38,7 @@ tarifario. Si facturas con IVA, cotiza "+ IVA".
 | Video para empresa (1 min) | desde $120.000; cada minuto extra $50.000 | $100.000 |
 | Subtítulos a tu video (por minuto) | desde $15.000 | $12.000 |
 | Video traducido con tu voz (por minuto) | desde $30.000 | $30.000 |
-| Grabación en terreno (por hora) | desde $30.000 | $25.000 |
+| Grabación en terreno (por hora). En pausa desde el 10 de octubre de 2026: no se ofrece en avisos hasta que Jordan diga | desde $30.000 | $25.000 |
 
 **Sin video**
 
