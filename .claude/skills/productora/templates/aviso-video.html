@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Aviso: editamos tu video</title>
+    <!-- Square offer for the general video service (1080x1080). Six video "thumbnails" drawn
+         as flat icons on colour, so it shows variety without showing anyone. -->
+    <style>
+      @font-face { font-family: "Anton"; src: url("assets/fonts/anton-latin-400-normal.woff2") format("woff2"); }
+      @font-face { font-family: "JetBrains Mono"; src: url("assets/fonts/JetBrainsMono-400.woff2") format("woff2"); font-weight: 400; }
+      @font-face { font-family: "JetBrains Mono"; src: url("assets/fonts/JetBrainsMono-700.woff2") format("woff2"); font-weight: 700; }
+      :root { --bg: #15100c; --fg: #f7efe6; --dim: #b5aaa1; --accent: #ff5400; --m: 64px; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1080px; overflow: hidden; background: var(--bg); }
+      .slide { position: relative; width: 1080px; height: 1080px; overflow: hidden; background: var(--bg); color: var(--fg); font-family: "Anton", sans-serif; }
+      .mono { font-family: "JetBrains Mono", monospace; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+      .accent { color: var(--accent); }
+      .glow { position: absolute; width: 900px; height: 900px; right: -420px; top: -420px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 84, 0, 0.45) 0%, rgba(255, 84, 0, 0) 66%); }
+      .grain { position: absolute; inset: 0; opacity: 0.06; mix-blend-mode: overlay; pointer-events: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.6'/></svg>"); }
+      .kicker { position: absolute; left: var(--m); top: 60px; font-size: 23px; }
+      .title { position: absolute; left: var(--m); top: 108px; }
+      .title span { display: block; font-size: 100px; line-height: 0.92; text-transform: uppercase; white-space: nowrap; }
+      .sub { position: absolute; left: var(--m); top: 312px; font-family: "JetBrains Mono", monospace; font-size: 25px; color: var(--dim); }
+      .grid { position: absolute; left: var(--m); top: 372px; width: 952px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+      .tile { position: relative; height: 228px; border-radius: 22px; overflow: hidden; box-shadow: 0 16px 34px rgba(0, 0, 0, 0.45); }
+      .tile svg.icon { position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%); width: 96px; height: 96px; }
+      .tile .lab { position: absolute; left: 20px; bottom: 16px; font-size: 34px; line-height: 1; text-transform: uppercase; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.25); }
+      .tile .dur { position: absolute; right: 14px; top: 14px; padding: 4px 10px; border-radius: 8px; background: rgba(0, 0, 0, 0.45); font-family: "JetBrains Mono", monospace; font-size: 18px; font-weight: 700; }
+      .tile .play { position: absolute; right: 16px; bottom: 14px; width: 44px; height: 44px; border-radius: 50%; background: rgba(255, 255, 255, 0.9); }
+      .tile .play::after { content: ""; position: absolute; left: 17px; top: 13px; border-left: 15px solid #15100c; border-top: 9px solid transparent; border-bottom: 9px solid transparent; }
+      .t1 { background: linear-gradient(135deg, #ff5400, #ffa04a); }
+      .t2 { background: linear-gradient(135deg, #0f8b8d, #38c7b4); }
+      .t3 { background: linear-gradient(135deg, #5b3cc4, #a46bff); }
+      .t4 { background: linear-gradient(135deg, #1f5fbf, #55a8ff); }
+      .t5 { background: linear-gradient(135deg, #d42f6a, #ff83ac); }
+      .t6 { background: linear-gradient(135deg, #2f6f2f, #7fc35b); }
+      .price { position: absolute; left: var(--m); top: 878px; }
+      .price .from { display: block; font-family: "JetBrains Mono", monospace; font-weight: 700; font-size: 22px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--dim); }
+      .price .v { display: block; font-size: 78px; line-height: 1; color: var(--accent); }
+      .chip { position: absolute; right: var(--m); top: 912px; display: inline-flex; align-items: center; height: 64px; padding: 0 28px; border-radius: 999px; background: var(--accent); color: var(--bg); font-size: 24px; }
+      .foot { position: absolute; left: var(--m); right: var(--m); bottom: 44px; display: flex; justify-content: space-between; font-size: 21px; color: var(--dim); }
+    </style>
+  </head>
+  <body>
+    <section class="slide">
+      <div class="glow"></div>
+      <span class="kicker mono accent">Pincheira Studio · Edición y producción de video</span>
+      <div class="title"><span>Editamos tu video</span><span class="accent">para lo que necesites</span></div>
+      <p class="sub">Reels, publicidad, productos, eventos y más.</p>
+      <div class="grid">
+        <div class="tile t1"><span class="dur">0:30</span>
+          <svg class="icon" viewBox="0 0 100 100" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M30 12 V44 M22 12 V36 Q22 44 30 44 Q38 44 38 36 V12 M30 44 V88" /><path d="M70 12 Q58 24 58 46 Q58 56 70 56 V88 M70 12 V56" /></svg>
+          <span class="lab">Restaurantes</span><span class="play"></span></div>
+        <div class="tile t2"><span class="dur">0:15</span>
+          <svg class="icon" viewBox="0 0 100 100" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 34 H80 L74 88 H26 Z" /><path d="M36 34 V26 Q36 12 50 12 Q64 12 64 26 V34" /></svg>
+          <span class="lab">Productos</span><span class="play"></span></div>
+        <div class="tile t3"><span class="dur">1:00</span>
+          <svg class="icon" viewBox="0 0 100 100" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M40 74 V22 L82 14 V64" /><circle cx="30" cy="74" r="11" /><circle cx="72" cy="64" r="11" /><path d="M40 36 L82 28" /></svg>
+          <span class="lab">Eventos</span><span class="play"></span></div>
+        <div class="tile t4"><span class="dur">0:45</span>
+          <svg class="icon" viewBox="0 0 100 100" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 48 L50 16 L86 48" /><path d="M24 40 V86 H76 V40" /><path d="M42 86 V62 H58 V86" /></svg>
+          <span class="lab">Inmobiliarias</span><span class="play"></span></div>
+        <div class="tile t5"><span class="dur">0:20</span>
+          <svg class="icon" viewBox="0 0 100 100" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><circle cx="28" cy="74" r="12" /><circle cx="72" cy="74" r="12" /><path d="M36 64 L78 14 M64 64 L22 14" /></svg>
+          <span class="lab">Belleza</span><span class="play"></span></div>
+        <div class="tile t6"><span class="dur">0:30</span>
+          <svg class="icon" viewBox="0 0 100 100" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M32 50 H68" /><rect x="14" y="32" width="14" height="36" rx="3" /><rect x="72" y="32" width="14" height="36" rx="3" /><path d="M8 42 V58 M92 42 V58" /></svg>
+          <span class="lab">Gimnasios</span><span class="play"></span></div>
+      </div>
+      <div class="price"><span class="from">Precio de lanzamiento, desde</span><span class="v">$35.000</span></div>
+      <span class="chip mono">Escríbeme por interno</span>
+      <div class="foot mono"><span>Con tus videos o vamos a grabar</span><span>Santiago</span></div>
+      <div class="grain"></div>
+    </section>
+    <script>
+      const n = parseInt(new URLSearchParams(location.search).get("slide") || "0", 10);
+      if (n > 0) document.querySelectorAll(".slide").forEach((s, i) => { if (i + 1 !== n) s.style.display = "none"; });
+    </script>
+  </body>
+</html>

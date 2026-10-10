@@ -36,6 +36,8 @@ Las fuentes vienen en las skills de HyperFrames
   Los ID no se guardan aquí: búscalos con `list_avatar_groups` y `list_voices`.
 - **Videos de entrada:** carpeta "Reels" de su Google Drive, compartida como Lector.
 - **Plan:** HeyGen Creator, 600 créditos al mes.
+- **Avisos de la productora:** no sale Jordan ni ninguna persona reconocible (alguien podría pedir que
+  se borre). Variedad de rubros con íconos, gráficos o tomas sin gente.
 - **Regla de Jordan:** no usar HeyGen sin preguntarle antes, cada vez. Tampoco para buscar
   ID ni para ver créditos. Sin su OK, voz grabada por él o voz local.
 

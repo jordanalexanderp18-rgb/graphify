@@ -109,6 +109,10 @@ The user asked to test the studio by selling through Facebook Marketplace.
   for their opinion). Kit delivered: a 1080x1080 offer image with a real reel frame in a phone,
   a group post, three catalog items, message replies and a one-week test plan.
 - `templates/aviso-cuadrado.html` is the reusable square offer.
+- The user then asked for a general ad ("editamos tu video de cualquier cosa") without him or
+  any identifiable person in it, since someone could ask to have it deleted. Done as three
+  1080x1080 cards with flat icon tiles for six kinds of business (`templates/aviso-video.html`,
+  `aviso-video-extra.html`). The rule is in Jordan's `MARCA.md`.
 
 ### Rejected
 - Marketplace: Meta's Commerce Policies ban selling services there, except through the WhatsApp
