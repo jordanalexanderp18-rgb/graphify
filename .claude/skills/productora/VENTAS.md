@@ -166,6 +166,10 @@ agregan cuando el socio defina su precio por sesión.
 - **Sí se puede:** publicaciones en grupos de Facebook de la zona (emprendedores, pymes,
   comercio), respetando las reglas de cada grupo; el catálogo de WhatsApp Business con cada
   servicio y su precio; la página del estudio con Citas; y el propio Instagram.
+- **Lo que hay en Marketplace igual** (búsqueda "reels" en Santiago, 10 de octubre de 2026):
+  avisos de edición de reels a $1 o "gratis" como anzuelo, y otros a $5.000, $25.000 ("Reels para
+  tu negocio") y $50.000. Hay demanda y competencia, aunque la regla los expone a que les borren
+  el aviso. Si Jordan decide publicar ahí igual, es su cuenta y su riesgo: precio real, nunca $1.
 - **La primera prueba** (octubre de 2026): la oferta de lanzamiento del reel ($35.000 para los
   3 primeros, a cambio de su opinión), con `templates/aviso-cuadrado.html` (1080x1080), un reel
   de ejemplo, un texto para grupos, el catálogo y las respuestas para los mensajes. Anotar de
