@@ -94,6 +94,31 @@ to it by construction.
 
 ## Log
 
+## 2026-10-10 — First test sale: not on Marketplace
+
+- **Branch:** `claude/skin-analysis-9qepkz`
+- **Touched:** `.claude/skills/productora/` (VENTAS.md section 11, SKILL.md,
+  `templates/aviso-cuadrado.html`)
+
+### Context
+The user asked to test the studio by selling through Facebook Marketplace.
+
+### Decisions
+- The test runs through local Facebook groups, a WhatsApp Business catalog and the studio's
+  page, with the launch offer (a reel at $35.000 instead of $45.000, first 3 clients, in exchange
+  for their opinion). Kit delivered: a 1080x1080 offer image with a real reel frame in a phone,
+  a group post, three catalog items, message replies and a one-week test plan.
+- `templates/aviso-cuadrado.html` is the reusable square offer.
+
+### Rejected
+- Marketplace: Meta's Commerce Policies ban selling services there, except through the WhatsApp
+  Business app or Appointments on Facebook and Instagram. Listings get removed and repeat
+  offences can limit the account. Do not disguise a service as a product to get it through.
+
+### Open
+- The test's results: which group and which reply brought messages and sales.
+- PR #4 (this branch into `v8`) is still waiting for the user to merge.
+
 ## 2026-10-09 — Watching videos from links: ver-links
 
 - **Branch:** `claude/skin-analysis-9qepkz`

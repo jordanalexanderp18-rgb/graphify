@@ -36,6 +36,7 @@ piece looks like it came from the same studio.
 | Tarifario | Prices from `VENTAS.md` | `templates/tarifario.html` + `render_slides.sh` (a design with `@page` also gets `slides.pdf`) | 5 PNG at 1080x1350 + PDF | Free |
 | Guía de grabación | — | `templates/guia-grabacion.html` + `render_slides.sh <html> <dir> 1080 1920` | PNG | Free |
 | Guion para el cliente | Topic | `templates/guion.html` (card 1: what they say, recorded later in a quiet room; card 2: shot list for the location) + the same renderer at 1080x1920 | 2 PNG | Free |
+| Aviso para grupos y WhatsApp | An offer from `VENTAS.md` and a frame of a real reel | `templates/aviso-cuadrado.html` + `render_slides.sh <html> <dir> 1080 1080`; never for Marketplace, which bans services (`VENTAS.md`, section 11) | PNG 1080x1080 | Free |
 | Guion para grabarse solo | Topic and place | `templates/guion-auto.html` (card 1: what he says; card 2: how to film it alone, or what the partner films) + the same renderer at 1080x1920 | 2 PNG | Free |
 | Documentos para clientes | Brief | `/theme-factory` + the docx, pptx and pdf skills | File | Free |
 

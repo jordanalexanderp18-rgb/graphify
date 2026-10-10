@@ -157,6 +157,20 @@ solo con la guía paso a paso. Antes de venderle al primer cliente juntos, acuer
 Las fotos (sesión, fotos de producto, eventos) todavía no están en la lista de precios. Se
 agregan cuando el socio defina su precio por sesión.
 
+## 11. Dónde publicar la oferta
+
+- **Marketplace de Facebook no sirve para servicios.** Las Políticas de Comercio de Meta dicen
+  que el contenido comercial no puede vender servicios, salvo en la app WhatsApp Business o con
+  Citas en Facebook o Instagram. Un aviso de servicio en Marketplace se rechaza o se borra, y si
+  se repite pueden limitar la cuenta. No lo disfraces de producto para que pase.
+- **Sí se puede:** publicaciones en grupos de Facebook de la zona (emprendedores, pymes,
+  comercio), respetando las reglas de cada grupo; el catálogo de WhatsApp Business con cada
+  servicio y su precio; la página del estudio con Citas; y el propio Instagram.
+- **La primera prueba** (octubre de 2026): la oferta de lanzamiento del reel ($35.000 para los
+  3 primeros, a cambio de su opinión), con `templates/aviso-cuadrado.html` (1080x1080), un reel
+  de ejemplo, un texto para grupos, el catálogo y las respuestas para los mensajes. Anotar de
+  qué grupo llega cada mensaje y si termina en venta.
+
 ## Fuentes (octubre de 2026)
 
 - Reels en Latinoamérica: prolatamwork.com/en/blog/how-much-video-editor-freelancer-latin-america-2026
@@ -164,6 +178,7 @@ agregan cuando el socio defina su precio por sesión.
   blackframeproducciones.cl/guia-produccion-audiovisual-santiago
 - Planes de redes en Chile: emprendiendo.cl/producto/community-manager, aprender21.cl/blog/tarifario-community-manager-chile
 - Video tradicional y con IA: genra.ai/es/blog/ai-video-cost-2026-pricing-breakdown
+- Políticas de Comercio de Meta, sección "Services": facebook.com/policies/commerce; y la ayuda "Things that can't be listed for sale on Facebook Marketplace"
 - HeyGen: eesel.ai/blog/heygen-pricing (créditos por minuto y planes; confírmalo en heygen.com/pricing)
 - Claude: eesel.ai/blog/claude-pro-pricing (confírmalo en claude.com/pricing)
 - Retención 2026: sii.cl/destacados/boletas_honorarios
