@@ -127,6 +127,10 @@ The user asked to test the studio by selling through Facebook Marketplace.
 ### Open
 - The test's results: which group and which reply brought messages and sales.
 - PR #4 (this branch into `v8`) is still waiting for the user to merge.
+- The user asked whether Claude can work from his Facebook. Not from a cloud session: Facebook is
+  outside the network allowlist, there are no browser tools here, and nobody asks for his password.
+  From his computer, Claude in Chrome can fill posts in his own logged-in browser while he watches
+  and presses Publish. Groups and his page only; Marketplace stays his own call (services ban).
 
 ## 2026-10-09 — Watching videos from links: ver-links
 
