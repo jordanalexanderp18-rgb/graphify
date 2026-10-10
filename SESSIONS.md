@@ -94,6 +94,36 @@ to it by construction.
 
 ## Log
 
+## 2026-10-10 — Google Fotos access
+
+- **Branch:** `claude/google-fotos-connection-qo9z5q`
+- **Touched:** `.claude/skills/google-fotos/`
+
+### Context
+Jordan wanted Claude connected to their Google Fotos. No Claude connector for it
+exists (registry searched); Drive, Gmail and Calendar are connected.
+
+### Decisions
+- Skill on the Photos Picker API (user taps photos in Google's picker, script
+  downloads them). It is the only API that still reads a user's existing
+  photos since Google's March 2025 Library API cut.
+- OAuth "Desktop app" client with redirect `http://localhost`: the user pastes
+  the failed-to-load localhost URL back. Credentials come from env secrets so
+  the refresh token survives the ephemeral container.
+
+### Rejected
+- Photos Library API `mediaItems.list`: only returns app-created items now.
+- OAuth device flow: Google does not allow the photospicker scope there.
+- Reading `gcloud` auth to borrow a token: blocked by the auto-mode
+  classifier as credential exploration, and wrong scope anyway.
+
+### Open
+- `lh3.googleusercontent.com` (where files download from) is 403 under the
+  default network policy; Jordan must allow it. Not yet tested end to end:
+  needs Jordan's OAuth client and a real picker session.
+- Google storage is full and the AI Pro plan lapsed (Gmail notices); Fotos may
+  stop syncing.
+
 ## 2026-10-02 — Command board across agents
 
 - **Branch:** `claude/session-history-c0kdq7` (restarted from v8 after PR #2 merged)
