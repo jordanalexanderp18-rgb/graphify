@@ -94,6 +94,477 @@ to it by construction.
 
 ## Log
 
+## 2026-10-10 — First test sale: not on Marketplace
+
+- **Branch:** `claude/skin-analysis-9qepkz`
+- **Touched:** `.claude/skills/productora/` (VENTAS.md section 11, SKILL.md,
+  `templates/aviso-cuadrado.html`)
+
+### Context
+The user asked to test the studio by selling through Facebook Marketplace.
+
+### Decisions
+- The test runs through local Facebook groups, a WhatsApp Business catalog and the studio's
+  page, with the launch offer (a reel at $35.000 instead of $45.000, first 3 clients, in exchange
+  for their opinion). Kit delivered: a 1080x1080 offer image with a real reel frame in a phone,
+  a group post, three catalog items, message replies and a one-week test plan.
+- `templates/aviso-cuadrado.html` is the reusable square offer.
+- The user then asked for a general ad ("editamos tu video de cualquier cosa") without him or
+  any identifiable person in it, since someone could ask to have it deleted. Done as three
+  1080x1080 cards with flat icon tiles for six kinds of business (`templates/aviso-video.html`,
+  `aviso-video-extra.html`). The rule is in Jordan's `MARCA.md`.
+- Second pass on the user's brief ("también podemos hacerte un guion... lo puedes verificar...
+  un adicional si quieres la IA de voz... un buen marketing"): headline "Tú grabas. Nosotros
+  hacemos el resto", script included, a version to approve before delivery, and the AI voice as
+  a +$10.000 add-on. That price is a proposal recorded in `VENTAS.md`. Filming is paused, so
+  the ads say "te enseño a grabarlos" instead of "vamos a grabar".
+
+### Rejected
+- Marketplace: Meta's Commerce Policies ban selling services there, except through the WhatsApp
+  Business app or Appointments on Facebook and Instagram. Listings get removed and repeat
+  offences can limit the account. Do not disguise a service as a product to get it through.
+
+### Open
+- The test's results: which group and which reply brought messages and sales.
+- PR #4 (this branch into `v8`) is still waiting for the user to merge.
+- The user asked whether Claude can work from his Facebook. Not from a cloud session: Facebook is
+  outside the network allowlist, there are no browser tools here, and nobody asks for his password.
+  From his computer, Claude in Chrome can fill posts in his own logged-in browser while he watches
+  and presses Publish. Groups and his page only; Marketplace stays his own call (services ban).
+
+## 2026-10-09 — Watching videos from links: ver-links
+
+- **Branch:** `claude/skin-analysis-9qepkz`
+- **Touched:** `.claude/skills/ver-links/` (SKILL.md, `bajar.py`), `.claude/skills/productora/SKILL.md`
+
+### Context
+The user sends Instagram links and wants Claude to watch them. Their own account skill
+`ver-videos-y-audios` reads uploaded files (local Whisper plus frame sheets) but says links
+cannot be downloaded in the cloud.
+
+### Decisions
+- `ver-links` turns a link into a file: `bajar.py` runs yt-dlp with no login and no cookies,
+  720p at most, drops tracking parameters, saves YouTube subtitles, and reports `ok`,
+  `bloqueado`, `login` or `error`. The file then goes through `ver-videos-y-audios`.
+- The web fetch tool (Parallel) reads an Instagram page from outside the container even while
+  instagram.com is blocked here: author and caption, not the video.
+- YouTube downloads get `--js-runtimes node:<path>`, because yt-dlp needs a JavaScript runtime
+  for YouTube's player challenge and the image has Node, not Deno.
+
+### Rejected
+- Logging in, browser cookies, proxies or downloader websites to get past a `login` answer.
+  The fallback is a screen recording.
+
+### Open
+- Both test links came back `bloqueado`: youtube.com and instagram.com are outside the
+  environment's allowlist. The `ok` path is untested until the user adds the domains listed
+  in the skill.
+- New sessions start from the default branch, `v8`, which had none of this work. The user
+  asked to leave everything ready for a new chat, so this branch went up as a pull request to
+  `v8`. Until it is merged, a new session has to check out `claude/skin-analysis-9qepkz`.
+  Local CI run before opening it: all five skillgen checks pass with full history; pytest
+  passes 5500 tests, and the 4 in `test_ollama_retry_cap.py` fail only because the optional
+  `openai` extra is not installed here (CI installs every extra). The branch changes nothing
+  under `graphify/`, `tests/` or `tools/`.
+
+## 2026-10-09 — Sales skills, a photographer partner and two ways to film
+
+- **Branch:** `claude/skin-analysis-9qepkz`
+- **Touched:** `.claude/skills/{offers,prospecting,sales-enablement,ad-creative,referrals,lead-magnets}/`,
+  `.claude/skills/_vendor/marketingskills/UPSTREAM`, `.claude/skills/productora/`
+  (SKILL.md, VENTAS.md section 10, BRIEF-plantilla.md, `clientes/jordan/MARCA.md`,
+  `templates/guion-auto.html`)
+
+### Context
+The user asked what else could be downloaded to sell videos "de cualquier cosa". They are
+partnering with a coworker who is a photographer. When the user says "lo graba mi socio",
+the partner films; when the user says "lo hago yo", Claude teaches them to film alone. As the
+example, the user asked for a script while driving to work.
+
+### Decisions
+- Vendored six skills from coreyhaines31/marketingskills at 1efedbc, unmodified: offers,
+  prospecting, sales-enablement, ad-creative, referrals and lead-magnets. They are Markdown
+  plus one HTML template with inline scripts only. `UPSTREAM` lists what was skipped and why.
+- "Who films" is now a brief field and a step in the productora. The partner gets a shot list
+  with camera settings, Jordan gets solo steps for the place, and a client gets the guía.
+  Nothing is ever scripted to be filmed while driving: the car example says to film parked.
+- The car example became `templates/guion-auto.html`: card 1 has the script; card 2 has the
+  solo steps (mount, light, sound, framing, extra shots) plus the partner's version.
+- `VENTAS.md` section 10 lists what the partners must agree in writing before the first joint
+  sale: roles, split, who invoices, equipment, rights to the material, exit, and the name.
+
+### Rejected
+- `ig-reel`'s `hookscore.py` and `beats.py` are tuned for English. Their word regex has no
+  accented letters, and their number and stakes lists are English, so Spanish hooks score
+  under 50 and words like "repetición" count twice. Read their flags as hints, not verdicts.
+- From marketingskills: pricing (built for SaaS; VENTAS.md has the prices), cold-email
+  (`ig-dm` covers Instagram), ads (full campaign management), copywriting and launch (wait
+  for a website), and image (generative APIs).
+
+### Open
+- Photo services (session, product, events) are not on the price list until the partner sets
+  his rate. The partner's name is unknown.
+- `~/.claude/instagram/voice.md` does not exist; `ig-reel` wants one. Build it from three of
+  the user's own reels once the account has them.
+
+## 2026-10-09 — The "52 skills" reel: Ootto's pack audited, three skills vendored
+
+- **Branch:** `claude/skin-analysis-9qepkz`
+- **Touched:** `.claude/skills/series-planner/`, `.claude/skills/comment-mining/`,
+  `.claude/skills/social-proof-mining/`, `.claude/skills/_vendor/ootto-content-skills/`,
+  `.claude/skills/productora/SKILL.md`
+
+### Context
+The user sent a screen recording of an Instagram reel that advertises "52 Claude skills"
+(Ootto-AI/claude-content-skills, MIT; the repo actually holds 53). The reel says they make
+reels, carousels and captions, fix the bio, answer comments and post to Instagram on their own.
+
+### Decisions
+- Vendored only series-planner, comment-mining and social-proof-mining. They are plain prompt
+  text, and nothing already installed covers them. The Ootto ad lines were removed and the
+  links re-pointed; `_vendor/ootto-content-skills/UPSTREAM` records the changes and the audit.
+- The reel's five headline skills map to what is already here: content-factory to reel-studio
+  plus ig-reel, carousel-builder to ig-carousel plus the six styles, caption-and-hashtags to
+  ig-caption, bio-profile-optimizer to ig-profile, comment-responder to ig-reply plus ig-dm.
+
+### Rejected
+- Auto-posting and unattended DM loops (content-factory, comment-responder, viral-carousel).
+  They need Composio or Ootto's paid service holding the user's Instagram connection, and they
+  break the house rule that the user posts. Instagram is outside the network allowlist anyway.
+- agent-reach: cookie logins, residential proxies, anti-bot workarounds and downloads of other
+  people's content.
+- reel-builder: wants a paid Runway key and renders with Remotion, not HyperFrames.
+- install.sh and the marketplace entry: both install all 53 skills globally, agent-reach
+  included.
+
+### Open
+- The reel's edit style (talking head, full-screen dark UI cutaways, a "SKILL 1/5" progress
+  pill, captions with coloured keywords, a "Comentá PALABRA" ending) can be built with
+  /talking-head-recut over a clip of the user talking. Offered, not started.
+- A comment-keyword-to-DM automation is a ManyChat-type tool that the user would connect
+  themselves. Offered only to write the messages.
+
+## 2026-10-08 — Trending style library and a layout check that measures ink
+
+- **Branch:** `claude/skin-analysis-9qepkz`
+- **Touched:** `AGENTS.md`, `.claude/skills/reel-studio/SKILL.md`,
+  `.claude/skills/productora/` (SKILL.md section 7, `templates/estilos/`,
+  `scripts/check_layout.cjs`, `scripts/new_job.sh`, `scripts/render_slides.sh`, fixes in
+  `templates/carousel.html`, `templates/guion.html` and `templates/guia-grabacion.html`)
+
+### Context
+The user asked for more designs that are on trend, "busca por Instagram o todo lados".
+Instagram cannot be browsed from here, so the research came from 2026 trend articles.
+
+### Decisions
+- Standing rule from the user: "No ocupes la HeyGen, siempre pregúntame". Ask before every
+  HeyGen call, free calls included, and treat each OK as covering one job only. It lives in
+  `AGENTS.md`, which every session reads at start, and in the productora and reel-studio
+  skills, the brief template and Jordan's `MARCA.md`. Footage reels now default to a recorded
+  voice or the local voice; the cloned voice is the exception.
+- Six 3-slide styles (papel, neón, collage, pop, notas, revista), all with the same sample
+  content, plus a 10-slide catalogue that doubles as a sales piece: one page per style, two
+  pages of reel caption looks over the user's own footage, and a close with two CTAs. It went
+  to the user as PNG and as a 1.6 MB PDF.
+- `check_layout.cjs` builds one ink box per character from canvas metrics
+  (`fontBoundingBox*` against `actualBoundingBox*`) and reports EDGE, OVERLAP, COVERED
+  (whatever `elementsFromPoint` finds above a glyph's centre, skipping full-slide layers and
+  gradients) and FONT (a web font that failed to load). On its first run it found three
+  defects in pieces already delivered and passed by eye: the accents of DÍA and CÓMO touched
+  the kicker on the guion and the guía, and ESTÁS TÚ touched the line above on carousel
+  slide 7. All three were fixed and re-sent.
+- `new_job.sh` copies a template plus every font it references, searched under
+  `.claude/skills/`, because the fonts live in canvas-design, embedded-captions and
+  hyperframes-creative. A job copy renders pixel-identical to the original.
+- `render_slides.sh` counts slides that carry extra classes (`class="slide pink"`). Before,
+  it silently rendered only the plain ones.
+- A PDF printed from a page of PNG renders weighed 25 MB. Printing a page of JPEG q88 copies
+  of the same slides gives 1.6 MB.
+
+### Rejected
+- Overlap tests on whole line boxes flag every line with an accent. Line boxes shrunk by 22%
+  missed Boldonse lines that really touched. Per-character ink boxes catch both, with no false
+  alarms on the current templates.
+- Erica One numerals: its 1 reads as a plain block. Numerals use Outfit Bold.
+- Moving a title down to clear its accents pushed the subtitle under the first box; raising
+  the whole header fixed it. COVERED exists because of that.
+
+### Open
+- The user picks a style for the next carousel, or sends screenshots of designs they like.
+- For a client, re-render the catalogue with their photos, frames and brand.
+- "Pincheira Studio" is the working name; the older entry's "no name yet" is superseded.
+
+## 2026-10-08 — La productora: one front door for every content piece
+
+- **Branch:** `claude/skin-analysis-9qepkz`
+- **Touched:** `.claude/skills/productora/`, `.claude/skills/canvas-design/`,
+  `.claude/skills/theme-factory/`, `.claude/skills/_vendor/anthropic-skills/`,
+  `.claude/skills/reel-studio/SKILL.md`
+
+### Context
+After the first reel from the user's own footage, they asked for "una productora" (a
+production studio) and authorized downloading every skill it needs.
+
+### Decisions
+- `productora` is an umbrella skill. It has a service menu that routes each piece to the
+  skill that owns it, a brief template, a brand profile per client under `clientes/`,
+  quality gates and delivery specs. Jordan is client zero.
+- canvas-design and theme-factory were vendored from anthropics/skills under Apache-2.0;
+  the fonts are SIL OFL. The audit found instructions only, and the showcase PDF has no
+  actions. The commit is recorded in `_vendor/anthropic-skills/UPSTREAM`.
+- Static pieces render with `scripts/render_slides.sh`. It uses the headless Chromium that
+  ships in the image, opens `?slide=N` once per slide, and sets `--virtual-time-budget` so
+  the fonts load. Seven slides take about 6 s.
+- `scripts/finish_reel.sh` replaces mastering the voice alone. A mono voice mastered to
+  −14 LUFS measured −11 LUFS once rendered as stereo. Mastering the final mix fixes that,
+  and the CRF 19 copy capped at 9 Mbit/s is 16 MB with SSIM 0.99.
+- First repurpose: the squat reel also became a 7-slide carousel and a reel cover. Both
+  designs live in `productora/templates/`.
+- The user wants to sell the productora as a service. `productora/VENTAS.md` holds the
+  price list in CLP: per piece, with a launch price and a normal price, plus 3 monthly plans
+  from $180.000 to $600.000. It also covers costs (Claude Max and HeyGen Creator, about
+  $116.000 a month), equipment (a phone kit for about $40.000), the sales steps, a contract
+  checklist and SII registration. The prices come from public October 2026 sources (Chile
+  and LatAm) at about $900 per dollar, and the file cites them. The tax points are general
+  guidance only: confirm with an accountant before the first sale.
+- The studio's working name is "Pincheira Studio": the user said Pincheira should be in it,
+  and they left the choice to me. The price list (`templates/tarifario.html`, 5 slides,
+  "con video" and "sin video") and the recording guide for clients
+  (`templates/guia-grabacion.html`) render with `render_slides.sh`. When the HTML has an
+  `@page` rule, the script also prints `slides.pdf`. VENTAS.md now lists exactly the
+  published prices.
+
+### Open (added later the same day)
+- The first test client is the user's partner, filmed during a leg day at the gym. The script
+  cards are already sent (`templates/guion.html`): a hook ("Día de pierna con mi personal
+  trainer… que también es mi pareja"), then squat, Romanian deadlift, hip thrust and Bulgarian
+  split squat with one cue each, then a save CTA. She records the voice afterwards at home as a
+  video, because the gym plays music. The gym clips get no dialogue and stay muted. When the
+  files land in "Reels", follow the footage route with her voice in place of the cloned voice.
+  Sets and reps come from the user.
+
+### Rejected
+- marcolang/marketing-skills (instagram-carousel) and hoodini/ai-agents-skills
+  (yuv-reel-covers) were not vendored because neither has a LICENSE. The cover skill is
+  also built around another person's face and brand.
+- The third-party music skills (ElevenLabs and inference.sh generators) need paid APIs.
+  Music comes from Instagram's in-app library instead.
+
+### Open
+- Client work needs a private repo, because this one is public. The user has to create it
+  and grant the Claude GitHub App access.
+- The productora has no name yet. Ask the user.
+- The carousel copy was rendered without approval, under the user's "elige tú". Adjust it
+  if they ask.
+
+## 2026-10-08 — First reel cut from the user's own footage
+
+- **Branch:** `claude/skin-analysis-9qepkz`
+- **Touched:** `.claude/skills/reel-studio/` (SKILL.md section 4, `new-reel.sh` template
+  argument, `template-footage/`)
+
+### Context
+The user disliked the talking-avatar test and wanted reels made from their real gym
+videos. They put 3 originals in a Drive folder: 2019 clips, 4K HEVC, about 30 s and
+145 MB each. For the topic and script they said "elige tú".
+
+### Decisions
+- The reel was edited locally with HyperFrames, not with HeyGen's Video Agent. Locally we
+  can see the footage, cut on the reps and keep the brand captions. HeyGen supplies only the
+  voice: `create_speech` with the cloned voice "Jor" cost 1 credit for 23 s and returns
+  word timestamps.
+- The footage set the topic. The clips are a bodyweight squat, a barbell back squat and a heavy
+  squat with a spotter, so the reel is "3 levels of squat" and opens on the heaviest clip.
+  It uses standard coaching cues only.
+- The environment's network access is now Custom: package managers plus
+  `drive.usercontent.google.com`, `drive.google.com` and `*.heygen.ai`. The user set it at
+  claude.ai/code in the phone's browser, under session menu → "Editar entorno de nube".
+  The Android app has no such option. The running container picked up the change within a minute.
+- `template-footage/` keeps the composition, and `new-reel.sh <dir> template-footage`
+  scaffolds a new project from it.
+
+### Rejected
+- HeyGen URL inputs (`files[]` with `url`, or a scene's `source.url`) are capped at 32 MB per
+  video, so the 145 MB originals fail with `invalid_parameter`. HeyGen itself did fetch the
+  public Drive link.
+- A helper session from `create_session` cannot move the bytes from Drive to HeyGen's S3. It
+  runs in the same environment and got the same policy denial. Fix the allowlist instead.
+- Trimming the clips under the 30 MB chat limit was rejected because the user wanted the whole
+  videos used.
+- On the first try the user pasted the domains into "Script de configuración", the setup
+  script, which would break session startup. Domains go in "Dominios permitidos" under
+  "Personalizado".
+
+### Open
+- The Drive folder is shared as "Editor", so anyone with the link can edit it. The user was
+  asked to switch it to "Lector".
+- Three HeyGen direct-upload slots were created and never completed. They expire on their own.
+- The reel has voice only. The user can add a track from Instagram's library at low volume.
+- The render and the final MP4 live only in the scratchpad, not in git.
+
+## 2026-10-08 — Free local video editing: HyperFrames, video-use, reel-studio
+
+- **Branch:** `claude/skin-analysis-9qepkz`
+- **Touched:** `.claude/skills/hyperframes*`, `media-use`, `general-video`,
+  `embedded-captions`, `talking-head-recut`, `motion-graphics`, `video-use`,
+  `.claude/skills/reel-studio/`, `.claude/skills/_vendor/`
+
+### Context
+The user asked to stop paying for editors (CapCut Pro) and have Claude do the
+editing, using "the best skills". Paying for the avatar and voice (HeyGen) stays
+open for them to decide.
+
+### Decisions
+- Researched the zhuyansen/awesome-claude-video-skills list (252 repos, each
+  security-graded). Chose heygen-com/hyperframes (Apache-2.0, about 57k stars):
+  14 skills, the core set plus the general-video, embedded-captions,
+  talking-head-recut and motion-graphics workflows. Also chose browser-use/video-use
+  (MIT) for cutting raw takes. Both were audited and vendored unmodified;
+  the audited commits are in `_vendor/*/UPSTREAM`.
+- HyperFrames telemetry is anonymous and documented; turn it off with
+  `HYPERFRAMES_NO_TELEMETRY=1`. Set `HYPERFRAMES_SKIP_SKILLS=1` so `init` stops
+  syncing skills into `~/.claude/skills`, because the project copies are canonical.
+- huggingface.co is blocked by this environment's network policy. Parakeet v3
+  (Spanish ASR) comes from the k2-fsa GitHub release instead. Its 4 files match
+  the sha256 values HyperFrames pins byte for byte; `setup.sh` verifies them.
+  Parakeet transcribes 30 s of Spanish in about 9.5 s on CPU, with word timings.
+- video-use needs ElevenLabs Scribe, but `reel-studio/parakeet_to_scribe.py`
+  writes a Scribe-shaped transcript and video-use's cache then skips the upload.
+  Tested through `pack_transcripts.py`.
+- Built a 15 s demo reel: Kokoro `em_alex` voice, round-trip-transcribed to verify
+  the words, mastered to −13.6 LUFS, rendered in 39 s. `check` passes (layout,
+  motion, 42/42 contrast). It is now `reel-studio/template/`.
+- Brand: bg `#15100c`, fg `#f7efe6`, accent `#ff5400`, Anton plus JetBrains Mono.
+  Inter is on HyperFrames' generic-font list.
+
+### Rejected
+- calesthio/OpenMontage (about 64k stars): AGPL and very large (700+ files). It
+  wraps HyperFrames/Remotion, which we now use directly.
+- remotion-dev/skills: no LICENSE (see the entry below). HyperFrames covers the same ground.
+- The default whisper models (`small.en` and the rest) are English only and their
+  downloads 403 here. Use `--engine parakeet --language es`.
+- A Studio preview before render: it runs on this server and the user's phone
+  cannot reach it. Send the MP4 with SendUserFile.
+
+### Open
+- Not yet tested on the user's own footage. `embedded-captions` matting
+  (u2net from a GitHub release, reachable) has not run yet. Ask for a 10–20 s clip.
+- The user put 2 clips on Google Drive (59 MB and 76 MB screen recordings) and said they
+  had added the Drive domains to the environment's allowlist. The edit never took effect:
+  this container and a brand-new helper session in the same environment (the account has
+  only one, "Predeterminado") both got a 403 policy denial at CONNECT for
+  `drive.usercontent.google.com`. Resolved later that day: the domains are now under Allowed
+  domains (see the entry above). Their links are
+  deliberately not stored here, because this repo is public and the files are shared by
+  link. Download with
+  `curl -L "https://drive.usercontent.google.com/download?id=<ID>&export=download&confirm=t"`.
+  The Drive connector works with the user's account (metadata, permissions, search),
+  but `download_file_content` refuses files over 10 MB, so it cannot carry video.
+- The chat upload limit is about 30 MB. Original clips trimmed to 15–20 s at 1080p fit;
+  screen recordings carry phone UI and lose quality, so ask for the original file.
+- HeyGen is live: the user is on the Creator plan (600 credits a month) and owns a digital-twin
+  avatar "Jor" with a cloned Spanish voice "Jor". The connector is the custom one at
+  `https://mcp.heygen.com/mcp/v1` (tools `mcp__HeyGen__*`); the claude.ai directory only lists
+  "HyperFrames by HeyGen", which has no avatar tools. For an exact script use
+  `create_video_from_avatar`; the Video Agent rewrites scripts. The cloned voice also runs on
+  the ElevenLabs engines inside HeyGen, so a separate ElevenLabs plan is not needed.
+  The HeyGen media hosts (`*.heygen.ai`) were blocked at first. They are now allowed (see
+  the entry above), so HeyGen audio and renders can be downloaded here.
+  IDs are deliberately not stored here.
+- The user expected reels cut from their own gym footage, not a talking avatar.
+  `create_video_from_studio`, `create_video_agent` and `create_ai_clipping` accept
+  `{"type":"url"}` sources, and HeyGen does fetch a public Drive direct link (it reported
+  the file's exact size). URL inputs are capped at 32 MB per video, though, and the user's
+  originals are about 145 MB each. Larger files go through `create_asset_upload`: PUT the
+  bytes to the presigned URL on `heygen-resources-prod.s3-accelerate.amazonaws.com`
+  (reachable here, valid 24 h), sending `Content-Type: video/mp4` and
+  `x-amz-server-side-encryption: AES256`, then call `complete_asset_upload`. That needs the
+  bytes in a container that can reach Drive. A helper session from `create_session` can do
+  the transfer, but it cannot message back, so read its result with `list_events`.
+- The auto-mode classifier blocks HeyGen renders as "Real-World Transactions" until the
+  user OKs spending credits in the conversation. Ask before rendering, even for a test.
+- Lint warns `nested_structure_needs_subcomposition` for the single-file template.
+  That only affects how Studio displays the timeline; the render is correct.
+- `pytest` here: test_skillgen fails because the clone is shallow (baseline
+  commit 47042beb missing), and test_ollama_retry_cap fails because `openai`
+  is not installed. Both are environmental: 5489 other tests pass, and CI runs `uv sync --all-extras`.
+
+## 2026-10-08 — HeyGen and social/video skills, AI avatar route
+
+- **Branch:** `claude/skin-analysis-9qepkz`
+- **Touched:** `.claude/skills/heygen-*`, `.claude/skills/social`, `.claude/skills/video`, `.claude/skills/_vendor/`
+
+### Context
+The user (fitness account, wants content and AI rather than sales) asked for
+every skill covering Instagram, WhatsApp and Facebook. They also want an AI
+avatar that explains workouts for them, because they find talking on camera hard.
+
+### Decisions
+- Vendored `heygen-avatar` and `heygen-video` from heygen-com/skills (the
+  official vendor, MIT). They talk only to the HeyGen MCP
+  (`mcp.heygen.com`, OAuth, uses the user's paid plan credits).
+  `update-check.sh` only curls the VERSION file from GitHub.
+- Vendored `social` and `video` from coreyhaines31/marketingskills (MIT). Both
+  are text only. The `curl` recipes in `social` read public APIs (Reddit, HN,
+  Bluesky) and nothing else.
+- License and audited commit for each source go in `.claude/skills/_vendor/<source>/`.
+  `instagram-agent/` moved there too, so `.claude/skills/` holds only real skills.
+- The auto-mode classifier blocks copying third-party code into the repo until
+  the user approves it explicitly. Ask first.
+
+### Rejected
+- lharries/whatsapp-mcp: it reads every personal chat into local SQLite, needs a
+  Go bridge on the user's machine, and is unofficial, so the number risks a ban.
+  Do not install it without the user accepting those risks explicitly.
+- The Facebook Graph skill on claudskills.com: unknown author, needs a Page
+  token, and `social` already covers writing Facebook content.
+
+### Open
+- HeyGen is not connected yet. The user needs a HeyGen plan and
+  `claude mcp add --transport http heygen https://mcp.heygen.com/mcp/v1/` on
+  their own machine, then `/heygen-avatar` with a photo.
+- The user has not applied the profile rewrite yet: name "Jordan Pincheira | Fitness",
+  public creator account, highlights by topic.
+- Proposed stack, awaiting the user's yes or no: HeyGen Creator, about US$29/month
+  billed monthly. CapCut Pro is deferred. ElevenLabs is not needed because HeyGen
+  clones the voice. Start with the account private and go public once videos work.
+- Longer-term goal: use this content channel to promote the user's
+  "Smart"/PowerPoint app. That app is not in this repo or on their GitHub
+  (list_repos shows graphify only), so ask for it when that work starts.
+  Update, 2026-10-08: Smart generates .pptx decks with AI for students and teachers
+  in Chile (school talks, "disertaciones"). It starts from scratch in its own private repo,
+  `smart-presentaciones`, kept separate from graphify. The GitHub integration cannot
+  create repos (403 "Resource not accessible by integration"), so the user creates it
+  and grants the Claude GitHub App access. The MVP plan (PLAN.md) goes in that repo:
+  Netlify Function → claude-opus-5-5 structured output → PptxGenJS in the browser.
+- remotion-dev/skills has no LICENSE. Do not vendor it; install it with
+  `npx skills add remotion-dev/skills` on the user's machine.
+
+## 2026-10-08 — Vendored instagram-agent-skill
+
+- **Branch:** `claude/skin-analysis-9qepkz`
+- **Touched:** `.claude/skills/ig-*`, `.claude/skills/_vendor/instagram-agent/`, `.gitignore`
+
+### Context
+The user found Jake Schincariol's instagram-agent-skill (13 Claude skills, MIT)
+in an Instagram reel and asked for a malware check, then a copy in this repo.
+
+### Decisions
+- Audited upstream at the commit in `.claude/skills/_vendor/instagram-agent/UPSTREAM`
+  before copying. Python is stdlib only, with no network, subprocess or eval.
+  It only reads input you pass it and writes to `~/.claude/instagram/`. No
+  hooks and no hidden Unicode. The SKILL.md files forbid auto-posting, DM
+  automation and asking for passwords.
+- `.gitignore`: `.claude/` became `.claude/*` with `!.claude/skills/**`, so only
+  the skills are tracked. `settings.json` and other local state stay ignored.
+- Vendored as-is, with no edits, so a re-audit against upstream is a plain diff.
+
+### Open
+- Hook scoring is tuned for English. Spanish hooks score lower. The same
+  "lost $18,000" hook scored 81 in English and 60 in Spanish. A Spanish lexicon is
+  possible follow-up work.
+- These are not graphify code. Keep them out of `graphify/skills/` and skillgen.
+
 ## 2026-10-02 — Command board across agents
 
 - **Branch:** `claude/session-history-c0kdq7` (restarted from v8 after PR #2 merged)

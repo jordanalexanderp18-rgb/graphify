@@ -1,0 +1,28 @@
+source: https://github.com/Ootto-AI/claude-content-skills
+commit: 5263be7 (shallow clone, 2026-10-09)
+fetched: 2026-10-09, after the user sent a reel advertising "52 skills" from this repo
+license: MIT (LICENSE here, Copyright (c) 2026 Ootto)
+skills: series-planner, comment-mining, social-proof-mining (skills/<name>/SKILL.md)
+changes from upstream:
+  - Removed the closing Ootto ad ("Built by Ootto ... Book a demo") from series-planner
+    and comment-mining, and comment-mining's line "The Ootto MCP can read them off your
+    posts directly." The frontmatter author credit stays.
+  - "Next" links and social-proof-mining's cross-references pointed at Ootto skills that
+    are not vendored; they now point at ig-plan, ig-reel, comment-mining, ig-profile,
+    ig-caption and productora/VENTAS.md.
+audit (all 53 skills read; nothing installed or run):
+  - The three vendored skills are prompt text only: no tools, network, keys or logins.
+  - Skipped as risky: content-factory (posts to Instagram through Composio, scrapes with
+    Apify, paid Runway renders), comment-responder (unattended auto-replies and DMs through
+    an Ootto monitor), viral-carousel (downloads rivals' slides, posts through Ootto or
+    Composio), reel-builder (asks for a paid Runway key), content-research (Composio and
+    sandcastles.ai), agent-reach (cookie logins, residential proxies, anti-bot workarounds,
+    downloads other people's content).
+  - Skipped as duplicates: about 40 skills that the ig-* skills, productora, reel-studio
+    or social already cover (carousel-builder = ig-carousel, caption-and-hashtags =
+    ig-caption, bio-profile-optimizer = ig-profile, and so on).
+  - Never run install.sh or the plugin marketplace entry: both copy all 53 skills,
+    agent-reach included, into the global skills folder.
+why: a named recurring series (series-planner), reel ideas ranked from the user's own
+  comments (comment-mining), and a testimonial library with consent and narrow claims for
+  selling the productora (social-proof-mining). Nothing else installed covers them.

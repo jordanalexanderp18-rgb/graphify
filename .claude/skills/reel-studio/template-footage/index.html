@@ -1,0 +1,649 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>Sentadilla: 3 niveles</title>
+    <script src="assets/gsap.min.js"></script>
+    <style>
+      @font-face {
+        font-family: "Anton";
+        src: url("assets/fonts/anton-latin-400-normal.woff2") format("woff2");
+        font-weight: 400;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: "JetBrains Mono";
+        src: url("assets/fonts/JetBrainsMono-400.woff2") format("woff2");
+        font-weight: 400;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: "JetBrains Mono";
+        src: url("assets/fonts/JetBrainsMono-700.woff2") format("woff2");
+        font-weight: 700;
+        font-style: normal;
+      }
+      :root {
+        --bg: #15100c;
+        --fg: #f7efe6;
+        --dim: #8f857d;
+        --accent: #ff5400;
+        --col-left: 72px;
+        --col-width: 778px;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: var(--bg);
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: "Anton", sans-serif;
+      }
+      .layer {
+        position: absolute;
+        inset: 0;
+      }
+      .mono {
+        font-family: "JetBrains Mono", monospace;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .accent {
+        color: var(--accent);
+      }
+
+      /* ---------- footage: timed shot > ken burns > punch > video ---------- */
+      .shot {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+      }
+      .kb,
+      .punch {
+        position: absolute;
+        inset: 0;
+      }
+      .shot video {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1080px;
+        height: 1920px;
+        object-fit: cover;
+      }
+
+      /* ---------- legibility scrims, grain, cut flash ---------- */
+      #scrim-top {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1080px;
+        height: 700px;
+        background: linear-gradient(to bottom, rgba(21, 16, 12, 0.9) 0%, rgba(21, 16, 12, 0.78) 40%, rgba(21, 16, 12, 0.4) 70%, rgba(21, 16, 12, 0) 100%);
+      }
+      #scrim-bot {
+        position: absolute;
+        left: 0;
+        top: 960px;
+        width: 1080px;
+        height: 960px;
+        background: linear-gradient(to bottom, rgba(21, 16, 12, 0) 0%, rgba(21, 16, 12, 0.55) 40%, rgba(21, 16, 12, 0.82) 100%);
+      }
+      #grain {
+        position: absolute;
+        inset: -120px;
+        opacity: 0.07;
+        mix-blend-mode: overlay;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.6'/></svg>");
+        background-size: 240px 240px;
+      }
+      #flash {
+        position: absolute;
+        inset: 0;
+        background: #fff6ec;
+        opacity: 0;
+      }
+
+      /* ---------- top meta bar (also the progress bar) ---------- */
+      #meta {
+        position: absolute;
+        left: var(--col-left);
+        top: 236px;
+        width: var(--col-width);
+        height: 64px;
+      }
+      #meta .row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 26px;
+        height: 40px;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+      }
+      #meta .tag {
+        color: rgb(255, 115, 46);
+      }
+      #meta .track {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 54px;
+        height: 4px;
+        background: rgba(247, 239, 230, 0.24);
+      }
+      #meta .fill {
+        display: block;
+        width: 100%;
+        height: 100%;
+        background: var(--accent);
+        transform-origin: left center;
+      }
+
+      /* ---------- hook title ---------- */
+      #hook {
+        position: absolute;
+        left: var(--col-left);
+        top: 900px;
+        width: fit-content;
+        padding: 26px 34px 30px;
+        border-radius: 26px;
+        background: rgba(21, 16, 12, 0.76);
+      }
+      #h1,
+      #h2 {
+        display: block;
+        line-height: 0.9;
+        text-transform: uppercase;
+        white-space: nowrap;
+        text-shadow: 0 8px 34px rgba(0, 0, 0, 0.5);
+      }
+      #h1 {
+        font-size: 180px;
+        color: var(--accent);
+      }
+      #h2 {
+        font-size: 104px;
+      }
+      #h-rule {
+        display: block;
+        width: 300px;
+        height: 12px;
+        margin-top: 24px;
+        background: var(--accent);
+        transform-origin: left center;
+      }
+
+      /* ---------- level chips ---------- */
+      .lvl {
+        position: absolute;
+        left: var(--col-left);
+        top: 336px;
+        width: var(--col-width);
+        display: flex;
+        align-items: center;
+        gap: 28px;
+      }
+      .lvl-num {
+        flex: none;
+        width: 156px;
+        height: 156px;
+        border-radius: 24px;
+        background: var(--accent);
+        color: var(--bg);
+        font-size: 132px;
+        line-height: 156px;
+        text-align: center;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
+      }
+      .lvl-txt {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .lvl-k {
+        font-size: 30px;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+      }
+      .lvl-name {
+        font-size: 100px;
+        line-height: 0.92;
+        text-transform: uppercase;
+        white-space: nowrap;
+        text-shadow: 0 6px 28px rgba(0, 0, 0, 0.55);
+      }
+      #badge {
+        position: absolute;
+        left: var(--col-left);
+        top: 524px;
+        display: inline-flex;
+        align-items: center;
+        height: 68px;
+        padding: 0 30px;
+        border: 4px solid var(--accent);
+        border-radius: 999px;
+        background: rgba(21, 16, 12, 0.72);
+        color: var(--accent);
+        font-size: 30px;
+      }
+
+      /* ---------- captions rail ---------- */
+      #captions {
+        position: absolute;
+        left: var(--col-left);
+        top: 1290px;
+        width: var(--col-width);
+        height: 150px;
+      }
+      .cap {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0 28px;
+        font-size: 88px;
+        line-height: 1;
+        text-transform: uppercase;
+        white-space: nowrap;
+        opacity: 0;
+      }
+      .cap .w {
+        display: inline-block;
+        color: #c8c0b9;
+        transform-origin: 50% 60%;
+        text-shadow: 0 5px 0 rgba(0, 0, 0, 0.5), 0 0 22px rgba(0, 0, 0, 0.7);
+      }
+
+      /* ---------- end card ---------- */
+      #veil {
+        position: absolute;
+        inset: 0;
+        background: var(--bg);
+        opacity: 0;
+      }
+      #q {
+        position: absolute;
+        left: var(--col-left);
+        top: 300px;
+        width: var(--col-width);
+      }
+      #q1,
+      #q2 {
+        display: block;
+        font-size: 118px;
+        line-height: 1.04;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      #q2 {
+        margin-top: 4px;
+        color: var(--accent);
+      }
+      #tiles {
+        position: absolute;
+        left: var(--col-left);
+        top: 590px;
+        width: var(--col-width);
+        height: 384px;
+        display: flex;
+        gap: 29px;
+      }
+      .tile {
+        position: relative;
+        flex: none;
+        width: 240px;
+        height: 384px;
+        border-radius: 22px;
+        overflow: hidden;
+        border: 4px solid rgba(247, 239, 230, 0.9);
+        background: #000;
+      }
+      .tile img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .tile .n {
+        position: absolute;
+        left: 14px;
+        top: 14px;
+        width: 66px;
+        height: 66px;
+        border-radius: 14px;
+        background: var(--accent);
+        color: var(--bg);
+        font-size: 56px;
+        line-height: 66px;
+        text-align: center;
+      }
+      .tile .l {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        padding: 34px 8px 16px;
+        font-size: 24px;
+        text-align: center;
+        background: linear-gradient(to bottom, rgba(21, 16, 12, 0) 0%, rgba(21, 16, 12, 0.92) 55%);
+      }
+      #save {
+        position: absolute;
+        left: var(--col-left);
+        top: 1036px;
+        display: flex;
+        align-items: center;
+        gap: 30px;
+      }
+      #save-icon {
+        display: block;
+        flex: none;
+        width: 100px;
+        height: 130px;
+      }
+      #save-txt span {
+        display: block;
+        font-size: 108px;
+        line-height: 0.92;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      #sub {
+        position: absolute;
+        left: var(--col-left);
+        top: 1268px;
+        display: flex;
+        gap: 0 16px;
+        font-size: 32px;
+      }
+      #sub span {
+        display: inline-block;
+      }
+      #handle-pill {
+        position: absolute;
+        left: var(--col-left);
+        top: 1340px;
+        display: inline-flex;
+        align-items: center;
+        height: 72px;
+        padding: 0 32px;
+        border-radius: 999px;
+        background: var(--accent);
+        color: var(--bg);
+        font-size: 30px;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-width="1080"
+      data-height="1920"
+      data-duration="24"
+    >
+      <!-- footage: C hook 0–2.32 · A 2.32–8.75 · B 8.75–13.22 · C 13.22–24 -->
+      <!-- untimed wrappers carry the camera moves; only the <video> inside is timed -->
+      <div id="shot-hook" class="shot">
+        <div id="kb-hook" class="kb" data-layout-allow-overflow><div id="pu-hook" class="punch">
+          <video id="v-hook" src="assets/c.mp4" data-start="0" data-duration="2.32" data-media-start="9.6" data-track-index="0" muted playsinline></video>
+        </div></div>
+      </div>
+      <div id="shot-a" class="shot">
+        <div id="kb-a" class="kb" data-layout-allow-overflow><div id="pu-a" class="punch">
+          <video id="v-a" src="assets/a.mp4" data-start="2.32" data-duration="6.43" data-media-start="18.52" data-track-index="0" muted playsinline></video>
+        </div></div>
+      </div>
+      <div id="shot-b" class="shot">
+        <div id="kb-b" class="kb" data-layout-allow-overflow><div id="pu-b" class="punch">
+          <video id="v-b" src="assets/b.mp4" data-start="8.75" data-duration="4.47" data-media-start="9.55" data-track-index="0" muted playsinline></video>
+        </div></div>
+      </div>
+      <div id="shot-c" class="shot">
+        <div id="kb-c" class="kb" data-layout-allow-overflow><div id="pu-c" class="punch">
+          <video id="v-c" src="assets/c.mp4" data-start="13.22" data-duration="10.78" data-media-start="13.3" data-track-index="0" muted playsinline></video>
+        </div></div>
+      </div>
+
+      <!-- scrims, grain and the cut flash sit over the footage for the whole piece -->
+      <div id="fx" class="layer clip" data-start="0" data-duration="24" data-track-index="1">
+        <div id="scrim-top"></div>
+        <div id="scrim-bot"></div>
+        <div id="grain" data-layout-allow-overflow></div>
+        <div id="flash"></div>
+      </div>
+
+      <!-- meta bar with progress -->
+      <div id="meta-clip" class="layer clip" data-start="0" data-duration="18.9" data-track-index="2">
+        <div id="meta" class="mono">
+          <div class="row"><span id="handle">@jordan_pincheira</span><span class="tag">Sentadilla · 3 niveles</span></div>
+          <div class="track"><span id="progress" class="fill"></span></div>
+        </div>
+      </div>
+
+      <!-- hook title: visible from the first frame -->
+      <div id="hook-clip" class="layer clip" data-start="0" data-duration="2.4" data-track-index="3">
+        <div id="hook">
+          <span id="h1">3 niveles</span>
+          <span id="h2">de sentadilla</span>
+          <span id="h-rule"></span>
+        </div>
+      </div>
+
+      <!-- level chips -->
+      <div id="lvl1-clip" class="layer clip" data-start="3.62" data-duration="5.13" data-track-index="4">
+        <div id="lvl1" class="lvl">
+          <span class="lvl-num">1</span>
+          <span class="lvl-txt"><span class="lvl-k mono">Nivel</span><span id="lvl1-name" class="lvl-name">Sin peso</span></span>
+        </div>
+      </div>
+      <div id="lvl2-clip" class="layer clip" data-start="8.75" data-duration="4.47" data-track-index="5">
+        <div id="lvl2" class="lvl">
+          <span class="lvl-num">2</span>
+          <span class="lvl-txt"><span class="lvl-k mono">Nivel</span><span id="lvl2-name" class="lvl-name">Con barra</span></span>
+        </div>
+      </div>
+      <div id="lvl3-clip" class="layer clip" data-start="13.22" data-duration="5.36" data-track-index="6">
+        <div id="lvl3" class="lvl">
+          <span class="lvl-num">3</span>
+          <span class="lvl-txt"><span class="lvl-k mono">Nivel</span><span id="lvl3-name" class="lvl-name">Pesado</span></span>
+        </div>
+      </div>
+
+      <!-- captions rail: word-synced from HeyGen's timestamps (checked against Parakeet) -->
+      <div id="captions-clip" class="layer clip" data-start="0" data-duration="18.62" data-track-index="7">
+        <div id="captions">
+          <div class="cap" id="g1"><span class="w" data-s="0.28" data-e="0.69">Nadie</span><span class="w" data-s="0.73" data-e="1.02">empieza</span></div>
+          <div class="cap" id="g2"><span class="w" data-s="1.10" data-e="1.46">cargando</span></div>
+          <div class="cap" id="g3"><span class="w" data-s="1.50" data-e="1.63">así</span><span class="w" data-s="1.67" data-e="1.75">de</span><span class="w" data-s="1.79" data-e="2.26">pesado</span></div>
+          <div class="cap" id="g4"><span class="w" data-s="2.36" data-e="2.48">Se</span><span class="w" data-s="2.52" data-e="2.80">empieza</span><span class="w" data-s="2.84" data-e="3.35">aquí</span></div>
+          <div class="cap" id="g5"><span class="w" data-s="3.70" data-e="4.02">Nivel</span><span class="w" data-s="4.10" data-e="4.41">uno</span></div>
+          <div class="cap" id="g6"><span class="w" data-s="4.55" data-e="4.75">sin</span><span class="w" data-s="4.80" data-e="5.32">peso</span></div>
+          <div class="cap" id="g7"><span class="w" data-s="5.53" data-e="5.81">Pecho</span><span class="w" data-s="5.85" data-e="6.22">arriba</span></div>
+          <div class="cap" id="g8"><span class="w" data-s="6.34" data-e="6.70">rodillas</span></div>
+          <div class="cap" id="g9"><span class="w" data-s="6.75" data-e="6.95">hacia</span><span class="w accent-word" data-s="6.99" data-e="7.19">afuera</span></div>
+          <div class="cap" id="g10"><span class="w" data-s="7.40" data-e="7.56">y</span><span class="w" data-s="7.60" data-e="7.84">baja</span></div>
+          <div class="cap" id="g11"><span class="w" data-s="7.88" data-e="8.64">controlado</span></div>
+          <div class="cap" id="g12"><span class="w" data-s="8.86" data-e="9.18">Nivel</span><span class="w" data-s="9.26" data-e="9.57">dos</span></div>
+          <div class="cap" id="g13"><span class="w" data-s="9.75" data-e="9.87">con</span><span class="w" data-s="9.96" data-e="10.38">barra</span></div>
+          <div class="cap" id="g14"><span class="w" data-s="10.52" data-e="10.97">Abdomen</span><span class="w" data-s="11.01" data-e="11.38">firme</span></div>
+          <div class="cap" id="g15"><span class="w" data-s="11.50" data-e="11.58">y</span><span class="w" data-s="11.62" data-e="11.99">empuja</span></div>
+          <div class="cap" id="g16"><span class="w" data-s="12.03" data-e="12.07">el</span><span class="w" data-s="12.11" data-e="12.35">piso</span></div>
+          <div class="cap" id="g17"><span class="w" data-s="12.39" data-e="12.52">con</span><span class="w" data-s="12.56" data-e="12.76">todo</span></div>
+          <div class="cap" id="g18"><span class="w" data-s="12.80" data-e="12.84">el</span><span class="w" data-s="12.88" data-e="13.16">pie</span></div>
+          <div class="cap" id="g19"><span class="w" data-s="13.28" data-e="13.56">Nivel</span><span class="w" data-s="13.60" data-e="13.99">tres</span></div>
+          <div class="cap" id="g20"><span class="w" data-s="14.21" data-e="14.92">pesado</span></div>
+          <div class="cap" id="g21"><span class="w" data-s="15.19" data-e="15.27">Y</span><span class="w" data-s="15.31" data-e="15.64">ahí</span></div>
+          <div class="cap" id="g22"><span class="w" data-s="15.76" data-e="16.08">nunca</span><span class="w" data-s="16.12" data-e="16.61">solo</span></div>
+          <div class="cap" id="g23"><span class="w" data-s="16.86" data-e="17.26">siempre</span></div>
+          <div class="cap" id="g24"><span class="w" data-s="17.30" data-e="17.42">con</span><span class="w" data-s="17.46" data-e="17.75">alguien</span></div>
+          <div class="cap" id="g25"><span class="w" data-s="17.79" data-e="17.87">que</span><span class="w" data-s="17.91" data-e="18.03">te</span><span class="w" data-s="18.07" data-e="18.51">asista</span></div>
+        </div>
+      </div>
+
+      <!-- end card: 18.55 – 24 -->
+      <div id="end-clip" class="layer clip" data-start="18.55" data-duration="5.45" data-track-index="8">
+        <div id="veil"></div>
+        <div id="q">
+          <span id="q1">¿En qué nivel</span>
+          <span id="q2">estás tú?</span>
+        </div>
+        <div id="tiles">
+          <div class="tile" id="t1"><img src="assets/tile1.jpg" alt="" /><span class="n">1</span><span class="l mono">Sin peso</span></div>
+          <div class="tile" id="t2"><img src="assets/tile2.jpg" alt="" /><span class="n">2</span><span class="l mono">Con barra</span></div>
+          <div class="tile" id="t3"><img src="assets/tile3.jpg" alt="" /><span class="n">3</span><span class="l mono">Pesado</span></div>
+        </div>
+        <div id="save">
+          <svg id="save-icon" viewBox="0 0 128 166" aria-hidden="true">
+            <path d="M10 12 Q10 4 18 4 L110 4 Q118 4 118 12 L118 158 L64 120 L10 158 Z" fill="#ff5400" />
+          </svg>
+          <div id="save-txt"><span id="s1" class="accent">Guarda</span><span id="s2">este video</span></div>
+        </div>
+        <div id="sub" class="mono">
+          <span id="u1">para</span><span id="u2">tu</span><span id="u3">próximo</span><span id="u4" class="accent">entrenamiento</span>
+        </div>
+        <div id="handle-pill" class="mono">@jordan_pincheira</div>
+      </div>
+
+      <audio id="vo" src="assets/voz.wav" data-start="0" data-duration="22.86" data-track-index="9" data-volume="1"></audio>
+    </div>
+
+    <script>
+      const DURATION = 24;
+      const tl = gsap.timeline({ paused: true });
+
+      // ---- word onsets from HeyGen's speech timestamps (seconds) ----
+      const W = {
+        nadie: 0.28, se: 2.36, nivel1: 3.7, sin: 4.55, pecho: 5.53, rodillas: 6.34, afuera: 6.99,
+        baja: 7.6, nivel2: 8.86, con: 9.75, abdomen: 10.52, empuja: 11.62, pie: 12.88,
+        nivel3: 13.28, pesado: 14.21, nunca: 15.76, siempre: 16.86, asista: 18.07,
+        en: 18.66, que: 18.97, nivel: 19.13, estas: 19.37, tu: 19.66,
+        guarda: 20.15, este: 20.51, para: 21.04, tu2: 21.28, proximo: 21.45, entrenamiento: 21.81,
+      };
+      const CUTS = [2.32, 8.75, 13.22];
+
+      // ---- footage: slow push on every shot, plus a settle on the cut ----
+      tl.fromTo("#kb-hook", { y: 280, scale: 1.08, transformOrigin: "58% 0%" }, { y: 280, scale: 1, duration: 2.32, ease: "power1.out" }, 0);
+      tl.fromTo("#kb-a", { scale: 1, transformOrigin: "40% 40%" }, { scale: 1.06, duration: 6.43, ease: "none" }, 2.32);
+      tl.fromTo("#kb-b", { scale: 1.04, transformOrigin: "52% 58%" }, { scale: 1.12, duration: 4.47, ease: "none" }, 8.75);
+      tl.fromTo("#kb-c", { y: 260, scale: 1, transformOrigin: "58% 0%" }, { y: 260, scale: 1.08, duration: 10.78, ease: "none" }, 13.22);
+
+      // punches land on the cue words and release before the next shot
+      const punch = (sel, origin, to, at, release) => {
+        tl.fromTo(sel, { scale: 1, transformOrigin: origin }, { scale: to, duration: 0.22, ease: "power3.out", immediateRender: false }, at);
+        tl.to(sel, { scale: 1, duration: 0.45, ease: "power2.inOut" }, release);
+      };
+      tl.set(["#pu-hook", "#pu-a", "#pu-b", "#pu-c"], { scale: 1 }, 0);
+      punch("#pu-a", "42% 66%", 1.08, W.rodillas, 7.5);
+      punch("#pu-b", "52% 82%", 1.12, W.empuja, 12.95);
+      punch("#pu-c", "35% 25%", 1.08, W.nunca, 17.9);
+
+      // a soft flash frame on each hard cut
+      CUTS.forEach((t) => {
+        tl.fromTo("#flash", { opacity: 0.22 }, { opacity: 0, duration: 0.16, ease: "power2.out", immediateRender: false }, t);
+      });
+
+      // ---- ambient: grain crawls, progress fills ----
+      tl.fromTo("#grain", { x: 0, y: 0 }, { x: 96, y: 48, duration: DURATION, ease: "steps(72)" }, 0);
+      tl.fromTo("#progress", { scaleX: 0 }, { scaleX: 1, duration: 18.6, ease: "none" }, 0);
+      tl.fromTo("#meta", { y: -24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, 2.32);
+      tl.fromTo("#scrim-top", { opacity: 0.55 }, { opacity: 1, duration: 0.3, ease: "power1.inOut" }, 2.32);
+      tl.to("#meta", { opacity: 0, duration: 0.25, ease: "power1.in" }, 18.55);
+
+      // ---- hook title: on screen from frame 0, settles, then clears for level 1 ----
+      tl.fromTo("#h1", { scale: 1.07, transformOrigin: "0% 50%" }, { scale: 1, duration: 0.6, ease: "power3.out" }, 0);
+      tl.fromTo("#h2", { x: -36 }, { x: 0, duration: 0.5, ease: "expo.out" }, 0);
+      tl.fromTo("#h-rule", { scaleX: 0 }, { scaleX: 1, duration: 0.45, ease: "expo.inOut" }, 0.3);
+      tl.to("#hook", { y: 40, opacity: 0, duration: 0.14, ease: "power2.in" }, 2.18);
+
+      // ---- level chips: number pops on "Nivel", name lands on its own word ----
+      const level = (n, tIn, tName, tOut) => {
+        tl.fromTo(`#lvl${n} .lvl-num`, { scale: 0, rotation: -14, transformOrigin: "50% 50%" }, { scale: 1, rotation: 0, duration: 0.42, ease: "back.out(1.8)" }, tIn);
+        tl.fromTo(`#lvl${n} .lvl-k`, { x: -24, opacity: 0 }, { x: 0, opacity: 1, duration: 0.3, ease: "power2.out" }, tIn + 0.08);
+        tl.fromTo(`#lvl${n}-name`, { x: -70, opacity: 0 }, { x: 0, opacity: 1, duration: 0.38, ease: "expo.out" }, tName);
+        tl.to(`#lvl${n}`, { y: -40, opacity: 0, duration: 0.14, ease: "power2.in" }, tOut);
+      };
+      level(1, 3.64, W.sin, 8.58);
+      level(2, W.nivel2 - 0.06, W.con, 13.06);
+      level(3, W.nivel3 - 0.06, W.pesado, 18.4);
+
+      // ---- end card ----
+      tl.fromTo("#veil", { opacity: 0 }, { opacity: 0.86, duration: 0.3, ease: "power2.out" }, 18.55);
+      tl.fromTo("#q1", { scale: 1.3, filter: "blur(14px)", opacity: 0, transformOrigin: "0% 50%" }, { scale: 1, filter: "blur(0px)", opacity: 1, duration: 0.4, ease: "power4.out" }, W.en);
+      tl.fromTo("#q2", { x: -220, opacity: 0 }, { x: 0, opacity: 1, duration: 0.36, ease: "expo.out" }, W.estas);
+      [["#t1", W.que], ["#t2", W.nivel], ["#t3", W.estas]].forEach(([sel, t]) => {
+        tl.fromTo(sel, { y: 70, scale: 0.88, opacity: 0, transformOrigin: "50% 100%" }, { y: 0, scale: 1, opacity: 1, duration: 0.42, ease: "back.out(1.6)" }, t);
+      });
+      // the three levels light up in turn on "tú?"
+      [["#t1", W.tu], ["#t2", W.tu + 0.14], ["#t3", W.tu + 0.28]].forEach(([sel, t]) => {
+        tl.to(sel, { borderColor: "#ff5400", y: -14, duration: 0.14, ease: "power2.out" }, t);
+        tl.to(sel, { borderColor: "rgba(247, 239, 230, 0.9)", y: 0, duration: 0.24, ease: "power2.inOut" }, t + 0.16);
+      });
+      tl.fromTo("#save-icon", { scale: 0, opacity: 0, transformOrigin: "50% 50%" }, { scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.7)" }, W.guarda);
+      tl.fromTo("#s1", { scale: 1.4, filter: "blur(12px)", opacity: 0, transformOrigin: "0% 50%" }, { scale: 1, filter: "blur(0px)", opacity: 1, duration: 0.4, ease: "power4.out" }, W.guarda);
+      tl.fromTo("#s2", { x: -260, opacity: 0 }, { x: 0, opacity: 1, duration: 0.36, ease: "expo.out" }, W.este);
+      [["#u1", W.para], ["#u2", W.tu2], ["#u3", W.proximo], ["#u4", W.entrenamiento]].forEach(([sel, t]) => {
+        tl.fromTo(sel, { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.22, ease: "power3.out" }, t);
+      });
+      tl.fromTo("#handle-pill", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "power3.out" }, 22.3);
+      tl.fromTo("#save-icon", { y: 0 }, { y: -10, duration: 0.35, ease: "sine.inOut", yoyo: true, repeat: 1, immediateRender: false }, 23.0);
+
+      // ---- captions rail: hard swaps per group + karaoke envelope per word ----
+      const groups = Array.from(document.querySelectorAll("#captions .cap")).map((el) => "#" + el.id);
+      const starts = groups.map((g) => parseFloat(document.querySelector(g + " .w").dataset.s));
+      groups.forEach((g, i) => {
+        tl.set(g, { opacity: 1 }, starts[i]);
+        tl.fromTo(g, { y: 16, scale: 0.96 }, { y: 0, scale: 1, duration: 0.16, ease: "power2.out", immediateRender: false }, starts[i]);
+        const end = i + 1 < groups.length ? starts[i + 1] : 18.58;
+        tl.set(g, { opacity: 0 }, end);
+      });
+
+      const ATTACK = 0.08, RELEASE = 0.25, REST = 0.05, BOOST = 0.08;
+      const PENDING = [200, 192, 185], DONE = [247, 239, 230], ACTIVE = [255, 84, 0];
+      const capWords = Array.from(document.querySelectorAll("#captions .w")).map((el) => ({
+        el, s: parseFloat(el.dataset.s), e: parseFloat(el.dataset.e),
+      }));
+      const env = (t, s, e) => {
+        if (t < s) return -1;
+        if (t < e) return Math.min((t - s) / ATTACK, 1);
+        if (t < e + RELEASE) return 1 - ((t - e) / RELEASE) * (1 - REST);
+        return REST;
+      };
+      const mix = (a, b, k) => `rgb(${a.map((v, i) => Math.round(v + (b[i] - v) * k)).join(",")})`;
+      const driver = { t: 0 };
+      tl.fromTo(driver, { t: 0 }, {
+        t: DURATION, duration: DURATION, ease: "none",
+        onUpdate: () => {
+          for (const w of capWords) {
+            const k = env(driver.t, w.s, w.e);
+            if (k < 0) {
+              w.el.style.color = mix(PENDING, PENDING, 0);
+              w.el.style.transform = "scale(1)";
+            } else {
+              w.el.style.color = mix(DONE, ACTIVE, k);
+              w.el.style.transform = `scale(${1 + BOOST * k})`;
+            }
+          }
+        },
+      }, 0);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

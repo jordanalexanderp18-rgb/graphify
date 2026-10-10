@@ -1,0 +1,14 @@
+source: https://github.com/anthropics/skills
+commit: 683bc88e56f3e09ba94f7055977f3d3aa499f202
+fetched: 2026-10-08
+skills: canvas-design, theme-factory (copied unmodified from skills/<name>/)
+license: Apache-2.0 (LICENSE.txt inside each skill folder); canvas-design's
+  fonts are SIL Open Font License 1.1 (one <Family>-OFL.txt per family in canvas-fonts/)
+audit:
+  - Instructions and theme files only: no scripts, no network calls, no hidden
+    Unicode, no URLs besides the Apache license links.
+  - theme-showcase.pdf: no /JavaScript, /JS, /OpenAction, /Launch, /URI or embedded
+    files ("/AA" hits are font-subset prefixes such as /AAAAAA+DejaVuSans).
+  - All 27 font license files are SIL OFL.
+why: static design for reel covers, carousels and stories (canvas-design) and
+  ready-made palettes and font pairings for client decks and documents (theme-factory).
