@@ -117,8 +117,22 @@ her voice in HeyGen.
   script before `create_speech`.
 - The back-day script now follows the exercises actually filmed: jalón al pecho, remo en polea,
   jalón a una mano kneeling, pullover en polea.
+- Later the same day Jordan ruled out any "personal trainer" or "pareja" wording in her content.
+  The plan, the hooks and the template sample copy were rewritten around her own routines.
+  Covers wait for a photo he will send; the mirror selfie was turned down.
+- The back-day reel (23 s) and a story version (15.6 s) were cut without voice: text on screen,
+  look A, whose coral matches her top. Jordan allowed HeyGen "si es necesario"; it was not
+  needed.
+- Bystander faces get blurred (`reel-studio` section 4): a feathered ellipse where they stand
+  apart from her, and a portrait-mode blur from `remove-background` on the take where a man
+  trains right behind her (the pullover).
 
 ### Rejected
+- Rendering the 4K HDR take (the pulldown, bt2020/PQ) through a plain proxy. HyperFrames took
+  its HDR path at about 3 s a frame and the colours washed out. Tone-map it in the proxy step
+  (`reel-studio` section 4); the reel then rendered in about 2 minutes.
+- Portrait blur with the matte alone. The model keeps every person, so the man behind her
+  stayed sharp until her orange top anchored the split.
 - Nothing You Could Do for Spanish handwriting. Its accents render as tiny ticks ("tambien").
   The collage style moved to Caveat Bold as well.
 - remove-background on the whole photo. Her hair came out at alpha 0, against about 78 on a
@@ -126,8 +140,8 @@ her voice in HeyGen.
 
 ### Open
 - Which look she picks. Then her highlight covers and a private `MARCA.md`.
-- Her voice sample and written OK, the HeyGen clone, script approval, `create_speech`, then the
-  edit. Clean windows in the clips: the pulldown (60 fps, the one named "espalda") 4–12.5 s;
+- If a voice is still wanted: her voice sample and written OK, the HeyGen clone, script
+  approval (without the trainer and partner hook), `create_speech`, then the voice on the cut. Clean windows in the clips: the pulldown (60 fps, the one named "espalda") 4–12.5 s;
   the 09:04 row clip 1–30 s; the one-arm pulldown 8–40 s; the 09:23 pullover clip 6–23 s. The
   09:21 pullover clip has a man in frame the whole time.
 - Drive "Reels" is shared as "anyone with the link: Editor". Jordan was asked to set it to

@@ -77,6 +77,25 @@ in a local venv. Telemetry stays off (`HYPERFRAMES_NO_TELEMETRY=1`).
 3. **Proxy.** Transcode each clip to 1080x1920 H.264 at 30 fps with no audio:
    `-vf "scale=1080:1920:flags=lanczos,fps=30,eq=contrast=1.05:saturation=1.08,format=yuv420p" -c:v libx264 -crf 18 -g 15 -an`.
    Chromium may not decode HEVC, and the gym music on the clips is not his to publish.
+   Check `color_transfer` with ffprobe first. A take shot in HDR (`smpte2084`, bt2020) keeps
+   those tags through the plain proxy. It then looks washed out and purple, and HyperFrames
+   takes its HDR path: the October 2026 back-day reel crawled at about 3 s a frame. Tone-map
+   that take instead: put
+   `zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p`
+   before the scale and add `-color_primaries bt709 -color_trc bt709 -colorspace bt709`. With
+   SDR takes and `--workers 3`, the 23 s reel rendered in about 2 minutes.
+   **Bystanders.** Gym footage catches other people. Look at full-size frames, not only the
+   contact sheet, and blur any face someone could recognise. When the person stands apart
+   from the subject, blur a feathered ellipse over them, with the mask drawn once for the whole
+   take:
+   `-loop 1 -i mask.png -filter_complex "[0:v]split[a][b];[b]gblur=sigma=26[bl];[1:v]format=gray[m];[bl][m]alphamerge[f];[a][f]overlay=shortest=1"`.
+   When they stand right next to the subject, cut the subject out of the take with
+   `npx hyperframes remove-background take.mp4 -o cut.mov` and overlay the cut-out on a
+   `gblur` of the take. That blurs the whole background, like a phone's portrait mode. The
+   model keeps every person, so a bystander touching the subject stays sharp. Split them off
+   with something only the subject wears (her orange top in the October 2026 back-day reel):
+   blank the matte left of it and above its top edge, frame by frame, and look at four frames
+   before running the whole take.
 4. **Voice.** By default, use a voice recorded by the person on screen (as a video, in a
    quiet room) or the local voice from section 3, and take word timings with Parakeet.
    His cloned voice "Jor" is HeyGen `create_speech`: ask him first, every time, before any
