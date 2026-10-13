@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Portada: 3 niveles de sentadilla</title>
+    <style>
+      @font-face {
+        font-family: "Anton";
+        src: url("assets/fonts/anton-latin-400-normal.woff2") format("woff2");
+      }
+      @font-face {
+        font-family: "JetBrains Mono";
+        src: url("assets/fonts/JetBrainsMono-700.woff2") format("woff2");
+        font-weight: 700;
+      }
+      :root {
+        --bg: #15100c;
+        --fg: #f7efe6;
+        --accent: #ff5400;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: var(--bg);
+      }
+      .slide {
+        position: relative;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: "Anton", sans-serif;
+      }
+      .mono {
+        font-family: "JetBrains Mono", monospace;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+      .photo {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .shade {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to bottom, rgba(21, 16, 12, 0.55) 0%, rgba(21, 16, 12, 0) 16%, rgba(21, 16, 12, 0) 38%, rgba(21, 16, 12, 0.86) 56%, rgba(21, 16, 12, 0.94) 100%);
+      }
+      /* everything that matters sits inside the profile-grid crop (about y 285–1635) and 120 px from the sides */
+      #title {
+        position: absolute;
+        left: 120px;
+        top: 1010px;
+      }
+      .big {
+        display: block;
+        line-height: 0.9;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      #t1 {
+        font-size: 214px;
+        color: var(--accent);
+      }
+      #t2 {
+        font-size: 124px;
+      }
+      .levels {
+        display: flex;
+        gap: 18px;
+        margin-top: 44px;
+      }
+      .lv {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        height: 64px;
+        padding: 0 22px 0 8px;
+        border-radius: 14px;
+        background: rgba(247, 239, 230, 0.1);
+        font-size: 26px;
+      }
+      .lv b {
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        background: var(--accent);
+        color: var(--bg);
+        font-family: "Anton", sans-serif;
+        font-weight: 400;
+        font-size: 38px;
+        line-height: 48px;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <section class="slide">
+      <img class="photo" src="assets/c-1920.jpg" alt="Jordan haciendo sentadilla pesada con un compañero que lo asiste" />
+      <div class="shade"></div>
+      <div id="title">
+        <span id="t1" class="big">3 niveles</span>
+        <span id="t2" class="big">de sentadilla</span>
+        <div class="levels mono">
+          <span class="lv"><b>1</b>Sin peso</span>
+          <span class="lv"><b>2</b>Con barra</span>
+          <span class="lv"><b>3</b>Pesado</span>
+        </div>
+      </div>
+    </section>
+    <script>
+      const n = parseInt(new URLSearchParams(location.search).get("slide") || "0", 10);
+      if (n > 0) document.querySelectorAll(".slide").forEach((s, i) => { if (i + 1 !== n) s.style.display = "none"; });
+    </script>
+  </body>
+</html>

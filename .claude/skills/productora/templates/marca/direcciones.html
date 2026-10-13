@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Marca: estilos</title>
+    <!-- Personal-brand kit, one sheet per look for the person to choose from: the reel cover
+         and the carousel cover (render portadas.html and carruseles.html into out/ first), five
+         highlight icons, the palette and the fonts. 1080x1350. -->
+    <style>
+      @font-face { font-family: "Big Shoulders"; src: url("assets/fonts/BigShoulders-Bold.ttf"); font-weight: 700; }
+      @font-face { font-family: "Outfit"; src: url("assets/fonts/Outfit-Regular.ttf"); }
+      @font-face { font-family: "Outfit"; src: url("assets/fonts/Outfit-Bold.ttf"); font-weight: 700; }
+      @font-face { font-family: "Instrument Serif"; src: url("assets/fonts/InstrumentSerif-Regular.ttf"); }
+      @font-face { font-family: "Instrument Serif"; src: url("assets/fonts/InstrumentSerif-Italic.ttf"); font-style: italic; }
+      @font-face { font-family: "Instrument Sans"; src: url("assets/fonts/InstrumentSans-Regular.ttf"); }
+      @font-face { font-family: "Instrument Sans"; src: url("assets/fonts/InstrumentSans-Bold.ttf"); font-weight: 700; }
+      @font-face { font-family: "Caveat"; src: url("assets/fonts/caveat-latin-700-normal.woff2"); font-weight: 700; }
+      @font-face { font-family: "Boldonse"; src: url("assets/fonts/Boldonse-Regular.ttf"); }
+      @font-face { font-family: "Geist Mono"; src: url("assets/fonts/GeistMono-Bold.ttf"); font-weight: 700; }
+      @page { size: 1080px 1350px; margin: 0; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1350px; overflow: hidden; background: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      @media print { html, body { height: auto; overflow: visible; } .slide { break-after: page; } }
+      .slide { position: relative; width: 1080px; height: 1350px; overflow: hidden; font-family: "Outfit", sans-serif; }
+      .slide > * { position: absolute; }
+      .label { left: 56px; top: 58px; font-family: "Geist Mono", monospace; font-weight: 700; font-size: 24px; letter-spacing: 0.14em; }
+      .name { left: 52px; top: 96px; }
+      .desc { left: 520px; top: 70px; width: 504px; font-size: 26px; line-height: 1.32; }
+      .shot { border-radius: 18px; box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28); }
+      .portada { left: 56px; top: 236px; width: 432px; height: 768px; }
+      .carrusel { left: 524px; top: 236px; width: 500px; height: 625px; }
+      .hl { left: 524px; top: 892px; width: 500px; display: flex; justify-content: space-between; }
+      .hl div { width: 84px; text-align: center; font-size: 19px; font-weight: 700; }
+      .hl span { display: flex; width: 84px; height: 84px; margin-bottom: 10px; border-radius: 50%; align-items: center; justify-content: center; }
+      .hl svg { width: 40px; height: 40px; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+      .chips { left: 56px; top: 1046px; width: 968px; display: flex; gap: 16px; }
+      .chips div { flex: 1; height: 150px; border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; justify-content: flex-end; }
+      .chips b { font-size: 24px; }
+      .chips i { font-style: normal; font-family: "Geist Mono", monospace; font-weight: 700; font-size: 18px; opacity: 0.8; }
+      .fonts { left: 56px; top: 1232px; width: 968px; font-size: 26px; line-height: 1.4; }
+
+      .a { background: #0e142c; color: #fbf5ef; }
+      .a .label { color: #ff6b4a; }
+      .a .name { font-family: "Big Shoulders", sans-serif; font-weight: 700; font-size: 112px; line-height: 1; }
+      .a .desc { color: #f5c6c0; }
+      .a .hl span { background: #ff6b4a; }
+      .a .hl svg { stroke: #172042; }
+
+      .b { background: #ebe2d6; color: #2b2124; font-family: "Instrument Sans", sans-serif; }
+      .b .label { color: #b8325a; }
+      .b .name { font-family: "Instrument Serif", serif; font-style: italic; font-size: 120px; line-height: 1; color: #b8325a; top: 88px; left: 66px; }
+      .b .desc { color: #5f4a4e; }
+      .b .hl span { background: #f2c4cc; }
+      .b .hl svg { stroke: #b8325a; }
+      .b .hl div { font-family: "Instrument Sans", sans-serif; font-size: 17px; }
+
+      .c { background: #a897f5; color: #121212; }
+      .c .name { font-family: "Boldonse", sans-serif; font-size: 62px; line-height: 1.34; top: 100px; }
+      .c .desc { color: #121212; }
+      .c .hl span { background: #121212; }
+      .c .hl svg { stroke: #d4ff3a; }
+    </style>
+  </head>
+  <body>
+    <svg width="0" height="0" style="position: absolute">
+      <defs>
+        <g id="i-rutinas"><path d="M6 7v10M18 7v10M3 10v4M21 10v4M6 12h12" /></g>
+        <g id="i-tecnica"><path d="M5 12.5l4.2 4.2L19 7" /></g>
+        <g id="i-el"><path d="M12 20s-7.5-4.6-7.5-10.2A4.2 4.2 0 0 1 12 7.3a4.2 4.2 0 0 1 7.5 2.5C19.5 15.4 12 20 12 20z" /></g>
+        <g id="i-progreso"><path d="M4 17l5-5 4 4 7-7M15 9h5v5" /></g>
+        <g id="i-preguntas"><path d="M9.2 9.2a2.9 2.9 0 1 1 4.3 2.5c-.9.5-1.5 1.2-1.5 2.2v.6M12 18.2v.1" /></g>
+      </defs>
+    </svg>
+
+    <section class="slide a">
+      <p class="label">ESTILO A</p>
+      <h1 class="name">DEPORTIVA</h1>
+      <p class="desc">Azul marino, coral y rosado. Letras altas que se leen bien en chiquitito. Para rutinas y técnica.</p>
+      <img class="shot portada" src="out/portadas/01.png" alt="" />
+      <img class="shot carrusel" src="out/carruseles/01.png" alt="" />
+      <div class="hl">
+        <div><span><svg viewBox="0 0 24 24"><use href="#i-rutinas" /></svg></span>Rutinas</div>
+        <div><span><svg viewBox="0 0 24 24"><use href="#i-tecnica" /></svg></span>Técnica</div>
+        <div><span><svg viewBox="0 0 24 24"><use href="#i-el" /></svg></span>Sobre mí</div>
+        <div><span><svg viewBox="0 0 24 24"><use href="#i-progreso" /></svg></span>Progreso</div>
+        <div><span><svg viewBox="0 0 24 24"><use href="#i-preguntas" /></svg></span>Preguntas</div>
+      </div>
+      <div class="chips">
+        <div style="background: #172042; box-shadow: inset 0 0 0 2px #2c376a"><b>Marino</b><i>#172042</i></div>
+        <div style="background: #ff6b4a; color: #172042"><b>Coral</b><i>#FF6B4A</i></div>
+        <div style="background: #f5c6c0; color: #172042"><b>Rosado</b><i>#F5C6C0</i></div>
+        <div style="background: #fbf5ef; color: #172042"><b>Crema</b><i>#FBF5EF</i></div>
+      </div>
+      <p class="fonts">Títulos: <b style="font-family: 'Big Shoulders'; font-size: 34px">BIG SHOULDERS</b> · Textos: <b>Outfit</b></p>
+    </section>
+
+    <section class="slide b">
+      <p class="label">ESTILO B</p>
+      <h1 class="name">Diario</h1>
+      <p class="desc">Papel crema, letra de revista y notas a mano. Cercano, como su diario de gimnasio. Para su historia, su progreso y el día a día.</p>
+      <img class="shot portada" src="out/portadas/02.png" alt="" />
+      <img class="shot carrusel" src="out/carruseles/02.png" alt="" />
+      <div class="hl">
+        <div><span><svg viewBox="0 0 24 24"><use href="#i-rutinas" /></svg></span>Rutinas</div>
+        <div><span><svg viewBox="0 0 24 24"><use href="#i-tecnica" /></svg></span>Técnica</div>
+        <div><span><svg viewBox="0 0 24 24"><use href="#i-el" /></svg></span>Sobre mí</div>
+        <div><span><svg viewBox="0 0 24 24"><use href="#i-progreso" /></svg></span>Progreso</div>
+        <div><span><svg viewBox="0 0 24 24"><use href="#i-preguntas" /></svg></span>Preguntas</div>
+      </div>
+      <div class="chips">
+        <div style="background: #f6efe6; box-shadow: inset 0 0 0 2px #d9cbbb"><b>Crema</b><i>#F6EFE6</i></div>
+        <div style="background: #f2c4cc"><b>Rosa</b><i>#F2C4CC</i></div>
+        <div style="background: #b8325a; color: #fff"><b>Frambuesa</b><i>#B8325A</i></div>
+        <div style="background: #2b2124; color: #f6efe6"><b>Tinta</b><i>#2B2124</i></div>
+      </div>
+      <p class="fonts">Títulos: <b style="font-family: 'Instrument Serif'; font-weight: 400; font-size: 36px">Instrument Serif</b> · A mano: <b style="font-family: 'Caveat'; font-size: 36px; color: #b8325a">Caveat</b> · Textos: <b>Instrument Sans</b></p>
+    </section>
+
+    <section class="slide c">
+      <p class="label">ESTILO C</p>
+      <h1 class="name">ENERGÍA</h1>
+      <p class="desc">Lila, lima y negro, con letras gruesas y stickers. Llama la atención en el feed. Para retos, humor y tendencias.</p>
+      <img class="shot portada" src="out/portadas/03.png" alt="" />
+      <img class="shot carrusel" src="out/carruseles/03.png" alt="" />
+      <div class="hl">
+        <div><span><svg viewBox="0 0 24 24"><use href="#i-rutinas" /></svg></span>Rutinas</div>
+        <div><span><svg viewBox="0 0 24 24"><use href="#i-tecnica" /></svg></span>Técnica</div>
+        <div><span><svg viewBox="0 0 24 24"><use href="#i-el" /></svg></span>Sobre mí</div>
+        <div><span><svg viewBox="0 0 24 24"><use href="#i-progreso" /></svg></span>Progreso</div>
+        <div><span><svg viewBox="0 0 24 24"><use href="#i-preguntas" /></svg></span>Preguntas</div>
+      </div>
+      <div class="chips">
+        <div style="background: #b9a7ff; box-shadow: inset 0 0 0 2px #8f7ce0"><b>Lila</b><i>#B9A7FF</i></div>
+        <div style="background: #d4ff3a"><b>Lima</b><i>#D4FF3A</i></div>
+        <div style="background: #121212; color: #d4ff3a"><b>Negro</b><i>#121212</i></div>
+        <div style="background: #ffffff"><b>Blanco</b><i>#FFFFFF</i></div>
+      </div>
+      <p class="fonts">Títulos: <b style="font-family: 'Boldonse'; font-weight: 400; font-size: 24px">BOLDONSE</b> · Textos: <b>Outfit</b> · Detalles: <b style="font-family: 'Geist Mono'">Geist Mono</b></p>
+    </section>
+
+    <script>
+      const n = parseInt(new URLSearchParams(location.search).get("slide") || "0", 10);
+      if (n > 0) document.querySelectorAll(".slide").forEach((s, i) => { if (i + 1 !== n) s.style.display = "none"; });
+    </script>
+  </body>
+</html>

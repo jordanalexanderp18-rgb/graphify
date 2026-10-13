@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Tarifas 2026: Pincheira Studio</title>
+    <style>
+      @font-face {
+        font-family: "Anton";
+        src: url("assets/fonts/anton-latin-400-normal.woff2") format("woff2");
+      }
+      @font-face {
+        font-family: "JetBrains Mono";
+        src: url("assets/fonts/JetBrainsMono-400.woff2") format("woff2");
+        font-weight: 400;
+      }
+      @font-face {
+        font-family: "JetBrains Mono";
+        src: url("assets/fonts/JetBrainsMono-700.woff2") format("woff2");
+        font-weight: 700;
+      }
+      @page {
+        size: 1080px 1350px;
+        margin: 0;
+      }
+      :root {
+        --bg: #15100c;
+        --card: #211913;
+        --fg: #f7efe6;
+        --dim: #b5aaa1;
+        --accent: #ff5400;
+        --m: 72px;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1080px;
+        height: 1350px;
+        overflow: hidden;
+        background: var(--bg);
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      @media print {
+        html,
+        body {
+          height: auto;
+          overflow: visible;
+        }
+        .slide {
+          break-after: page;
+        }
+      }
+      .slide {
+        position: relative;
+        width: 1080px;
+        height: 1350px;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: "Anton", sans-serif;
+      }
+      .mono {
+        font-family: "JetBrains Mono", monospace;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+      .accent {
+        color: var(--accent);
+      }
+      .big {
+        display: block;
+        line-height: 0.92;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      .grain {
+        position: absolute;
+        inset: 0;
+        opacity: 0.06;
+        mix-blend-mode: overlay;
+        pointer-events: none;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.6'/></svg>");
+      }
+      .glow {
+        position: absolute;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255, 84, 0, 0.55) 0%, rgba(255, 84, 0, 0) 66%);
+        pointer-events: none;
+      }
+      /* chrome shared by every slide */
+      .brand {
+        position: absolute;
+        left: var(--m);
+        top: 64px;
+        font-size: 26px;
+      }
+      .count {
+        position: absolute;
+        right: var(--m);
+        top: 64px;
+        font-size: 26px;
+        color: var(--dim);
+      }
+      .foot {
+        position: absolute;
+        left: var(--m);
+        right: var(--m);
+        bottom: 56px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 26px;
+        color: var(--dim);
+      }
+      .foot b {
+        color: var(--fg);
+        font-weight: 700;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        height: 60px;
+        padding: 0 26px;
+        border-radius: 999px;
+        background: var(--accent);
+        color: var(--bg);
+        font-size: 26px;
+      }
+      .chip.ghost {
+        background: transparent;
+        border: 4px solid var(--accent);
+        color: var(--accent);
+      }
+      .head {
+        position: absolute;
+        left: var(--m);
+        right: var(--m);
+        top: 140px;
+      }
+      .head .big {
+        margin-top: 26px;
+        font-size: 104px;
+      }
+
+      /* 1 · portada */
+      #p1 .glow {
+        width: 980px;
+        height: 980px;
+        right: -420px;
+        top: -260px;
+        opacity: 0.55;
+      }
+      #p1 .top {
+        position: absolute;
+        left: var(--m);
+        top: 150px;
+        font-size: 30px;
+      }
+      #p1 .name {
+        position: absolute;
+        left: var(--m);
+        top: 210px;
+      }
+      #p1 .name .big {
+        font-size: 196px;
+      }
+      #p1 .tag {
+        position: absolute;
+        left: var(--m);
+        top: 610px;
+        width: 860px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 38px;
+        line-height: 1.35;
+      }
+      #p1 .offer {
+        position: absolute;
+        left: var(--m);
+        top: 800px;
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 26px;
+      }
+      #p1 .offer li {
+        display: flex;
+        align-items: center;
+        gap: 26px;
+        font-size: 58px;
+        line-height: 1;
+        text-transform: uppercase;
+      }
+      .n {
+        flex: none;
+        width: 76px;
+        height: 76px;
+        border-radius: 14px;
+        background: var(--accent);
+        color: var(--bg);
+        font-size: 56px;
+        line-height: 76px;
+        text-align: center;
+      }
+
+      /* 2 y 3 · listas de precios */
+      .rows {
+        position: absolute;
+        left: var(--m);
+        right: var(--m);
+        top: 360px;
+        display: flex;
+        flex-direction: column;
+      }
+      .row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 24px;
+        padding: 16px 0;
+        border-top: 2px solid rgba(247, 239, 230, 0.12);
+      }
+      .row:last-child {
+        border-bottom: 2px solid rgba(247, 239, 230, 0.12);
+      }
+      .row .what .t {
+        display: block;
+        font-size: 42px;
+        line-height: 1;
+        text-transform: uppercase;
+      }
+      .row .what .d {
+        display: block;
+        margin-top: 8px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 24px;
+        color: var(--dim);
+      }
+      .row .price {
+        flex: none;
+        text-align: right;
+      }
+      .row .price .from {
+        display: block;
+        font-size: 22px;
+        color: var(--dim);
+      }
+      .row .price .v {
+        display: block;
+        font-size: 50px;
+        line-height: 1;
+        color: var(--accent);
+      }
+
+      /* 4 · planes */
+      .grid {
+        position: absolute;
+        left: 64px;
+        right: 64px;
+        top: 340px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+      }
+      .plan {
+        position: relative;
+        height: 388px;
+        padding: 28px 28px 22px;
+        border-radius: 26px;
+        background: var(--card);
+        border: 3px solid rgba(247, 239, 230, 0.1);
+      }
+      .plan.hot {
+        border-color: var(--accent);
+      }
+      .plan .kind {
+        font-size: 22px;
+        color: var(--dim);
+      }
+      .plan .pn {
+        display: block;
+        margin-top: 12px;
+        font-size: 60px;
+        line-height: 1;
+        text-transform: uppercase;
+      }
+      .plan .pv {
+        display: block;
+        margin-top: 10px;
+        font-size: 58px;
+        line-height: 1;
+        color: var(--accent);
+      }
+      .plan .pv small {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 24px;
+        color: var(--dim);
+      }
+      .plan ul {
+        margin-top: 18px;
+        list-style: none;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 24px;
+        line-height: 1.4;
+      }
+      .plan li::before {
+        content: "+ ";
+        color: var(--accent);
+        font-weight: 700;
+      }
+      .plan .badge {
+        position: absolute;
+        right: 22px;
+        top: 26px;
+        padding: 8px 14px;
+        border-radius: 10px;
+        background: var(--accent);
+        color: var(--bg);
+        font-size: 20px;
+      }
+      .note {
+        position: absolute;
+        left: var(--m);
+        right: var(--m);
+        top: 1158px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 25px;
+        color: var(--dim);
+      }
+
+      /* 5 · cómo trabajamos */
+      .steps {
+        position: absolute;
+        left: var(--m);
+        right: var(--m);
+        top: 330px;
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+      }
+      .steps li {
+        display: flex;
+        gap: 26px;
+        align-items: flex-start;
+      }
+      .steps .t {
+        display: block;
+        font-size: 50px;
+        line-height: 1;
+        text-transform: uppercase;
+      }
+      .steps .d {
+        display: block;
+        margin-top: 10px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 27px;
+        color: var(--dim);
+      }
+      .work {
+        position: absolute;
+        left: var(--m);
+        top: 880px;
+        display: flex;
+        align-items: flex-end;
+        gap: 22px;
+      }
+      .work .lbl {
+        width: 180px;
+        font-size: 24px;
+        color: var(--dim);
+        line-height: 1.4;
+      }
+      .work img {
+        width: 160px;
+        height: 256px;
+        object-fit: cover;
+        border-radius: 16px;
+        border: 3px solid rgba(247, 239, 230, 0.85);
+      }
+      .pay {
+        position: absolute;
+        left: var(--m);
+        top: 1170px;
+        display: flex;
+        gap: 18px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 1 · PORTADA -->
+    <section class="slide" id="p1">
+      <div class="glow"></div>
+      <span class="top mono accent">Tarifas 2026</span>
+      <div class="name">
+        <span class="big">Pincheira</span>
+        <span class="big accent">Studio</span>
+      </div>
+      <p class="tag">Contenido para redes sociales, hecho con inteligencia artificial.</p>
+      <ul class="offer">
+        <li><span class="n">1</span>Reels con tus videos</li>
+        <li><span class="n">2</span>Tu avatar y tu voz con IA</li>
+        <li><span class="n">3</span>Carruseles y portadas</li>
+      </ul>
+      <div class="foot mono"><b>@jordan_pincheira</b><span>1/5</span></div>
+      <div class="grain"></div>
+    </section>
+
+    <!-- 2 · CON VIDEO -->
+    <section class="slide">
+      <span class="brand mono">Pincheira Studio</span>
+      <span class="count mono">2/5</span>
+      <div class="head">
+        <span class="chip mono">Con video</span>
+        <span class="big">Reels y videos</span>
+      </div>
+      <div class="rows">
+        <div class="row"><div class="what"><span class="t">Reel con tus videos</span><span class="d">Hasta 45 s · subtítulos, gráficos y voz</span></div><div class="price"><span class="from mono">desde</span><span class="v">$45.000</span></div></div>
+        <div class="row"><div class="what"><span class="t">Reel con tu avatar IA</span><span class="d">Hasta 60 s · tu clon digital habla por ti</span></div><div class="price"><span class="from mono">desde</span><span class="v">$60.000</span></div></div>
+        <div class="row"><div class="what"><span class="t">Tu avatar y tu voz con IA</span><span class="d">Se crea una sola vez · con tu autorización</span></div><div class="price"><span class="from mono">desde</span><span class="v">$60.000</span></div></div>
+        <div class="row"><div class="what"><span class="t">Video para empresa</span><span class="d">1 minuto · cada minuto extra $50.000</span></div><div class="price"><span class="from mono">desde</span><span class="v">$120.000</span></div></div>
+        <div class="row"><div class="what"><span class="t">Subtítulos a tu video</span><span class="d">Por minuto de video</span></div><div class="price"><span class="from mono">desde</span><span class="v">$15.000</span></div></div>
+        <div class="row"><div class="what"><span class="t">Video traducido con tu voz</span><span class="d">Por minuto · inglés, portugués y más</span></div><div class="price"><span class="from mono">desde</span><span class="v">$30.000</span></div></div>
+        <div class="row"><div class="what"><span class="t">Grabación en terreno</span><span class="d">Por hora · con micrófono y luz</span></div><div class="price"><span class="from mono">desde</span><span class="v">$30.000</span></div></div>
+      </div>
+      <div class="foot mono"><b>@jordan_pincheira</b><span>Valores en pesos chilenos</span></div>
+      <div class="grain"></div>
+    </section>
+
+    <!-- 3 · SIN VIDEO -->
+    <section class="slide">
+      <span class="brand mono">Pincheira Studio</span>
+      <span class="count mono">3/5</span>
+      <div class="head">
+        <span class="chip ghost mono">Sin video</span>
+        <span class="big">Diseño y estrategia</span>
+      </div>
+      <div class="rows">
+        <div class="row"><div class="what"><span class="t">Carrusel</span><span class="d">De 6 a 10 láminas · diseño y textos</span></div><div class="price"><span class="from mono">desde</span><span class="v">$25.000</span></div></div>
+        <div class="row"><div class="what"><span class="t">Portada de reel o post</span><span class="d">Con tu marca y tus colores</span></div><div class="price"><span class="from mono">desde</span><span class="v">$10.000</span></div></div>
+        <div class="row"><div class="what"><span class="t">Pack de 5 historias</span><span class="d">Para anunciar o vender sin hacer un post</span></div><div class="price"><span class="from mono">desde</span><span class="v">$20.000</span></div></div>
+        <div class="row"><div class="what"><span class="t">Texto para publicación</span><span class="d">Gancho, llamado a la acción y hashtags</span></div><div class="price"><span class="from mono">desde</span><span class="v">$5.000</span></div></div>
+        <div class="row"><div class="what"><span class="t">Plan de contenido del mes</span><span class="d">Ideas y calendario de publicaciones</span></div><div class="price"><span class="from mono">desde</span><span class="v">$30.000</span></div></div>
+        <div class="row"><div class="what"><span class="t">Revisión de tu perfil</span><span class="d">Bio, destacados y grilla</span></div><div class="price"><span class="from mono">desde</span><span class="v">$25.000</span></div></div>
+      </div>
+      <div class="foot mono"><b>@jordan_pincheira</b><span>Valores en pesos chilenos</span></div>
+      <div class="grain"></div>
+    </section>
+
+    <!-- 4 · PLANES -->
+    <section class="slide">
+      <span class="brand mono">Pincheira Studio</span>
+      <span class="count mono">4/5</span>
+      <div class="head">
+        <span class="chip mono">Planes mensuales</span>
+        <span class="big">Contenido todo el mes</span>
+      </div>
+      <div class="grid">
+        <div class="plan"><span class="kind mono">Con video</span><span class="pn">Básico</span><span class="pv">$200.000 <small>/ mes</small></span><ul><li>4 reels</li><li>4 carruseles</li><li>Textos para publicar</li></ul></div>
+        <div class="plan hot"><span class="badge mono">Más pedido</span><span class="kind mono">Con video</span><span class="pn">Pro</span><span class="pv">$350.000 <small>/ mes</small></span><ul><li>8 reels</li><li>4 carruseles y portadas</li><li>Textos para publicar</li><li>Plan del mes</li></ul></div>
+        <div class="plan"><span class="kind mono">Con video</span><span class="pn">Premium</span><span class="pv">$550.000 <small>/ mes</small></span><ul><li>12 reels con avatar</li><li>6 carruseles e historias</li><li>Textos y plan del mes</li><li>Reporte mensual</li></ul></div>
+        <div class="plan"><span class="kind mono">Sin video</span><span class="pn">Diseño</span><span class="pv">$150.000 <small>/ mes</small></span><ul><li>6 carruseles</li><li>8 historias</li><li>Textos y plan del mes</li></ul></div>
+      </div>
+      <p class="note">Primeros clientes: precio de lanzamiento.</p>
+      <div class="foot mono"><b>@jordan_pincheira</b><span>Valores en pesos chilenos</span></div>
+      <div class="grain"></div>
+    </section>
+
+    <!-- 5 · CÓMO TRABAJAMOS -->
+    <section class="slide">
+      <span class="brand mono">Pincheira Studio</span>
+      <span class="count mono">5/5</span>
+      <div class="head">
+        <span class="big" style="margin-top: 0">Cómo trabajamos</span>
+      </div>
+      <ul class="steps">
+        <li><span class="n">1</span><div><span class="t">Conversamos 15 minutos</span><span class="d">Qué quieres lograr y qué plan te sirve.</span></div></li>
+        <li><span class="n">2</span><div><span class="t">Grabas con tu celular</span><span class="d">Te mando una guía simple, o voy yo.</span></div></li>
+        <li><span class="n">3</span><div><span class="t">Edito con IA</span><span class="d">Cortes, subtítulos, gráficos y voz.</span></div></li>
+        <li><span class="n">4</span><div><span class="t">Recibes listo para publicar</span><span class="d">Con el texto incluido y 2 rondas de cambios.</span></div></li>
+      </ul>
+      <div class="work">
+        <span class="lbl mono">Trabajo real</span>
+        <img src="assets/tile1.jpg" alt="" />
+        <img src="assets/tile2.jpg" alt="" />
+        <img src="assets/tile3.jpg" alt="" />
+      </div>
+      <div class="pay">
+        <span class="chip mono">50% al empezar</span>
+        <span class="chip ghost mono">50% al recibir</span>
+      </div>
+      <div class="foot mono"><b>@jordan_pincheira</b><span>Escríbeme por DM o WhatsApp</span></div>
+      <div class="grain"></div>
+    </section>
+
+    <script>
+      // render_slides.sh opens ?slide=N; show only that slide (all of them without it, as in the PDF)
+      const n = parseInt(new URLSearchParams(location.search).get("slide") || "0", 10);
+      if (n > 0) document.querySelectorAll(".slide").forEach((s, i) => { if (i + 1 !== n) s.style.display = "none"; });
+    </script>
+  </body>
+</html>

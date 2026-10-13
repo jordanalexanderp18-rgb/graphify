@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Estilo Notas</title>
+    <!-- Notas: the slide reads like a note on a phone. Plain text, a highlighter on the key
+         words and a checklist. It feels personal, like a message instead of an ad.
+         Generic notes look on purpose: no real app's icons or toolbar. -->
+    <style>
+      @font-face { font-family: "Instrument Sans"; src: url("assets/fonts/InstrumentSans-Regular.ttf"); }
+      @font-face { font-family: "Instrument Sans"; src: url("assets/fonts/InstrumentSans-Bold.ttf"); font-weight: 700; }
+      @font-face { font-family: "Instrument Sans"; src: url("assets/fonts/InstrumentSans-Italic.ttf"); font-style: italic; }
+      @page { size: 1080px 1350px; margin: 0; }
+      :root { --page: #fbfaf7; --ink: #1c1c1e; --gray: #8e8e93; --amber: #d9a000; --hl: #ffe066; --redact: #e4e3df; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1350px; overflow: hidden; background: var(--page); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      @media print { html, body { height: auto; overflow: visible; } .slide { break-after: page; } }
+      .slide { position: relative; width: 1080px; height: 1350px; overflow: hidden; background: var(--page); color: var(--ink); font-family: "Instrument Sans", sans-serif; }
+      .bar { position: absolute; left: 64px; right: 80px; top: 70px; display: flex; justify-content: space-between; align-items: center; font-size: 40px; color: var(--amber); }
+      .bar .back { display: flex; align-items: center; gap: 10px; }
+      .bar b { font-weight: 700; }
+      .date { position: absolute; left: 0; right: 0; top: 168px; text-align: center; font-size: 27px; color: var(--gray); }
+      .title { position: absolute; left: 80px; right: 80px; top: 236px; font-size: 100px; font-weight: 700; line-height: 1.04; letter-spacing: -0.015em; }
+      .hl { background: linear-gradient(transparent 56%, var(--hl) 56%, var(--hl) 94%, transparent 94%); padding: 0 8px; margin: 0 -8px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+      .body { position: absolute; left: 80px; right: 80px; font-size: 46px; line-height: 1.4; }
+      .list { list-style: none; }
+      .list li { font-size: 54px; line-height: 1.62; }
+      .redact { display: inline-block; height: 38px; border-radius: 10px; background: var(--redact); vertical-align: -4px; }
+      .gray { color: var(--gray); font-style: italic; }
+      .checks { position: absolute; left: 80px; right: 80px; list-style: none; }
+      .checks li { display: flex; align-items: center; gap: 28px; height: 100px; font-size: 52px; }
+      .ck { position: relative; flex: none; width: 56px; height: 56px; border-radius: 50%; background: var(--amber); }
+      .ck::after { content: ""; position: absolute; left: 19px; top: 10px; width: 13px; height: 25px; border: solid #fff; border-width: 0 5px 5px 0; transform: rotate(45deg); }
+      .att { position: absolute; left: 80px; width: 920px; border-radius: 26px; object-fit: cover; }
+      .strong { font-weight: 700; }
+      .caret { display: inline-block; width: 5px; height: 58px; margin-left: 6px; background: var(--amber); vertical-align: -10px; }
+      .foot { position: absolute; left: 80px; right: 80px; bottom: 78px; display: flex; justify-content: space-between; font-size: 28px; color: var(--gray); }
+      .foot b { color: var(--amber); font-weight: 700; }
+    </style>
+  </head>
+  <body>
+    <section class="slide">
+      <div class="bar"><span class="back"><svg width="26" height="44" viewBox="0 0 26 44"><path d="M22 4 L5 22 L22 40" fill="none" stroke="#d9a000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" /></svg>Notas</span><b>Listo</b></div>
+      <p class="date">8 de octubre de 2026, 7:30</p>
+      <h1 class="title">4 ejercicios para <span class="hl">piernas fuertes</span></h1>
+      <p class="body" style="top: 520px; font-size: 50px">Lo que hago cada día de pierna:</p>
+      <ol class="body list" style="top: 612px">
+        <li>1. Sentadilla</li>
+        <li>2. <span class="redact" style="width: 430px"></span></li>
+        <li>3. <span class="redact" style="width: 290px"></span></li>
+        <li>4. <span class="redact" style="width: 360px"></span></li>
+      </ol>
+      <p class="body gray" style="top: 1012px">(desliza para ver el resto)</p>
+      <div class="foot"><span>@jordan_pincheira</span><b>Desliza →</b></div>
+    </section>
+    <section class="slide">
+      <div class="bar"><span class="back"><svg width="26" height="44" viewBox="0 0 26 44"><path d="M22 4 L5 22 L22 40" fill="none" stroke="#d9a000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" /></svg>Notas</span><b>Listo</b></div>
+      <p class="date">8 de octubre de 2026, 7:30</p>
+      <h2 class="title">1. Sentadilla</h2>
+      <ul class="checks" style="top: 400px">
+        <li><i class="ck"></i>Pecho arriba</li>
+        <li><i class="ck"></i>Rodillas hacia afuera</li>
+        <li><i class="ck"></i><span>Baja <span class="hl">controlado</span></span></li>
+      </ul>
+      <img class="att" src="assets/a-1350.jpg" alt="" style="top: 740px; height: 460px; object-position: 30% 70%" />
+      <div class="foot"><span>@jordan_pincheira</span><span>2 / 6</span></div>
+    </section>
+    <section class="slide">
+      <div class="bar"><span class="back"><svg width="26" height="44" viewBox="0 0 26 44"><path d="M22 4 L5 22 L22 40" fill="none" stroke="#d9a000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" /></svg>Notas</span><b>Listo</b></div>
+      <p class="date">8 de octubre de 2026, 7:30</p>
+      <h2 class="title">¿Cuál te cuesta <span class="hl">más</span>?</h2>
+      <ol class="body list" style="top: 500px">
+        <li>1. Sentadilla</li>
+        <li>2. Peso muerto rumano</li>
+        <li>3. Estocadas</li>
+        <li>4. Hip thrust</li>
+      </ol>
+      <p class="body strong" style="top: 900px; font-size: 54px"><span class="hl">Comenta tu número</span> y te leo.</p>
+      <p class="body gray" style="top: 1010px">PD: guárdala para tu próximo día de pierna.<i class="caret"></i></p>
+      <div class="foot"><span>@jordan_pincheira</span><span>6 / 6</span></div>
+    </section>
+    <script>
+      const n = parseInt(new URLSearchParams(location.search).get("slide") || "0", 10);
+      if (n > 0) document.querySelectorAll(".slide").forEach((s, i) => { if (i + 1 !== n) s.style.display = "none"; });
+    </script>
+  </body>
+</html>

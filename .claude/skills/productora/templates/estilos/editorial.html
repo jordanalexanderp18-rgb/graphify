@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Estilo Revista</title>
+    <!-- Revista: the carousel as a magazine. Full-bleed cover photo under a serif masthead,
+         feature pages with a pull quote and a folio, lots of air, one teal accent. -->
+    <style>
+      @font-face { font-family: "Gloock"; src: url("assets/fonts/Gloock-Regular.ttf"); }
+      @font-face { font-family: "Instrument Serif"; src: url("assets/fonts/InstrumentSerif-Regular.ttf"); }
+      @font-face { font-family: "Instrument Serif"; src: url("assets/fonts/InstrumentSerif-Italic.ttf"); font-style: italic; }
+      @font-face { font-family: "Instrument Sans"; src: url("assets/fonts/InstrumentSans-Regular.ttf"); }
+      @font-face { font-family: "Instrument Sans"; src: url("assets/fonts/InstrumentSans-Bold.ttf"); font-weight: 700; }
+      @page { size: 1080px 1350px; margin: 0; }
+      :root { --paper: #f4efe6; --ink: #161412; --soft: #6d665d; --teal: #0f8b8d; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1350px; overflow: hidden; background: var(--paper); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      @media print { html, body { height: auto; overflow: visible; } .slide { break-after: page; } }
+      .slide { position: relative; width: 1080px; height: 1350px; overflow: hidden; background: var(--paper); color: var(--ink); font-family: "Instrument Sans", sans-serif; }
+      .gloock { font-family: "Gloock", serif; font-weight: 400; }
+      .serif { font-family: "Instrument Serif", serif; font-weight: 400; }
+      .label { font-size: 22px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; }
+      .cover { color: #fff; }
+      .cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: saturate(0.85) contrast(1.05); }
+      .scrim { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(10, 10, 10, 0.62), rgba(10, 10, 10, 0) 36%), linear-gradient(to top, rgba(10, 10, 10, 0.86), rgba(10, 10, 10, 0) 55%); }
+      .mast { position: absolute; left: 0; right: 0; top: 56px; text-align: center; font-size: 250px; line-height: 0.86; letter-spacing: -0.01em; }
+      .issue { position: absolute; left: 80px; right: 80px; top: 300px; padding-top: 16px; border-top: 2px solid rgba(255, 255, 255, 0.7); display: flex; justify-content: space-between; }
+      .tag { position: absolute; left: 80px; top: 868px; padding: 10px 18px; background: var(--teal); color: #fff; }
+      .line1 { position: absolute; left: 76px; top: 916px; font-size: 156px; line-height: 1; font-style: italic; }
+      .line2 { position: absolute; left: 80px; top: 1080px; font-size: 80px; line-height: 1; }
+      .swipe { position: absolute; left: 80px; bottom: 70px; }
+      .barcode { position: absolute; right: 80px; bottom: 64px; width: 150px; height: 74px; padding: 8px 10px 20px; background: #fff; }
+      .barcode i { display: block; width: 100%; height: 100%; background: repeating-linear-gradient(90deg, #111 0 3px, transparent 3px 5px, #111 5px 6px, transparent 6px 9px, #111 9px 13px, transparent 13px 15px); }
+      .barcode span { position: absolute; left: 0; right: 0; bottom: 3px; text-align: center; font-size: 12px; color: #111; letter-spacing: 0.2em; }
+      .folio { position: absolute; left: 80px; right: 80px; top: 66px; padding-bottom: 18px; border-bottom: 1.5px solid var(--ink); display: flex; justify-content: space-between; align-items: baseline; }
+      .folio .gloock { font-size: 36px; }
+      .folio .label { color: var(--soft); }
+      .photo { position: absolute; left: 80px; top: 160px; width: 920px; height: 620px; object-fit: cover; filter: saturate(0.85); }
+      .credit { position: absolute; left: 80px; top: 792px; font-size: 26px; font-style: italic; color: var(--soft); }
+      .kicker { position: absolute; left: 80px; color: var(--teal); }
+      .title { position: absolute; left: 76px; top: 888px; font-size: 150px; line-height: 1; }
+      .pull { position: absolute; left: 80px; right: 80px; top: 1064px; font-size: 52px; line-height: 1.18; font-style: italic; }
+      .end { position: absolute; left: 80px; right: 80px; bottom: 58px; padding-top: 16px; border-top: 1.5px solid var(--ink); display: flex; justify-content: space-between; align-items: baseline; }
+      .end .gloock { font-size: 30px; }
+      .q { position: absolute; left: 76px; right: 80px; top: 236px; font-size: 140px; line-height: 0.98; }
+      .rows { position: absolute; left: 80px; right: 80px; top: 560px; list-style: none; border-top: 1.5px solid var(--ink); }
+      .rows li { display: flex; align-items: baseline; gap: 34px; padding: 22px 0 18px; border-bottom: 1px solid rgba(22, 20, 18, 0.25); }
+      .rows .gloock { width: 70px; font-size: 52px; color: var(--teal); }
+      .rows .serif { font-size: 60px; }
+      .ask { position: absolute; left: 80px; top: 1086px; font-size: 64px; font-style: italic; }
+    </style>
+  </head>
+  <body>
+    <section class="slide cover">
+      <img src="assets/c-1350.jpg" alt="" style="object-position: 50% 40%" />
+      <div class="scrim"></div>
+      <h1 class="mast gloock">PIERNA</h1>
+      <div class="issue label"><span>N.º 01 · Octubre 2026</span><span>Por @jordan_pincheira</span></div>
+      <span class="tag label">Especial fuerza</span>
+      <p class="line1 serif">4 ejercicios</p>
+      <p class="line2 gloock">para piernas fuertes</p>
+      <span class="swipe label">Desliza →</span>
+      <div class="barcode"><i></i><span>0 1 2 6</span></div>
+    </section>
+    <section class="slide">
+      <div class="folio"><span class="gloock">Pierna</span><span class="label">N.º 01 · Octubre 2026</span></div>
+      <img class="photo" src="assets/a-1350.jpg" alt="" style="object-position: 30% 70%" />
+      <p class="credit serif">Foto: @jordan_pincheira</p>
+      <span class="kicker label" style="top: 852px">Ejercicio 01 de 04</span>
+      <h2 class="title gloock">Sentadilla</h2>
+      <p class="pull serif">“Pecho arriba, rodillas hacia afuera y baja controlado.”</p>
+      <div class="end"><span class="label">@jordan_pincheira</span><span class="gloock">02</span></div>
+    </section>
+    <section class="slide">
+      <div class="folio"><span class="gloock">Pierna</span><span class="label">N.º 01 · Octubre 2026</span></div>
+      <span class="kicker label" style="top: 190px">La pregunta</span>
+      <h2 class="q gloock">¿Cuál te cuesta más?</h2>
+      <ol class="rows">
+        <li><span class="gloock">01</span><span class="serif">Sentadilla</span></li>
+        <li><span class="gloock">02</span><span class="serif">Peso muerto rumano</span></li>
+        <li><span class="gloock">03</span><span class="serif">Estocadas</span></li>
+        <li><span class="gloock">04</span><span class="serif">Hip thrust</span></li>
+      </ol>
+      <p class="ask serif">Comenta tu número.</p>
+      <div class="end"><span class="label">@jordan_pincheira</span><span class="gloock">06</span></div>
+    </section>
+    <script>
+      const n = parseInt(new URLSearchParams(location.search).get("slide") || "0", 10);
+      if (n > 0) document.querySelectorAll(".slide").forEach((s, i) => { if (i + 1 !== n) s.style.display = "none"; });
+    </script>
+  </body>
+</html>

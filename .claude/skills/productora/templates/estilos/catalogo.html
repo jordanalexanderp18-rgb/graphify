@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Catálogo de estilos 2026: Pincheira Studio</title>
+    <!-- The 2026 style catalogue: cover, one page per style, two caption pages, close.
+         Before rendering it, render each style next to it (render_slides.sh <estilo>.html
+         out/<estilo>) and put four 1080x1920 frames of the client's footage in assets/frames/
+         (karaoke, minimal, caja, clave). Sales piece: it can go to clients as is. -->
+    <style>
+      @font-face { font-family: "Anton"; src: url("assets/fonts/anton-latin-400-normal.woff2") format("woff2"); }
+      @font-face { font-family: "JetBrains Mono"; src: url("assets/fonts/JetBrainsMono-400.woff2") format("woff2"); font-weight: 400; }
+      @font-face { font-family: "JetBrains Mono"; src: url("assets/fonts/JetBrainsMono-700.woff2") format("woff2"); font-weight: 700; }
+      @font-face { font-family: "Outfit"; src: url("assets/fonts/Outfit-Regular.ttf"); }
+      @font-face { font-family: "Outfit"; src: url("assets/fonts/Outfit-Bold.ttf"); font-weight: 700; }
+      @page { size: 1080px 1350px; margin: 0; }
+      :root { --bg: #15100c; --card: #211913; --fg: #f7efe6; --dim: #b5aaa1; --accent: #ff5400; --m: 72px; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1350px; overflow: hidden; background: var(--bg); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      @media print { html, body { height: auto; overflow: visible; } .slide { break-after: page; } }
+      .slide { position: relative; width: 1080px; height: 1350px; overflow: hidden; background: var(--bg); color: var(--fg); font-family: "Anton", sans-serif; }
+      .mono { font-family: "JetBrains Mono", monospace; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+      .accent { color: var(--accent); }
+      .big { display: block; line-height: 0.92; text-transform: uppercase; white-space: nowrap; }
+      .grain { position: absolute; inset: 0; opacity: 0.06; mix-blend-mode: overlay; pointer-events: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.6'/></svg>"); }
+      .glow { position: absolute; width: 980px; height: 980px; right: -420px; top: -260px; opacity: 0.55; border-radius: 50%; background: radial-gradient(circle, rgba(255, 84, 0, 0.55) 0%, rgba(255, 84, 0, 0) 66%); pointer-events: none; }
+      .brand { position: absolute; left: var(--m); top: 64px; font-size: 26px; }
+      .count { position: absolute; right: var(--m); top: 64px; font-size: 26px; color: var(--dim); }
+      .foot { position: absolute; left: var(--m); right: var(--m); bottom: 56px; display: flex; justify-content: space-between; align-items: center; font-size: 26px; color: var(--dim); }
+      .foot b { color: var(--fg); font-weight: 700; }
+      .chip { display: inline-flex; align-items: center; height: 60px; padding: 0 26px; border-radius: 999px; background: var(--accent); color: var(--bg); font-size: 26px; }
+      .head { position: absolute; left: var(--m); right: var(--m); top: 140px; }
+      .head .big { margin-top: 26px; font-size: 104px; }
+
+      /* cover and close */
+      .top { position: absolute; left: var(--m); top: 150px; font-size: 30px; }
+      .name { position: absolute; left: var(--m); top: 210px; }
+      .name .big { font-size: 172px; }
+      .tag { position: absolute; left: var(--m); top: 560px; width: 900px; font-family: "JetBrains Mono", monospace; font-size: 36px; line-height: 1.35; }
+      .card { position: absolute; width: 260px; height: 325px; border-radius: 14px; box-shadow: 0 24px 50px rgba(0, 0, 0, 0.55); }
+      .offer { position: absolute; left: var(--m); right: var(--m); top: 610px; list-style: none; display: flex; flex-direction: column; gap: 40px; }
+      .offer li { display: flex; align-items: flex-start; gap: 28px; font-family: "JetBrains Mono", monospace; font-size: 34px; line-height: 1.38; }
+      .ctas { position: absolute; left: var(--m); top: 1110px; display: flex; gap: 22px; }
+      .chip.ghost { background: transparent; border: 4px solid var(--accent); color: var(--accent); }
+      .n { flex: none; width: 76px; height: 76px; border-radius: 14px; background: var(--accent); color: var(--bg); font-family: "Anton", sans-serif; font-size: 56px; line-height: 76px; text-align: center; }
+
+      /* style pages */
+      .sub { position: absolute; left: var(--m); top: 338px; font-size: 26px; color: var(--dim); }
+      .trio { position: absolute; left: var(--m); right: var(--m); top: 400px; display: flex; gap: 18px; }
+      .trio img { width: 300px; height: 375px; border-radius: 12px; box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5); }
+      .info { position: absolute; left: var(--m); right: var(--m); top: 846px; }
+      .row { display: flex; gap: 24px; align-items: baseline; padding: 22px 0; border-top: 2px solid rgba(247, 239, 230, 0.12); }
+      .row:last-child { border-bottom: 2px solid rgba(247, 239, 230, 0.12); }
+      .row .k { flex: none; width: 230px; font-size: 23px; color: var(--accent); }
+      .row .v { font-family: "JetBrains Mono", monospace; font-size: 28px; line-height: 1.36; }
+      .row .sw { display: flex; gap: 14px; align-self: center; }
+      .row .sw i { width: 50px; height: 50px; border-radius: 50%; border: 2px solid rgba(247, 239, 230, 0.3); }
+
+      /* caption pages */
+      .ctitle { position: absolute; left: var(--m); top: 130px; font-size: 88px; font-weight: 400; line-height: 1; text-transform: uppercase; }
+      .csub { position: absolute; left: var(--m); top: 236px; font-size: 24px; color: var(--dim); }
+      .phone { position: absolute; top: 290px; width: 450px; height: 800px; border-radius: 28px; overflow: hidden; box-shadow: 0 24px 50px rgba(0, 0, 0, 0.55); }
+      .frame { position: relative; width: 1080px; height: 1920px; transform: scale(0.416667); transform-origin: 0 0; background-size: cover; background-position: center; }
+      .capinfo { position: absolute; top: 1118px; width: 450px; }
+      .capinfo .t { display: block; font-size: 44px; line-height: 1; text-transform: uppercase; }
+      .capinfo .d { display: block; margin-top: 12px; font-size: 21px; line-height: 1.4; color: var(--dim); text-transform: none; letter-spacing: 0; font-weight: 400; }
+      .cap { position: absolute; left: 0; right: 0; top: 1240px; text-align: center; }
+      .karaoke { font-family: "Anton", sans-serif; font-size: 104px; line-height: 1.08; color: #fff; -webkit-text-stroke: 12px #15100c; paint-order: stroke fill; text-shadow: 0 8px 22px rgba(0, 0, 0, 0.5); }
+      .karaoke .on { display: inline-block; color: #ff5400; transform: scale(1.1); }
+      .karaoke .next { opacity: 0.55; }
+      .minimal { top: 1300px; font-family: "Outfit", sans-serif; font-weight: 700; font-size: 72px; color: #fff; letter-spacing: -0.01em; text-shadow: 0 3px 18px rgba(0, 0, 0, 0.6); }
+      .minimal .soft { font-weight: 400; opacity: 0.88; }
+      .box { display: inline-block; padding: 22px 38px 26px; border-radius: 26px; background: rgba(12, 10, 8, 0.64); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); font-family: "Outfit", sans-serif; font-weight: 700; font-size: 66px; line-height: 1.15; color: #fff; }
+      .key { top: 1180px; }
+      .key .small { font-family: "Outfit", sans-serif; font-weight: 700; font-size: 56px; color: #fff; text-shadow: 0 3px 16px rgba(0, 0, 0, 0.65); }
+      .key .word { display: inline-block; margin-top: 6px; font-family: "Anton", sans-serif; font-size: 138px; line-height: 1; color: #ff5400; -webkit-text-stroke: 12px #15100c; paint-order: stroke fill; text-shadow: 0 9px 0 #15100c; transform: rotate(-4deg); }
+    </style>
+  </head>
+  <body>
+    <section class="slide" id="p1">
+      <div class="glow"></div>
+      <span class="top mono accent">Catálogo 2026</span>
+      <div class="name"><span class="big">Estilos</span><span class="big accent">en tendencia</span></div>
+      <p class="tag">6 estilos de carrusel y 4 de subtítulos para reels. Todos se adaptan a tu marca.</p>
+      <img class="card" src="out/papel/01.png" alt="" style="left: 40px; top: 835px; transform: rotate(-12deg)" /><img class="card" src="out/neon/01.png" alt="" style="left: 192px; top: 821px; transform: rotate(-7deg)" /><img class="card" src="out/collage/01.png" alt="" style="left: 344px; top: 807px; transform: rotate(-2deg)" /><img class="card" src="out/pop/01.png" alt="" style="left: 496px; top: 807px; transform: rotate(3deg)" /><img class="card" src="out/notas/01.png" alt="" style="left: 648px; top: 821px; transform: rotate(8deg)" /><img class="card" src="out/editorial/01.png" alt="" style="left: 800px; top: 835px; transform: rotate(13deg)" />
+      <div class="foot mono"><b>@jordan_pincheira</b><span>1/10</span></div><div class="grain"></div>
+    </section>
+    <section class="slide">
+      <span class="brand mono">Pincheira Studio</span><span class="count mono">2/10</span>
+      <div class="head"><span class="chip mono">Estilo 01</span><span class="big">Papel</span></div>
+      <p class="sub mono">Minimalista, sobre papel cálido.</p>
+      <div class="trio"><img src="out/papel/01.png" alt="" /><img src="out/papel/02.png" alt="" /><img src="out/papel/03.png" alt="" /></div>
+      <div class="info">
+        <div class="row"><span class="k mono">Ideal para</span><span class="v">Consejos, listas y marca personal.</span></div>
+        <div class="row"><span class="k mono">Tendencia</span><span class="v">Limpio y premium: letra con serifa, mucho aire y un solo color de acento.</span></div>
+        <div class="row"><span class="k mono">Colores</span><span class="v sw"><i style="background: #f0eee9"></i><i style="background: #1c1b19"></i><i style="background: #6b6660"></i><i style="background: #e8590c"></i></span></div>
+        <div class="row"><span class="k mono">Letras</span><span class="v">Instrument Serif + Instrument Sans</span></div>
+      </div>
+      <div class="foot mono"><b>@jordan_pincheira</b><span>Carrusel 1080 × 1350</span></div><div class="grain"></div>
+    </section>
+    <section class="slide">
+      <span class="brand mono">Pincheira Studio</span><span class="count mono">3/10</span>
+      <div class="head"><span class="chip mono">Estilo 02</span><span class="big">Neón</span></div>
+      <p class="sub mono">Negro, un acento neón y letra de afiche.</p>
+      <div class="trio"><img src="out/neon/01.png" alt="" /><img src="out/neon/02.png" alt="" /><img src="out/neon/03.png" alt="" /></div>
+      <div class="info">
+        <div class="row"><span class="k mono">Ideal para</span><span class="v">Rutinas, retos, gym y motivación.</span></div>
+        <div class="row"><span class="k mono">Tendencia</span><span class="v">Fondo negro, un acento neón y letras gigantes, como un afiche.</span></div>
+        <div class="row"><span class="k mono">Colores</span><span class="v sw"><i style="background: #0b0b0c"></i><i style="background: #f4f4f2"></i><i style="background: #c6ff00"></i><i style="background: #8a8a86"></i></span></div>
+        <div class="row"><span class="k mono">Letras</span><span class="v">Boldonse + Geist Mono</span></div>
+      </div>
+      <div class="foot mono"><b>@jordan_pincheira</b><span>Carrusel 1080 × 1350</span></div><div class="grain"></div>
+    </section>
+    <section class="slide">
+      <span class="brand mono">Pincheira Studio</span><span class="count mono">4/10</span>
+      <div class="head"><span class="chip mono">Estilo 03</span><span class="big">Collage</span></div>
+      <p class="sub mono">Hecho a mano: cinta, polaroids y papel.</p>
+      <div class="trio"><img src="out/collage/01.png" alt="" /><img src="out/collage/02.png" alt="" /><img src="out/collage/03.png" alt="" /></div>
+      <div class="info">
+        <div class="row"><span class="k mono">Ideal para</span><span class="v">Progreso, detrás de escena e historias.</span></div>
+        <div class="row"><span class="k mono">Tendencia</span><span class="v">Fotos con cinta, papel y letra a mano: se siente real y cercano.</span></div>
+        <div class="row"><span class="k mono">Colores</span><span class="v sw"><i style="background: #e9dcc5"></i><i style="background: #1d1a16"></i><i style="background: #2846a8"></i><i style="background: #d7263d"></i></span></div>
+        <div class="row"><span class="k mono">Letras</span><span class="v">Bricolage Grotesque + letra a mano</span></div>
+      </div>
+      <div class="foot mono"><b>@jordan_pincheira</b><span>Carrusel 1080 × 1350</span></div><div class="grain"></div>
+    </section>
+    <section class="slide">
+      <span class="brand mono">Pincheira Studio</span><span class="count mono">5/10</span>
+      <div class="head"><span class="chip mono">Estilo 04</span><span class="big">Pop</span></div>
+      <p class="sub mono">Amarillo, rosado y letras infladas.</p>
+      <div class="trio"><img src="out/pop/01.png" alt="" /><img src="out/pop/02.png" alt="" /><img src="out/pop/03.png" alt="" /></div>
+      <div class="info">
+        <div class="row"><span class="k mono">Ideal para</span><span class="v">Tips rápidos, humor y público joven.</span></div>
+        <div class="row"><span class="k mono">Tendencia</span><span class="v">Letras infladas, colores saturados y stickers. Se nota en el feed.</span></div>
+        <div class="row"><span class="k mono">Colores</span><span class="v sw"><i style="background: #ffe14d"></i><i style="background: #ff3e9a"></i><i style="background: #1a1a1a"></i><i style="background: #fffdf7"></i></span></div>
+        <div class="row"><span class="k mono">Letras</span><span class="v">Erica One + Outfit</span></div>
+      </div>
+      <div class="foot mono"><b>@jordan_pincheira</b><span>Carrusel 1080 × 1350</span></div><div class="grain"></div>
+    </section>
+    <section class="slide">
+      <span class="brand mono">Pincheira Studio</span><span class="count mono">6/10</span>
+      <div class="head"><span class="chip mono">Estilo 05</span><span class="big">Notas</span></div>
+      <p class="sub mono">Como una nota escrita en el celular.</p>
+      <div class="trio"><img src="out/notas/01.png" alt="" /><img src="out/notas/02.png" alt="" /><img src="out/notas/03.png" alt="" /></div>
+      <div class="info">
+        <div class="row"><span class="k mono">Ideal para</span><span class="v">Listas, opiniones y consejos honestos.</span></div>
+        <div class="row"><span class="k mono">Tendencia</span><span class="v">Parece una nota del celular: se lee como un mensaje y no como un aviso.</span></div>
+        <div class="row"><span class="k mono">Colores</span><span class="v sw"><i style="background: #fbfaf7"></i><i style="background: #1c1c1e"></i><i style="background: #d9a000"></i><i style="background: #ffe066"></i></span></div>
+        <div class="row"><span class="k mono">Letras</span><span class="v">Instrument Sans</span></div>
+      </div>
+      <div class="foot mono"><b>@jordan_pincheira</b><span>Carrusel 1080 × 1350</span></div><div class="grain"></div>
+    </section>
+    <section class="slide">
+      <span class="brand mono">Pincheira Studio</span><span class="count mono">7/10</span>
+      <div class="head"><span class="chip mono">Estilo 06</span><span class="big">Revista</span></div>
+      <p class="sub mono">Tu carrusel como portada de revista.</p>
+      <div class="trio"><img src="out/editorial/01.png" alt="" /><img src="out/editorial/02.png" alt="" /><img src="out/editorial/03.png" alt="" /></div>
+      <div class="info">
+        <div class="row"><span class="k mono">Ideal para</span><span class="v">Marcas premium y transformaciones.</span></div>
+        <div class="row"><span class="k mono">Tendencia</span><span class="v">Portada de revista: foto grande, serifa elegante y mucho espacio.</span></div>
+        <div class="row"><span class="k mono">Colores</span><span class="v sw"><i style="background: #f4efe6"></i><i style="background: #161412"></i><i style="background: #0f8b8d"></i><i style="background: #6d665d"></i></span></div>
+        <div class="row"><span class="k mono">Letras</span><span class="v">Gloock + Instrument Serif</span></div>
+      </div>
+      <div class="foot mono"><b>@jordan_pincheira</b><span>Carrusel 1080 × 1350</span></div><div class="grain"></div>
+    </section>
+    <section class="slide">
+      <span class="brand mono">Pincheira Studio</span><span class="count mono">8/10</span>
+      <h2 class="ctitle">Subtítulos para reels</h2>
+      <p class="csub mono">Sobre tus videos reales · 1 de 2</p>
+      <div class="phone" style="left: 72px"><div class="frame" style="background-image: url('assets/frames/karaoke.jpg')"><div class="cap karaoke">RODILLAS <span class="on">HACIA</span><br /><span class="next">AFUERA</span></div></div></div>
+      <div class="capinfo" style="left: 72px"><span class="t">Karaoke de marca</span><span class="d mono">La palabra que suena se pinta con tu color.</span></div><div class="phone" style="left: 558px"><div class="frame" style="background-image: url('assets/frames/minimal.jpg')"><div class="cap minimal"><span class="soft">pecho</span> arriba</div></div></div>
+      <div class="capinfo" style="left: 558px"><span class="t">Minimal dinámico</span><span class="d mono">Letra limpia, pocas palabras, sin colores fuertes.</span></div>
+      <div class="foot mono"><b>@jordan_pincheira</b><span>Reel 1080 × 1920</span></div><div class="grain"></div>
+    </section>
+    <section class="slide">
+      <span class="brand mono">Pincheira Studio</span><span class="count mono">9/10</span>
+      <h2 class="ctitle">Subtítulos para reels</h2>
+      <p class="csub mono">2 de 2 · hay 35 estilos más para videos hablando</p>
+      <div class="phone" style="left: 72px"><div class="frame" style="background-image: url('assets/frames/caja.jpg')"><div class="cap"><span class="box">Pecho arriba y<br />rodillas afuera</span></div></div></div>
+      <div class="capinfo" style="left: 72px"><span class="t">Caja semitransparente</span><span class="d mono">Caja oscura detrás del texto: se lee sobre cualquier fondo.</span></div><div class="phone" style="left: 558px"><div class="frame" style="background-image: url('assets/frames/clave.jpg')"><div class="cap key"><span class="small">baja</span><br /><span class="word">CONTROLADO</span></div></div></div>
+      <div class="capinfo" style="left: 558px"><span class="t">Palabra clave</span><span class="d mono">Solo la palabra importante, en gigante.</span></div>
+      <div class="foot mono"><b>@jordan_pincheira</b><span>Reel 1080 × 1920</span></div><div class="grain"></div>
+    </section>
+    <section class="slide" id="p10">
+      <div class="glow"></div>
+      <span class="top mono accent">Pincheira Studio</span>
+      <div class="name"><span class="big">Elige tu</span><span class="big accent">estilo</span></div>
+      <ul class="offer">
+        <li><span class="n">1</span><span>Elige un estilo y lo hago con tus fotos, tus colores y tu letra.</span></li>
+        <li><span class="n">2</span><span>¿Viste un diseño que te encantó en Instagram? Mándame la captura y lo convierto en plantilla.</span></li>
+        <li><span class="n">3</span><span>Para videos hablando hay 35 estilos de subtítulos más.</span></li>
+      </ul>
+      <div class="ctas"><span class="chip mono">Escríbeme por DM</span><span class="chip ghost mono">Pide las tarifas</span></div>
+      <div class="foot mono"><b>@jordan_pincheira</b><span>10/10</span></div><div class="grain"></div>
+    </section>
+    <script>
+      const n = parseInt(new URLSearchParams(location.search).get("slide") || "0", 10);
+      if (n > 0) document.querySelectorAll(".slide").forEach((s, i) => { if (i + 1 !== n) s.style.display = "none"; });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Marca: destacadas</title>
+    <!-- Personal-brand kit, highlight covers: five 1080x1920 images with one icon each, in the
+         look the person chose (set the class on <body>: look-a Deportiva, look-b Diario,
+         look-c Energía). Instagram crops the middle into a circle and writes the highlight's
+         name under it, so the image carries no text. Upload each one as a story, add it to
+         the highlight and pick it as the cover. -->
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1920px; overflow: hidden; }
+      .slide { position: relative; width: 1080px; height: 1920px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: var(--bg); }
+      .slide span { display: flex; width: 720px; height: 720px; border-radius: 50%; align-items: center; justify-content: center; background: var(--disc); }
+      .slide svg { width: 380px; height: 380px; fill: none; stroke: var(--icon); stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+      .look-a { --bg: #172042; --disc: #ff6b4a; --icon: #172042; }
+      .look-b { --bg: #f6efe6; --disc: #f2c4cc; --icon: #b8325a; }
+      .look-c { --bg: #b9a7ff; --disc: #121212; --icon: #d4ff3a; }
+    </style>
+  </head>
+  <body class="look-a">
+    <svg width="0" height="0" style="position: absolute">
+      <defs>
+        <g id="i-rutinas"><path d="M6 7v10M18 7v10M3 10v4M21 10v4M6 12h12" /></g>
+        <g id="i-tecnica"><path d="M5 12.5l4.2 4.2L19 7" /></g>
+        <g id="i-sobre-mi"><path d="M12 20s-7.5-4.6-7.5-10.2A4.2 4.2 0 0 1 12 7.3a4.2 4.2 0 0 1 7.5 2.5C19.5 15.4 12 20 12 20z" /></g>
+        <g id="i-progreso"><path d="M4 17l5-5 4 4 7-7M15 9h5v5" /></g>
+        <g id="i-preguntas"><path d="M9.2 9.2a2.9 2.9 0 1 1 4.3 2.5c-.9.5-1.5 1.2-1.5 2.2v.6M12 18.2v.1" /></g>
+      </defs>
+    </svg>
+    <section class="slide"><span><svg viewBox="0 0 24 24"><use href="#i-rutinas" /></svg></span></section>
+    <section class="slide"><span><svg viewBox="0 0 24 24"><use href="#i-tecnica" /></svg></span></section>
+    <section class="slide"><span><svg viewBox="0 0 24 24"><use href="#i-sobre-mi" /></svg></span></section>
+    <section class="slide"><span><svg viewBox="0 0 24 24"><use href="#i-progreso" /></svg></span></section>
+    <section class="slide"><span><svg viewBox="0 0 24 24"><use href="#i-preguntas" /></svg></span></section>
+    <script>
+      const n = parseInt(new URLSearchParams(location.search).get("slide") || "0", 10);
+      if (n > 0) document.querySelectorAll(".slide").forEach((s, i) => { if (i + 1 !== n) s.style.display = "none"; });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Estilo Pop</title>
+    <!-- Pop: saturated yellow and hot pink, puffy letters with a thick ink outline and a hard
+         offset shadow, photos inside blobs, stickers. Loud and playful. -->
+    <style>
+      @font-face { font-family: "Erica One"; src: url("assets/fonts/EricaOne-Regular.ttf"); }
+      @font-face { font-family: "Outfit"; src: url("assets/fonts/Outfit-Regular.ttf"); }
+      @font-face { font-family: "Outfit"; src: url("assets/fonts/Outfit-Bold.ttf"); font-weight: 700; }
+      @page { size: 1080px 1350px; margin: 0; }
+      :root { --yellow: #ffe14d; --pink: #ff3e9a; --ink: #1a1a1a; --white: #fffdf7; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1350px; overflow: hidden; background: var(--yellow); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      @media print { html, body { height: auto; overflow: visible; } .slide { break-after: page; } }
+      .slide { position: relative; width: 1080px; height: 1350px; overflow: hidden; background: var(--yellow); color: var(--ink); font-family: "Outfit", sans-serif; }
+      .slide.pink { background: var(--pink); }
+      .meta { position: absolute; left: 80px; right: 80px; top: 76px; display: flex; justify-content: space-between; font-size: 28px; font-weight: 700; }
+      .puff { font-family: "Erica One", sans-serif; line-height: 0.92; color: var(--white); -webkit-text-stroke: 7px var(--ink); paint-order: stroke fill; text-shadow: 9px 11px 0 var(--ink); }
+      .puff.p { color: var(--pink); }
+      .kick { position: absolute; left: 80px; top: 170px; font-size: 56px; font-weight: 700; }
+      .h1 { position: absolute; left: 72px; top: 252px; }
+      .h1 span { display: block; font-size: 196px; }
+      .blob { position: absolute; overflow: hidden; border: 8px solid var(--ink); box-shadow: 14px 16px 0 var(--ink); border-radius: 58% 42% 55% 45% / 48% 56% 44% 52%; }
+      .blob img { display: block; width: 100%; height: 100%; object-fit: cover; }
+      svg.sticker { position: absolute; overflow: visible; }
+      .pill { position: absolute; padding: 18px 36px; background: var(--ink); color: var(--yellow); border-radius: 999px; font-size: 40px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+      .swipe { position: absolute; left: 80px; bottom: 80px; font-size: 32px; font-weight: 700; }
+      .badge { position: absolute; left: 70px; top: 140px; width: 230px; height: 230px; border-radius: 50%; background: var(--yellow); border: 8px solid var(--ink); box-shadow: 10px 12px 0 var(--ink); display: flex; align-items: center; justify-content: center; font-size: 168px; font-weight: 700; line-height: 1; padding-bottom: 10px; }
+      .t { position: absolute; left: 72px; top: 850px; font-size: 140px; }
+      .bubble { position: absolute; left: 80px; right: 80px; top: 1036px; padding: 32px 44px; background: var(--white); border: 6px solid var(--ink); border-radius: 44px; box-shadow: 10px 12px 0 var(--ink); font-size: 44px; font-weight: 700; line-height: 1.25; }
+      .bubble svg { position: absolute; left: 90px; top: -44px; }
+      .foot { position: absolute; left: 80px; right: 80px; bottom: 72px; display: flex; justify-content: space-between; font-size: 28px; font-weight: 700; }
+      .q { position: absolute; left: 72px; top: 176px; }
+      .q span { display: block; font-size: 168px; }
+      .opts { position: absolute; left: 80px; top: 770px; display: flex; gap: 36px; }
+      .opts span { width: 203px; height: 150px; border-radius: 999px; background: var(--pink); border: 7px solid var(--ink); box-shadow: 9px 11px 0 var(--ink); display: flex; align-items: center; justify-content: center; font-size: 108px; font-weight: 700; line-height: 1; padding-bottom: 8px; color: var(--white); -webkit-text-stroke: 8px var(--ink); paint-order: stroke fill; text-shadow: 5px 6px 0 var(--ink); }
+      .ask { position: absolute; left: 80px; top: 990px; font-size: 54px; font-weight: 700; }
+    </style>
+  </head>
+  <body>
+    <section class="slide">
+      <div class="meta"><span>@jordan_pincheira</span><span>01 / 06</span></div>
+      <p class="kick">4 ejercicios para</p>
+      <h1 class="h1"><span class="puff p">piernas</span><span class="puff">fuertes</span></h1>
+      <svg class="sticker" style="left: 900px; top: 196px" width="70" height="70" viewBox="0 0 100 100"><path d="M50 0 C55 35 65 45 100 50 C65 55 55 65 50 100 C45 65 35 55 0 50 C35 45 45 35 50 0Z" fill="#1a1a1a" /></svg>
+      <div class="blob" style="left: 440px; top: 664px; width: 560px; height: 560px"><img src="assets/c-1350.jpg" alt="" style="object-position: 50% 30%" /></div>
+      <svg class="sticker" style="left: 70px; top: 690px; transform: rotate(-12deg)" width="260" height="260" viewBox="0 0 260 260">
+        <polygon points="130.0,6.0 154.8,37.3 192.0,22.6 197.9,62.1 237.4,68.0 222.7,105.2 254.0,130.0 222.7,154.8 237.4,192.0 197.9,197.9 192.0,237.4 154.8,222.7 130.0,254.0 105.2,222.7 68.0,237.4 62.1,197.9 22.6,192.0 37.3,154.8 6.0,130.0 37.3,105.2 22.6,68.0 62.1,62.1 68.0,22.6 105.2,37.3" fill="#ff3e9a" stroke="#1a1a1a" stroke-width="7" stroke-linejoin="round" />
+        <text x="130" y="147" text-anchor="middle" font-family="Erica One" font-size="46" fill="#fffdf7" stroke="#1a1a1a" stroke-width="5" paint-order="stroke">TOP 4</text>
+      </svg>
+      <span class="pill" style="left: 80px; top: 1010px; transform: rotate(-6deg)">Guárdalo</span>
+      <svg class="sticker" style="left: 960px; top: 590px" width="44" height="44" viewBox="0 0 100 100"><path d="M50 0 C55 35 65 45 100 50 C65 55 55 65 50 100 C45 65 35 55 0 50 C35 45 45 35 50 0Z" fill="#ff3e9a" stroke="#1a1a1a" stroke-width="6" /></svg>
+      <span class="swipe">Desliza →</span>
+    </section>
+    <section class="slide pink">
+      <div class="meta"><span>@jordan_pincheira</span><span>02 / 06</span></div>
+      <div class="blob" style="left: 300px; top: 150px; width: 700px; height: 650px"><img src="assets/a-1350.jpg" alt="" style="object-position: 30% 70%" /></div>
+      <span class="badge">1</span>
+      <h2 class="t puff">sentadilla</h2>
+      <p class="bubble">
+        <svg width="70" height="50" viewBox="0 0 70 50"><path d="M4 50 L22 4 L62 50" fill="#fffdf7" stroke="#1a1a1a" stroke-width="6" stroke-linejoin="round" /></svg>
+        Pecho arriba, rodillas hacia afuera y baja controlado.
+      </p>
+      <div class="foot"><span>Ejercicio 1 de 4</span><span>Guárdalo</span></div>
+    </section>
+    <section class="slide">
+      <div class="meta"><span>@jordan_pincheira</span><span>06 / 06</span></div>
+      <h2 class="q"><span class="puff">¿cuál te</span><span class="puff">cuesta</span><span class="puff p">más?</span></h2>
+      <div class="opts"><span>1</span><span>2</span><span>3</span><span>4</span></div>
+      <p class="ask">Comenta tu número</p>
+      <svg class="sticker" style="left: 760px; top: 1030px; transform: rotate(10deg)" width="250" height="250" viewBox="0 0 260 260">
+        <polygon points="130.0,6.0 154.8,37.3 192.0,22.6 197.9,62.1 237.4,68.0 222.7,105.2 254.0,130.0 222.7,154.8 237.4,192.0 197.9,197.9 192.0,237.4 154.8,222.7 130.0,254.0 105.2,222.7 68.0,237.4 62.1,197.9 22.6,192.0 37.3,154.8 6.0,130.0 37.3,105.2 22.6,68.0 62.1,62.1 68.0,22.6 105.2,37.3" fill="#fffdf7" stroke="#1a1a1a" stroke-width="7" stroke-linejoin="round" />
+        <text x="130" y="122" text-anchor="middle" font-family="Erica One" font-size="54" fill="#ff3e9a" stroke="#1a1a1a" stroke-width="5" paint-order="stroke">¡te</text>
+        <text x="130" y="178" text-anchor="middle" font-family="Erica One" font-size="54" fill="#ff3e9a" stroke="#1a1a1a" stroke-width="5" paint-order="stroke">leo!</text>
+      </svg>
+      <span class="swipe">Guarda este post</span>
+    </section>
+    <script>
+      const n = parseInt(new URLSearchParams(location.search).get("slide") || "0", 10);
+      if (n > 0) document.querySelectorAll(".slide").forEach((s, i) => { if (i + 1 !== n) s.style.display = "none"; });
+    </script>
+  </body>
+</html>

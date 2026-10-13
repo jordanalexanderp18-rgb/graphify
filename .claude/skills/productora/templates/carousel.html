@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Carrusel: 3 niveles de sentadilla</title>
+    <style>
+      @font-face {
+        font-family: "Anton";
+        src: url("assets/fonts/anton-latin-400-normal.woff2") format("woff2");
+      }
+      @font-face {
+        font-family: "JetBrains Mono";
+        src: url("assets/fonts/JetBrainsMono-400.woff2") format("woff2");
+        font-weight: 400;
+      }
+      @font-face {
+        font-family: "JetBrains Mono";
+        src: url("assets/fonts/JetBrainsMono-700.woff2") format("woff2");
+        font-weight: 700;
+      }
+      :root {
+        --bg: #15100c;
+        --fg: #f7efe6;
+        --dim: #b5aaa1;
+        --accent: #ff5400;
+        --w: 1080px;
+        --h: 1350px;
+        --m: 96px;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: var(--w);
+        height: var(--h);
+        overflow: hidden;
+        background: var(--bg);
+      }
+      .slide {
+        position: relative;
+        width: var(--w);
+        height: var(--h);
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: "Anton", sans-serif;
+      }
+      .mono {
+        font-family: "JetBrains Mono", monospace;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+      .accent {
+        color: var(--accent);
+      }
+      .big {
+        display: block;
+        line-height: 0.92;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      /* shared chrome: page count top right, handle bottom left */
+      .count {
+        position: absolute;
+        right: var(--m);
+        top: 72px;
+        font-size: 30px;
+        color: var(--fg);
+        text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+      }
+      .handle {
+        position: absolute;
+        left: var(--m);
+        bottom: 64px;
+        font-size: 30px;
+        color: var(--fg);
+        text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+      }
+      .rule {
+        display: block;
+        width: 220px;
+        height: 12px;
+        background: var(--accent);
+      }
+      .grain {
+        position: absolute;
+        inset: 0;
+        opacity: 0.06;
+        mix-blend-mode: overlay;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.6'/></svg>");
+      }
+
+      /* 1 · cover: full-bleed photo, title low, clear of the outer 120 px */
+      .photo-full {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .shade-low {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to bottom, rgba(21, 16, 12, 0.35) 0%, rgba(21, 16, 12, 0) 22%, rgba(21, 16, 12, 0) 42%, rgba(21, 16, 12, 0.88) 70%, rgba(21, 16, 12, 0.96) 100%);
+      }
+      #cover-title {
+        position: absolute;
+        left: 120px;
+        top: 760px;
+      }
+      #cover-title .t1 {
+        font-size: 196px;
+        color: var(--accent);
+      }
+      #cover-title .t2 {
+        font-size: 112px;
+      }
+      #cover-title .promise {
+        display: block;
+        margin-top: 30px;
+        font-size: 36px;
+      }
+
+      /* text-only slides */
+      .stack {
+        position: absolute;
+        left: var(--m);
+        right: var(--m);
+        top: 0;
+        bottom: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .stack .rule {
+        margin-bottom: 52px;
+      }
+      .lead {
+        display: block;
+        margin-top: 48px;
+        max-width: 860px;
+        font-family: "JetBrains Mono", monospace;
+        font-weight: 400;
+        font-size: 38px;
+        line-height: 1.4;
+        color: var(--fg);
+      }
+
+      /* level slides: photo on top, dark panel below */
+      .photo-top {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 820px;
+        object-fit: cover;
+      }
+      .photo-top + .fade {
+        position: absolute;
+        left: 0;
+        top: 560px;
+        width: 100%;
+        height: 262px;
+        background: linear-gradient(to bottom, rgba(21, 16, 12, 0) 0%, rgba(21, 16, 12, 1) 100%);
+      }
+      .panel {
+        position: absolute;
+        left: var(--m);
+        right: var(--m);
+        top: 760px;
+      }
+      .chip {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+      }
+      .num {
+        width: 104px;
+        height: 104px;
+        border-radius: 18px;
+        background: var(--accent);
+        color: var(--bg);
+        font-size: 88px;
+        line-height: 104px;
+        text-align: center;
+      }
+      .chip .k {
+        font-size: 32px;
+      }
+      .panel .name {
+        margin-top: 26px;
+        font-size: 128px;
+      }
+      .cues {
+        margin-top: 30px;
+        list-style: none;
+        font-family: "JetBrains Mono", monospace;
+        font-weight: 700;
+        font-size: 36px;
+        line-height: 1.35;
+      }
+      .cues li {
+        position: relative;
+        padding-left: 44px;
+      }
+      .cues li::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 15px;
+        width: 22px;
+        height: 22px;
+        border-radius: 5px;
+        background: var(--accent);
+      }
+
+      /* recap */
+      .rows {
+        margin-top: 56px;
+        display: flex;
+        flex-direction: column;
+        gap: 44px;
+      }
+      .row {
+        display: flex;
+        align-items: flex-start;
+        gap: 30px;
+      }
+      .row .num {
+        flex: none;
+        width: 96px;
+        height: 96px;
+        font-size: 80px;
+        line-height: 96px;
+      }
+      .row .name {
+        display: block;
+        font-size: 76px;
+        line-height: 0.95;
+        text-transform: uppercase;
+      }
+      .row .how {
+        display: block;
+        margin-top: 10px;
+        font-family: "JetBrains Mono", monospace;
+        font-weight: 400;
+        font-size: 32px;
+        line-height: 1.35;
+        color: var(--dim);
+      }
+
+      /* CTA */
+      .levels {
+        align-self: flex-start;
+        display: flex;
+        gap: 34px;
+        margin-top: 60px;
+      }
+      .levels .num {
+        width: 170px;
+        height: 170px;
+        border-radius: 28px;
+        font-size: 150px;
+        line-height: 170px;
+      }
+      .pill {
+        align-self: flex-start;
+        display: inline-flex;
+        align-items: center;
+        margin-top: 70px;
+        height: 80px;
+        padding: 0 36px;
+        border-radius: 999px;
+        border: 4px solid var(--accent);
+        color: var(--accent);
+        font-size: 34px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 1 · COVER -->
+    <section class="slide">
+      <img class="photo-full" src="assets/c-1350.jpg" alt="Jordan haciendo sentadilla pesada con barra mientras un compañero lo asiste por detrás" />
+      <div class="shade-low"></div>
+      <div id="cover-title">
+        <span class="big t1">3 niveles</span>
+        <span class="big t2">de sentadilla</span>
+        <span class="promise mono">¿En cuál estás tú? Desliza</span>
+      </div>
+      <span class="count mono">1/7</span>
+      <span class="handle mono">@jordan_pincheira</span>
+      <div class="grain"></div>
+    </section>
+
+    <!-- 2 · STAKE -->
+    <section class="slide">
+      <div class="stack">
+        <span class="rule"></span>
+        <span class="big" style="font-size: 132px">Nadie empieza</span>
+        <span class="big accent" style="font-size: 132px">cargando pesado</span>
+        <span class="lead">La fuerza se construye por niveles. Domina uno antes de pasar al siguiente.</span>
+      </div>
+      <span class="count mono">2/7</span>
+      <span class="handle mono">@jordan_pincheira</span>
+      <div class="grain"></div>
+    </section>
+
+    <!-- 3 · NIVEL 1 -->
+    <section class="slide">
+      <img class="photo-top" src="assets/a-1350.jpg" alt="" style="object-position: 50% 100%" />
+      <div class="fade"></div>
+      <div class="panel">
+        <div class="chip"><span class="num">1</span><span class="k mono">Nivel 1</span></div>
+        <span class="big name">Sin peso</span>
+        <ul class="cues">
+          <li>Pecho arriba</li>
+          <li>Rodillas hacia afuera</li>
+          <li>Baja controlado</li>
+        </ul>
+      </div>
+      <span class="count mono">3/7</span>
+      <span class="handle mono">@jordan_pincheira</span>
+      <div class="grain"></div>
+    </section>
+
+    <!-- 4 · NIVEL 2 -->
+    <section class="slide">
+      <img class="photo-top" src="assets/b-1350.jpg" alt="" style="object-position: 50% 72%" />
+      <div class="fade"></div>
+      <div class="panel">
+        <div class="chip"><span class="num">2</span><span class="k mono">Nivel 2</span></div>
+        <span class="big name">Con barra</span>
+        <ul class="cues">
+          <li>Abdomen firme</li>
+          <li>Empuja el piso con todo el pie</li>
+        </ul>
+      </div>
+      <span class="count mono">4/7</span>
+      <span class="handle mono">@jordan_pincheira</span>
+      <div class="grain"></div>
+    </section>
+
+    <!-- 5 · NIVEL 3 -->
+    <section class="slide">
+      <img class="photo-top" src="assets/c-1350.jpg" alt="" style="object-position: 50% 58%" />
+      <div class="fade"></div>
+      <div class="panel">
+        <div class="chip"><span class="num">3</span><span class="k mono">Nivel 3</span></div>
+        <span class="big name">Pesado</span>
+        <ul class="cues">
+          <li>Nunca solo</li>
+          <li>Siempre con alguien que te asista</li>
+        </ul>
+      </div>
+      <span class="count mono">5/7</span>
+      <span class="handle mono">@jordan_pincheira</span>
+      <div class="grain"></div>
+    </section>
+
+    <!-- 6 · RECAP -->
+    <section class="slide">
+      <div class="stack">
+        <span class="rule"></span>
+        <span class="big" style="font-size: 108px">Los 3 niveles</span>
+        <div class="rows">
+          <div class="row"><span class="num">1</span><div><span class="name">Sin peso</span><span class="how">Pecho arriba, rodillas hacia afuera y baja controlado.</span></div></div>
+          <div class="row"><span class="num">2</span><div><span class="name">Con barra</span><span class="how">Abdomen firme y empuja el piso con todo el pie.</span></div></div>
+          <div class="row"><span class="num">3</span><div><span class="name">Pesado</span><span class="how">Nunca solo: siempre con alguien que te asista.</span></div></div>
+        </div>
+      </div>
+      <span class="count mono">6/7</span>
+      <span class="handle mono">@jordan_pincheira</span>
+      <div class="grain"></div>
+    </section>
+
+    <!-- 7 · CTA -->
+    <section class="slide">
+      <div class="stack">
+        <span class="rule"></span>
+        <span class="big" style="font-size: 124px">¿En qué nivel</span>
+        <span class="big accent" style="font-size: 124px; margin-top: 40px">estás tú?</span>
+        <div class="levels"><span class="num">1</span><span class="num">2</span><span class="num">3</span></div>
+        <span class="pill mono">Comenta tu número</span>
+      </div>
+      <span class="count mono">7/7</span>
+      <span class="handle mono">@jordan_pincheira</span>
+      <div class="grain"></div>
+    </section>
+
+    <script>
+      // render_slides.sh opens ?slide=N; show only that slide (all of them without it)
+      const n = parseInt(new URLSearchParams(location.search).get("slide") || "0", 10);
+      if (n > 0) document.querySelectorAll(".slide").forEach((s, i) => { if (i + 1 !== n) s.style.display = "none"; });
+    </script>
+  </body>
+</html>
