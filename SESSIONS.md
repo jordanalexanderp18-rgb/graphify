@@ -94,6 +94,27 @@ to it by construction.
 
 ## Log
 
+## 2026-10-13 — Back-day script for the partner, as a series
+
+- **Branch:** `claude/skin-analysis-9qepkz`
+- **Touched:** nothing in the repo besides this entry (the cards come from `templates/guion.html`)
+
+### Context
+The user and his partner film again today, back day, and asked for the script and how to film.
+
+### Decisions
+- The same two cards as leg day: card 1 is what she says, recorded later at home as a video;
+  card 2 is Jordan's shot list. Back exercises are filmed from behind on a diagonal so the
+  back shows working.
+- The hook repeats leg day's ("Día de espalda con mi personal trainer… que también es mi
+  pareja"), which turns the videos into a series.
+- Exercises chosen by Claude, standard cues only: jalón al pecho, remo con mancuerna, remo en
+  polea, hiperextensiones. Jordan can swap them; sets and reps come from him.
+
+### Open
+- Edit both partner videos (leg day, if it was filmed, and back day) when the clips and her voice
+  recording land in Drive "Reels". Her own voice, no HeyGen.
+
 ## 2026-10-10 — First test sale: not on Marketplace
 
 - **Branch:** `claude/skin-analysis-9qepkz`
