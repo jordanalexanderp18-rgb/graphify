@@ -94,6 +94,45 @@ to it by construction.
 
 ## Log
 
+## 2026-10-13 — Personal-brand kit for the partner, and her back-day clips
+
+- **Branch:** `claude/skin-analysis-9qepkz`
+- **Touched:** [[.claude/skills/productora/SKILL]] (section 8), `templates/marca/` (portadas,
+  carruseles, direcciones, destacadas), `scripts/recorte.py`, `templates/estilos/collage.html`
+
+### Context
+Jordan asked for styles, designs and "skills de todo" to make Jordan's partner famous on Instagram.
+Meanwhile Jordan uploaded her back-day clips to a subfolder of Drive "Reels" and asked to clone
+her voice in HeyGen.
+
+### Decisions
+- Three looks with the same content, one comparison sheet each: A Deportiva (palette taken from
+  her outfit), B Diario, C Energía. She picks one. Highlight covers and her `MARCA.md` follow.
+- Her photos are cut out with `scripts/recorte.py`, so no gym strangers appear on her covers.
+- Her name, photos, brand file and plan stay in the scratchpad and reach Jordan as files. The
+  repo only gets the generic templates ("NOMBRE", "MI SERIE").
+- HeyGen: Jordan asked for it in so many words ("Quiero grabar su voz en heygen"). That is the
+  OK for this job only. Before any call, she gives her written OK on WhatsApp and records the
+  consent sentence at the start of a sample made in a quiet room. Jordan approves the reel
+  script before `create_speech`.
+- The back-day script now follows the exercises actually filmed: jalón al pecho, remo en polea,
+  jalón a una mano kneeling, pullover en polea.
+
+### Rejected
+- Nothing You Could Do for Spanish handwriting. Its accents render as tiny ticks ("tambien").
+  The collage style moved to Caveat Bold as well.
+- remove-background on the whole photo. Her hair came out at alpha 0, against about 78 on a
+  crop around her. Crop first.
+
+### Open
+- Which look she picks. Then her highlight covers and a private `MARCA.md`.
+- Her voice sample and written OK, the HeyGen clone, script approval, `create_speech`, then the
+  edit. Clean windows in the clips: the pulldown (60 fps, the one named "espalda") 4–12.5 s;
+  the 09:04 row clip 1–30 s; the one-arm pulldown 8–40 s; the 09:23 pullover clip 6–23 s. The
+  09:21 pullover clip has a man in frame the whole time.
+- Drive "Reels" is shared as "anyone with the link: Editor". Jordan was asked to set it to
+  Lector.
+
 ## 2026-10-13 — Back-day script for the partner, as a series
 
 - **Branch:** `claude/skin-analysis-9qepkz`

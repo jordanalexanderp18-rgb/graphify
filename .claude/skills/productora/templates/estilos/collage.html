@@ -8,7 +8,7 @@
     <style>
       @font-face { font-family: "Bricolage"; src: url("assets/fonts/BricolageGrotesque-Bold.ttf"); font-weight: 700; }
       @font-face { font-family: "Bricolage"; src: url("assets/fonts/BricolageGrotesque-Regular.ttf"); font-weight: 400; }
-      @font-face { font-family: "Hand"; src: url("assets/fonts/NothingYouCouldDo-Regular.ttf"); }
+      @font-face { font-family: "Hand"; src: url("assets/fonts/caveat-latin-700-normal.woff2"); font-weight: 700; }
       @page { size: 1080px 1350px; margin: 0; }
       :root { --paper: #e9dcc5; --ink: #1d1a16; --blue: #2846a8; --red: #d7263d; --tape: rgba(255, 236, 170, 0.78); }
       * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -22,7 +22,7 @@
       .tape { position: absolute; width: 190px; height: 54px; background: var(--tape); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08); }
       .torn { position: absolute; background: #fbfaf6; padding: 34px 44px 40px; clip-path: polygon(0 6%, 4% 0, 9% 5%, 15% 1%, 22% 6%, 30% 0, 37% 5%, 45% 1%, 53% 6%, 61% 0, 69% 5%, 77% 1%, 85% 6%, 92% 0, 100% 5%, 99% 94%, 94% 100%, 87% 95%, 79% 100%, 71% 95%, 63% 100%, 55% 95%, 47% 100%, 39% 95%, 31% 100%, 23% 95%, 15% 100%, 7% 95%, 0 100%); box-shadow: 0 10px 30px rgba(40, 25, 10, 0.2); }
       .torn .h { font-size: 88px; font-weight: 700; line-height: 0.98; text-transform: uppercase; letter-spacing: -0.01em; }
-      .hand { position: absolute; font-family: "Hand", cursive; color: var(--blue); line-height: 1.15; }
+      .hand { position: absolute; font-family: "Hand", cursive; font-weight: 700; color: var(--blue); line-height: 1.15; }
       .stamp { position: absolute; width: 230px; height: 230px; border: 7px solid var(--red); border-radius: 50%; color: var(--red); display: flex; align-items: center; justify-content: center; text-align: center; font-size: 34px; font-weight: 700; line-height: 1.05; text-transform: uppercase; opacity: 0.85; }
       .label { position: absolute; white-space: nowrap; background: var(--red); color: #fff; padding: 16px 30px; font-size: 76px; font-weight: 700; text-transform: uppercase; box-shadow: 0 8px 20px rgba(40, 25, 10, 0.25); }
       .sticker { position: absolute; width: 180px; height: 180px; background: #fbfaf6; display: flex; align-items: center; justify-content: center; font-size: 110px; font-weight: 700; box-shadow: 0 10px 24px rgba(40, 25, 10, 0.25); }

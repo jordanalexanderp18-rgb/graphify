@@ -1,6 +1,6 @@
 ---
 name: productora
-description: Jordan's content production studio, "la productora". It takes any content request (a reel, a carousel in one of six trending styles, a reel cover, stories, a caption, a weekly plan, or a batch for a client) and runs it end to end through the installed skills, using brand profiles, briefs, quality gates and delivery specs. Use when Jordan (@jordan_pincheira) asks for content ("hazme contenido", "un carrusel", "la portada", "algo para un cliente"), asks for new or trending designs ("diseños nuevos", "en tendencia"), asks for several pieces at once, or asks what the productora can make.
+description: Jordan's content production studio, "la productora". It takes any content request (a reel, a carousel in one of six trending styles, a reel cover, stories, a caption, a weekly plan, a personal-brand kit for someone who wants to grow, or a batch for a client) and runs it end to end through the installed skills, using brand profiles, briefs, quality gates and delivery specs. Use when Jordan (@jordan_pincheira) asks for content ("hazme contenido", "un carrusel", "la portada", "algo para un cliente"), asks for new or trending designs ("diseños nuevos", "en tendencia"), wants to grow someone's account ("estilos para ella", "la quiero hacer famosa", "marca personal"), asks for several pieces at once, or asks what the productora can make.
 ---
 
 # La productora
@@ -38,6 +38,9 @@ piece looks like it came from the same studio.
 | Guion para el cliente | Topic | `templates/guion.html` (card 1: what they say, recorded later in a quiet room; card 2: shot list for the location) + the same renderer at 1080x1920 | 2 PNG | Free |
 | Aviso para grupos y WhatsApp | An offer from `VENTAS.md` | `templates/aviso-video.html` + `aviso-video-extra.html` (any kind of video: six flat icon tiles, what is included, how it works; nobody shown) or `templates/aviso-cuadrado.html` (one reel) + `render_slides.sh <html> <dir> 1080 1080`; never for Marketplace, which bans services (`VENTAS.md`, section 11) | PNG 1080x1080 | Free |
 | Guion para grabarse solo | Topic and place | `templates/guion-auto.html` (card 1: what he says; card 2: how to film it alone, or what the partner films) + the same renderer at 1080x1920 | 2 PNG | Free |
+| Kit de marca personal | Photos of the person, their niche, their OK | Section 8: `scripts/recorte.py`, then `templates/marca/` (three looks), then the plan with `/ig-profile`, `/series-planner`, `/ig-plan`, `/ig-reel` and `/ig-caption` | 3 style sheets (PNG), then a plan (text) | Free |
+| Destacadas | The look the person chose | `templates/marca/destacadas.html` (the look is a class on `<body>`) + `render_slides.sh <html> <dir> 1080 1920` | 5 PNG | Free |
+| Sacar a la gente de una foto | A photo | `scripts/recorte.py` (section 8) | Transparent PNG | Free |
 | Documentos para clientes | Brief | `/theme-factory` + the docx, pptx and pdf skills | File | Free |
 
 **Repurpose by default.** When one piece works, offer the rest of the set: a reel
@@ -116,7 +119,10 @@ first set (3 levels of squat) is the reference: one idea in three formats.
   Claude GitHub App granted access to it. Start from `clientes/_plantilla/MARCA.md`
   and never commit those files here.
 - Get written consent before cloning anyone's face or voice. HeyGen asks for it too,
-  through `create_avatar_consent`.
+  through `create_avatar_consent`. For a voice: the person's own written OK (a WhatsApp
+  message is enough) and the consent sentence read at the start of the sample. Record the
+  sample in a quiet room with a text read twice, calm and then with energy. Download it and
+  ask Jordan to delete it from Drive. The ask-first rule for HeyGen still applies.
 - Footage that shows other people (the spotter in the first reel) is fine for his
   own content. For a client, confirm they have the right to use it.
 
@@ -127,7 +133,9 @@ first set (3 levels of squat) is the reference: one idea in three formats.
   Instagram stay blocked until their domains are allowed (`/ver-links` lists them); even then
   nobody logs into Instagram for him.
 - **Drive:** the Google Drive connector lists folders and checks sharing. Download
-  with curl from public "Lector" links, because the connector stops at 10 MB.
+  with curl from public "Lector" links, because the connector stops at 10 MB. On 13 Oct 2026
+  "Reels" was shared as "anyone with the link: Editor". Ask him to set it to Lector, more so
+  when a voice sample sits in it.
 - **HeyGen** (only after asking, see section 2 step 4): `create_speech` returns his cloned
   voice with word timestamps.
   `create_video_from_avatar` takes an exact script. Studio and Video Agent URL inputs
@@ -160,7 +168,7 @@ the client's footage in `assets/frames/`.
 | --- | --- | --- | --- | --- |
 | Papel | `papel.html` | Warm off-white paper, serif headline with one italic accent, one accent colour | Tips, lists, personal brand | Instrument Serif + Instrument Sans |
 | Neón | `neon.html` | Black, one neon accent, poster-size type, grayscale photos | Routines, challenges, gym | Boldonse + Geist Mono |
-| Collage | `collage.html` | Kraft paper, taped polaroids, handwriting, a rubber stamp | Progress, behind the scenes | Bricolage Grotesque + Nothing You Could Do |
+| Collage | `collage.html` | Kraft paper, taped polaroids, handwriting, a rubber stamp | Progress, behind the scenes | Bricolage Grotesque + Caveat |
 | Pop | `pop.html` | Yellow and hot pink, puffy outlined letters, blob photos, stickers | Quick tips, humour, a younger audience | Erica One + Outfit |
 | Notas | `notas.html` | A note on a phone: highlighter, checklist, a redacted list as the hook | Lists, opinions | Instrument Sans |
 | Revista | `editorial.html` | Magazine cover and feature pages, pull quote, folio | Premium brands, transformations | Gloock + Instrument Serif |
@@ -171,6 +179,9 @@ the client's footage in `assets/frames/`.
 - Boldonse caps stand 1.19 em tall: keep its display line-height at 1.34 or more, and 1.7
   when a line carries accents. Erica One draws its 1 as a plain block, so numerals use
   Outfit Bold.
+- Nothing You Could Do draws accents as tiny ticks that vanish at any size ("tambien").
+  Spanish handwriting uses Caveat Bold (`caveat-latin-700-normal.woff2`, in the
+  embedded-captions fonts).
 - The notes look is generic on purpose: no real app's icons or toolbar.
 - Caption looks for reels (catalogue slides 8 and 9): karaoke de marca (the spoken word
   turns the brand colour), minimal dinámico (clean lowercase, two or three words at a time),
@@ -182,3 +193,45 @@ the client's footage in `assets/frames/`.
 - Sources: carousel guides from PostNitro, ContentStudio and PostEverywhere; design trend
   reports from Picsart, Adobe and Krumzi; caption trends from Blitzcut, OpusClip and Subclip;
   Pantone's 2026 colour (Cloud Dancer).
+
+## 8. Marca personal
+
+For someone who wants to grow their own account: the partner first (October 2026), and any
+client after. It is their account. They choose the look, they post, and nobody logs in for them.
+Their profile goes in a private place (a `MARCA.md` file handed to Jordan or a private repo),
+never in this one. Use only their first name, and only once they have agreed.
+
+1. **Photos.** Gym photos always catch other people. Cut the person out with
+   `python3 -I scripts/recorte.py <photo> <out.png> --crop x0,y0,x1,y1`. It runs
+   `npx hyperframes remove-background` (a local model), keeps the largest shape and fills its
+   holes. Look at `<out>-check.jpg`. The model drops phones held in front of the face, other
+   light objects near the body and wrist scrunchies, and turns dark hair see-through against
+   dark machines. Put them back with `--add "x,y x,y ..."` (crop coordinates; draw a grid over
+   the crop to read them) and blank a neighbour with `--erase`. A cable machine's cable ends
+   at the crop's top edge: fade or trim those rows.
+2. **Three looks.** Run `scripts/new_job.sh` on `templates/marca/portadas.html`,
+   `carruseles.html` and `direcciones.html` into one job folder and save the cut-out as
+   `assets/recorte.png`. The looks are A Deportiva (navy, coral, blush; Big Shoulders and
+   Outfit), B Diario (cream paper, serif and Caveat handwriting) and C Energía (lilac, lime,
+   black; Boldonse). Swap in the person's name and series, retune each `.cut` rule for the photo,
+   and run `check_layout.cjs`. Render the covers to `out/portadas/` at 1080x1920 and the
+   carousels to `out/carruseles/`. Then render `direcciones.html`: one sheet per look with
+   the cover, the carousel, five highlight icons, the palette and the fonts. Send the three
+   sheets and recommend one. A palette taken from what they wear works.
+3. **With the chosen look.** Render the highlight covers (`templates/marca/destacadas.html`,
+   the look set on `<body>`) and write their `MARCA.md` from `clientes/_plantilla/`. From then
+   on, every reel cover is that slide of `portadas.html` with a new photo and title.
+4. **The plan**, as a text file they can copy from:
+   - Profile, with `/ig-profile`: three name-field options (30 characters, the field that
+     Instagram search reads), two bios (150 characters), five highlights and three pinned posts.
+   - Three named series, with `/series-planner`.
+   - The first nine posts and the week, with `/ig-plan`: three posts a week, daily stories,
+     and 20 minutes of comments before posting.
+   - Ten hooks, with `/ig-reel`'s formulas.
+   - The first caption, with `/ig-caption`.
+   - What we never do: buy followers, promise results or numbers, give medical advice.
+5. **Instagram facts checked in October 2026.** A collaboration is posted through Etiquetar
+   personas > Invitar a colaboradores and shows on both profiles; a public account can invite
+   a private one. Trial reels ("Reels de prueba") need a professional account, and since
+   August 2025 a public one with about 1,000 followers (EmbedSocial). A synthetic voice needs
+   the AI label at posting. Check again before quoting any of these as current.
