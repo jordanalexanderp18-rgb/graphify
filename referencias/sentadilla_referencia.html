@@ -1,0 +1,205 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{width:1080px;height:2000px;background:#111317;font-family:Inter,"Inter Display",sans-serif;color:#f2f2f2;padding:40px}
+  h1{font-family:"Inter Display",Inter;font-weight:800;font-size:54px;letter-spacing:-1px}
+  h1 span{color:#ff6b2c}
+  .sub{color:#a8adb7;font-size:22px;margin-top:6px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:28px}
+  .card{background:#1b1e24;border-radius:22px;padding:22px;border:1px solid #2a2e36}
+  .card h2{font-size:26px;font-weight:800;display:flex;align-items:center;gap:12px}
+  .num{background:#ff6b2c;color:#111;border-radius:50%;width:38px;height:38px;display:inline-flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;flex:none}
+  .card p{color:#c4c8d0;font-size:19px;line-height:1.4;margin-top:10px}
+  .wide{grid-column:1/3}
+  svg text{font-family:Inter,sans-serif}
+  .tips{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}
+  .tip{background:#23272f;border-radius:14px;padding:14px;font-size:18px;color:#d8dbe1;line-height:1.35}
+  .tip b{color:#ff6b2c}
+</style></head><body>
+
+<h1>Cómo grabar la <span>SENTADILLA</span></h1>
+<div class="sub">Referencia sin tripié · celular vertical · 4K 30 fps · lente 1x</div>
+
+<div class="grid">
+
+  <!-- VISTA DESDE ARRIBA -->
+  <div class="card wide">
+    <h2>Vista desde arriba: dónde pararte en cada toma</h2>
+    <svg viewBox="0 0 1000 400" width="100%" height="400">
+      <defs>
+        <marker id="ar" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10z" fill="#ff6b2c"/></marker>
+      </defs>
+      <!-- piso -->
+      <rect x="10" y="10" width="980" height="380" rx="16" fill="#15181d" stroke="#2a2e36"/>
+      <!-- rack -->
+      <rect x="330" y="60" width="16" height="16" fill="#555"/><rect x="574" y="60" width="16" height="16" fill="#555"/>
+      <text x="460" y="50" fill="#777" font-size="16" text-anchor="middle">rack</text>
+      <!-- persona: hombros, cabeza, barra -->
+      <line x1="300" y1="150" x2="620" y2="150" stroke="#cfd3da" stroke-width="8" stroke-linecap="round"/>
+      <rect x="290" y="128" width="14" height="44" rx="4" fill="#cfd3da"/><rect x="616" y="128" width="14" height="44" rx="4" fill="#cfd3da"/>
+      <ellipse cx="460" cy="160" rx="60" ry="26" fill="#3a7bd5"/>
+      <circle cx="460" cy="160" r="20" fill="#f0c8a0"/>
+      <!-- pies -->
+      <ellipse cx="420" cy="215" rx="12" ry="22" fill="#3a7bd5" transform="rotate(-15 420 215)"/>
+      <ellipse cx="500" cy="215" rx="12" ry="22" fill="#3a7bd5" transform="rotate(15 500 215)"/>
+      <text x="460" y="275" fill="#a8adb7" font-size="18" text-anchor="middle">↓ mira hacia el FRENTE ↓</text>
+
+      <!-- toma 1: lateral -->
+      <g>
+        <path d="M800,160 L560,100 L560,230 Z" fill="#ff6b2c" opacity=".12"/>
+        <rect x="790" y="135" width="26" height="48" rx="6" fill="#ff6b2c"/>
+        <circle cx="850" cy="125" r="20" fill="#ff6b2c"/><text x="850" y="133" fill="#111" font-size="22" font-weight="800" text-anchor="middle">1</text>
+        <line x1="785" y1="80" x2="620" y2="80" stroke="#ff6b2c" stroke-width="2" stroke-dasharray="6 6" marker-end="url(#ar)"/>
+        <text x="705" y="68" fill="#ff6b2c" font-size="18" text-anchor="middle">2–3 m · de perfil (90°)</text>
+        <text x="790" y="215" fill="#f2f2f2" font-size="17">celular en banco</text>
+        <text x="790" y="237" fill="#f2f2f2" font-size="17">o rack, a la altura</text>
+        <text x="790" y="259" fill="#f2f2f2" font-size="17">de la cadera</text>
+      </g>
+      <!-- toma 2: 45 frente -->
+      <g>
+        <path d="M640,345 L470,190 L560,170 Z" fill="#ffd166" opacity=".15"/>
+        <rect x="628" y="322" width="26" height="48" rx="6" fill="#ffd166" transform="rotate(-45 641 346)"/>
+        <circle cx="700" cy="370" r="20" fill="#ffd166"/><text x="700" y="378" fill="#111" font-size="22" font-weight="800" text-anchor="middle">2</text>
+        <text x="730" y="365" fill="#ffd166" font-size="17">45° por delante · ~2 m</text>
+        <text x="730" y="386" fill="#ffd166" font-size="17">de rodillas, codos apoyados</text>
+      </g>
+      <!-- toma 3: primer plano -->
+      <g>
+        <rect x="248" y="200" width="26" height="48" rx="6" fill="#06d6a0" transform="rotate(35 261 224)"/>
+        <circle cx="215" cy="200" r="20" fill="#06d6a0"/><text x="215" y="208" fill="#111" font-size="22" font-weight="800" text-anchor="middle">3</text>
+        <line x1="285" y1="215" x2="400" y2="205" stroke="#06d6a0" stroke-width="2" stroke-dasharray="6 6" marker-end="url(#ar)"/>
+        <text x="40" y="270" fill="#06d6a0" font-size="17">50 cm · a mano</text>
+        <text x="40" y="291" fill="#06d6a0" font-size="17">cerrado en el muslo</text>
+        <text x="40" y="312" fill="#06d6a0" font-size="17">60 fps (cámara lenta)</text>
+      </g>
+    </svg>
+  </div>
+
+  <!-- TOMA 1 LATERAL -->
+  <div class="card">
+    <h2><span class="num">1</span>Perfil: celular apoyado</h2>
+    <svg viewBox="0 0 460 400" width="100%" height="370">
+      <line x1="0" y1="370" x2="460" y2="370" stroke="#444" stroke-width="3"/>
+      <!-- banco -->
+      <rect x="20" y="290" width="120" height="16" rx="4" fill="#555"/>
+      <rect x="30" y="306" width="12" height="64" fill="#444"/><rect x="118" y="306" width="12" height="64" fill="#444"/>
+      <!-- botella + celular -->
+      <rect x="60" y="250" width="16" height="40" rx="5" fill="#3a7bd5" opacity=".7"/>
+      <rect x="80" y="244" width="14" height="46" rx="3" fill="#ff6b2c"/>
+      <!-- lineas de encuadre -->
+      <line x1="94" y1="262" x2="420" y2="110" stroke="#ff6b2c" stroke-dasharray="5 6" stroke-width="2"/>
+      <line x1="94" y1="270" x2="420" y2="372" stroke="#ff6b2c" stroke-dasharray="5 6" stroke-width="2"/>
+      <!-- linea altura cadera -->
+      <line x1="94" y1="266" x2="300" y2="266" stroke="#ffd166" stroke-width="2"/>
+      <text x="150" y="258" fill="#ffd166" font-size="16">altura de cadera</text>
+      <!-- figura en sentadilla mirando a la izquierda -->
+      <g stroke="#cfd3da" stroke-width="12" stroke-linecap="round" fill="none">
+        <line x1="330" y1="368" x2="300" y2="300"/>   <!-- tibia -->
+        <line x1="300" y1="300" x2="370" y2="285"/>   <!-- muslo -->
+        <line x1="370" y1="285" x2="335" y2="200"/>   <!-- torso -->
+        <line x1="340" y1="205" x2="315" y2="230"/>   <!-- brazo -->
+      </g>
+      <line x1="318" y1="368" x2="350" y2="368" stroke="#cfd3da" stroke-width="10" stroke-linecap="round"/>
+      <circle cx="326" cy="178" r="17" fill="#f0c8a0"/>
+      <circle cx="345" cy="205" r="26" fill="none" stroke="#888" stroke-width="7"/>
+      <text x="230" y="395" fill="#a8adb7" font-size="16" text-anchor="middle">← 2 a 3 metros →</text>
+    </svg>
+    <p>Apoya el celular en un banco o en el rack, contra una botella o un disco. Que salga de <b>pies a cabeza</b> durante toda la bajada.</p>
+  </div>
+
+  <!-- TOMA 2 45 GRADOS -->
+  <div class="card">
+    <h2><span class="num">2</span>45°: tú de rodillas</h2>
+    <svg viewBox="0 0 460 400" width="100%" height="370">
+      <line x1="0" y1="370" x2="460" y2="370" stroke="#444" stroke-width="3"/>
+      <!-- camarógrafo arrodillado mirando a la derecha -->
+      <g stroke="#ffd166" stroke-width="12" stroke-linecap="round" fill="none">
+        <line x1="40" y1="368" x2="85" y2="368"/>   <!-- tibia trasera en piso -->
+        <line x1="85" y1="368" x2="100" y2="300"/>  <!-- muslo trasero -->
+        <line x1="100" y1="300" x2="150" y2="300"/> <!-- muslo delantero -->
+        <line x1="150" y1="300" x2="150" y2="368"/> <!-- tibia delantera -->
+        <line x1="100" y1="300" x2="110" y2="215"/> <!-- torso -->
+        <line x1="112" y1="225" x2="140" y2="290"/> <!-- brazo a rodilla -->
+        <line x1="140" y1="290" x2="165" y2="262"/> <!-- antebrazo -->
+      </g>
+      <circle cx="113" cy="192" r="17" fill="#f0c8a0"/>
+      <rect x="163" y="242" width="12" height="38" rx="3" fill="#ff6b2c" transform="rotate(-10 169 261)"/>
+      <circle cx="150" cy="296" r="9" fill="#06d6a0"/>
+      <text x="20" y="160" fill="#06d6a0" font-size="16">codo apoyado</text>
+      <text x="20" y="180" fill="#06d6a0" font-size="16">en tu rodilla</text>
+      <!-- lineas -->
+      <line x1="178" y1="258" x2="430" y2="120" stroke="#ffd166" stroke-dasharray="5 6" stroke-width="2"/>
+      <line x1="178" y1="262" x2="430" y2="372" stroke="#ffd166" stroke-dasharray="5 6" stroke-width="2"/>
+      <!-- pareja de frente (simplificada) -->
+      <g stroke="#cfd3da" stroke-width="11" stroke-linecap="round" fill="none">
+        <line x1="355" y1="368" x2="340" y2="310"/><line x1="405" y1="368" x2="420" y2="310"/>
+        <line x1="340" y1="310" x2="365" y2="285"/><line x1="420" y1="310" x2="395" y2="285"/>
+        <line x1="380" y1="285" x2="380" y2="205"/>
+      </g>
+      <line x1="320" y1="205" x2="440" y2="205" stroke="#888" stroke-width="7" stroke-linecap="round"/>
+      <circle cx="380" cy="182" r="17" fill="#f0c8a0"/>
+      <text x="300" y="395" fill="#a8adb7" font-size="16">~2 m en diagonal</text>
+    </svg>
+    <p>Una rodilla en el piso y el codo sobre la otra. Graba un poco desde abajo: así las piernas se ven <b>más fuertes</b>. Es la toma para el hook.</p>
+  </div>
+
+  <!-- TOMA 3 PRIMER PLANO -->
+  <div class="card">
+    <h2><span class="num">3</span>Primer plano del muslo</h2>
+    <svg viewBox="0 0 460 330" width="100%" height="300">
+      <line x1="0" y1="310" x2="460" y2="310" stroke="#444" stroke-width="3"/>
+      <g stroke="#cfd3da" stroke-width="22" stroke-linecap="round" fill="none">
+        <line x1="290" y1="305" x2="250" y2="200"/>
+        <line x1="250" y1="200" x2="360" y2="170"/>
+      </g>
+      <ellipse cx="305" cy="185" rx="62" ry="24" fill="#3a7bd5" opacity=".35" transform="rotate(-15 305 185)"/>
+      <text x="305" y="135" fill="#06d6a0" font-size="17" text-anchor="middle">cuádriceps</text>
+      <rect x="95" y="160" width="16" height="50" rx="4" fill="#ff6b2c"/>
+      <line x1="113" y1="175" x2="245" y2="160" stroke="#06d6a0" stroke-dasharray="5 6" stroke-width="2"/>
+      <line x1="113" y1="195" x2="250" y2="225" stroke="#06d6a0" stroke-dasharray="5 6" stroke-width="2"/>
+      <text x="40" y="250" fill="#a8adb7" font-size="16">50 cm · altura de rodilla</text>
+      <text x="40" y="272" fill="#a8adb7" font-size="16">acompaña la subida</text>
+    </svg>
+    <p>A mano, a la altura de la rodilla. Graba 3–4 subidas en <b>60 fps</b>: yo la paso a cámara lenta.</p>
+  </div>
+
+  <!-- PANTALLA DEL CELULAR -->
+  <div class="card">
+    <h2>Así debe verse tu pantalla</h2>
+    <svg viewBox="0 0 460 330" width="100%" height="300">
+      <rect x="150" y="5" width="170" height="302" rx="22" fill="#0b0c0f" stroke="#555" stroke-width="4"/>
+      <!-- zona aire -->
+      <rect x="160" y="18" width="150" height="50" fill="#ffd166" opacity=".15"/>
+      <text x="235" y="48" fill="#ffd166" font-size="13" text-anchor="middle">aire para el texto</text>
+      <!-- margenes laterales -->
+      <line x1="178" y1="70" x2="178" y2="295" stroke="#06d6a0" stroke-dasharray="4 4"/>
+      <line x1="292" y1="70" x2="292" y2="295" stroke="#06d6a0" stroke-dasharray="4 4"/>
+      <!-- figura -->
+      <g stroke="#cfd3da" stroke-width="7" stroke-linecap="round" fill="none">
+        <line x1="230" y1="290" x2="218" y2="250"/><line x1="218" y1="250" x2="250" y2="243"/>
+        <line x1="250" y1="243" x2="235" y2="190"/>
+      </g>
+      <circle cx="232" cy="176" r="10" fill="#f0c8a0"/>
+      <circle cx="240" cy="193" r="13" fill="none" stroke="#888" stroke-width="4"/>
+      <text x="20" y="150" fill="#06d6a0" font-size="15">deja margen</text>
+      <text x="20" y="170" fill="#06d6a0" font-size="15">a los lados</text>
+      <text x="20" y="190" fill="#06d6a0" font-size="15">(estabilización)</text>
+      <text x="335" y="230" fill="#cfd3da" font-size="15">pies a cabeza,</text>
+      <text x="335" y="250" fill="#cfd3da" font-size="15">sin cortar</text>
+      <text x="335" y="270" fill="#cfd3da" font-size="15">los pies</text>
+    </svg>
+    <p>Mantén el dedo sobre tu pareja en la pantalla para <b>bloquear el enfoque</b>. Sin ventanas detrás.</p>
+  </div>
+
+  <div class="card wide">
+    <h2>Sin tripié: cómo sostener el celular</h2>
+    <div class="tips">
+      <div class="tip"><b>Codos pegados</b> al cuerpo y el celular con las dos manos.</div>
+      <div class="tip"><b>Respira lento</b> y no camines durante la serie.</div>
+      <div class="tip">Empieza a grabar <b>2 s antes</b> de la primera repetición y corta <b>2 s después</b> de la última.</div>
+    </div>
+  </div>
+
+</div>
+</body></html>
