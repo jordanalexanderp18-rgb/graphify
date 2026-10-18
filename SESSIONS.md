@@ -94,6 +94,25 @@ to it by construction.
 
 ## Log
 
+## 2026-10-18 — Proyecto YouTube "Dinero Oculto" (fuera del código de graphify)
+
+- **Branch:** `ccr-fd3f2a8c-djfs9d`
+- **Touched:** [[youtube-dinero-oculto/README]]
+
+### Context
+The user asked for help building income through a faceless Spanish YouTube channel. Not related to the graphify code; the files live in `youtube-dinero-oculto/` so the next chat can continue.
+
+### Decisions
+- Niche: business plus money psychology. Picked after comparing 14 niches in vidIQ; it has the highest ad pay and proven breakouts from small channels.
+
+### Rejected
+- Kids content: the lowest ad pay because "made for kids" disables personalized ads, and YouTube is demonetizing AI-made kids content.
+- Ultracode or max effort for this work: it costs a lot more and gives no real improvement for scripts.
+- Driving Chrome from a cloud session: the Claude in Chrome tools are missing there. It needs the desktop app with the extension.
+
+### Open
+- Logo and banner, then the script and thumbnail for video 2 (McDonald's). See [[youtube-dinero-oculto/README]].
+
 ## 2026-10-02 — Command board across agents
 
 - **Branch:** `claude/session-history-c0kdq7` (restarted from v8 after PR #2 merged)
