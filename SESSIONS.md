@@ -94,6 +94,34 @@ to it by construction.
 
 ## Log
 
+## 2026-10-24 — Shift Fit audit after Cursor
+
+- **Branch:** `ccr-25ead029-plq3l2` (this note); the work is in the private repo
+  `shift-fit-app`, branch `claude/accesibilidad-web-0.4.2`
+
+### Context
+The user dropped Cursor and asked to verify what it built: the Shift Fit app
+(Expo/React Native). 226 of its 289 commits carry Cursor's co-author trailer.
+The Drive folder "Shift Fit APK" holds APKs 0.3.2 to 0.4.1 and the doc used as
+a chat channel with the agent; 0.4.2 (running) exists only as code.
+
+### Decisions
+- Verified rather than trusted: tsc clean, 258 suites / 2.992 tests green,
+  `expo export` android and web OK.
+- Fixed web accessibility: react-native-web ignores `accessibilityState`, so
+  checked/selected/expanded states were invisible on web. Moved to `aria-*`.
+
+### Rejected
+- Building the APK in the cloud container: `dl.google.com` (Android SDK) is
+  denied by the network policy. Build on the user's PC with
+  `build-apk-noci.sh`, or allow the host in the environment settings.
+- Logging into Gravl with the user's account to clone it: the project's
+  clean-room rule (functions only, never code, assets, text or colours) stands.
+
+### Open
+- APK 0.4.2 still to compile and upload to Drive.
+- The radio options in onboarding have no `radiogroup` wrapper.
+
 ## 2026-10-02 — Command board across agents
 
 - **Branch:** `claude/session-history-c0kdq7` (restarted from v8 after PR #2 merged)
