@@ -16,6 +16,13 @@
   --c-success-soft: #e6f4ec;
   --c-warning: #8a5a00;
   --c-warning-soft: #fdf3dc;
+  --c-staff-1: #3a4ccf;
+  --c-staff-2: #1d7148;
+  --c-staff-3: #a1471a;
+  --c-staff-4: #7a3db8;
+  --c-staff-5: #0f6f86;
+  --c-staff-6: #a8325e;
+  --c-scrim: rgba(16,24,40,.45);
   --font-sans: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
   --fs-xs: 0.75rem;

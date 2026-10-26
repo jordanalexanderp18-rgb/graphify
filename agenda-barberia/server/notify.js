@@ -13,11 +13,12 @@ export function whenText(startIso, tz) {
   return `${DAYS[p.weekday]} ${p.d} de ${MONTHS[p.m - 1]} a las ${minToHHMM(p.min)}`;
 }
 
+const LOCALE = { CLP: 'es-CL', MXN: 'es-MX', COP: 'es-CO', ARS: 'es-AR', PEN: 'es-PE', DOP: 'es-DO', EUR: 'es-ES', USD: 'es-EC' };
 export function money(amount, currency) {
   const zeroDecimals = ['CLP', 'COP', 'PYG', 'ARS'].includes(currency);
   const value = zeroDecimals ? amount : amount / 100;
   try {
-    return new Intl.NumberFormat('es', { style: 'currency', currency, maximumFractionDigits: zeroDecimals ? 0 : 2 }).format(value);
+    return new Intl.NumberFormat(LOCALE[currency] || 'es', { style: 'currency', currency, maximumFractionDigits: zeroDecimals ? 0 : 2 }).format(value);
   } catch {
     return `${value} ${currency}`;
   }

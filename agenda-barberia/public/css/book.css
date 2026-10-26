@@ -1,0 +1,21 @@
+/* Página pública de reservas. */
+body { background: var(--c-surface); }
+.book { max-width: 640px; margin: 0 auto; padding: var(--s-5) var(--s-4) var(--s-8); display: flex; flex-direction: column; gap: var(--s-5); }
+.book-head { display: flex; flex-direction: column; gap: var(--s-1); }
+.steps { display: flex; gap: var(--s-2); font-size: var(--fs-xs); color: var(--c-text-muted); flex-wrap: wrap; }
+.steps [aria-current="step"] { color: var(--c-accent); font-weight: 700; }
+.opt { width: 100%; text-align: left; border: 1px solid var(--c-border); background: var(--c-bg); border-radius: var(--r-md); padding: var(--s-4); cursor: pointer; display: flex; justify-content: space-between; gap: var(--s-3); align-items: center; font: inherit; color: inherit; }
+.opt:hover { border-color: var(--c-accent); }
+.opt[aria-pressed="true"] { border-color: var(--c-accent); background: var(--c-accent-soft); }
+.days { display: flex; gap: var(--s-2); overflow-x: auto; padding-bottom: var(--s-2); scroll-snap-type: x mandatory; }
+.day { flex: none; width: 64px; border: 1px solid var(--c-border); background: var(--c-bg); border-radius: var(--r-md); padding: var(--s-2) 0; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; font: inherit; color: inherit; scroll-snap-align: start; }
+.day strong { font-size: var(--fs-lg); line-height: var(--lh-lg); }
+.day[aria-pressed="true"] { background: var(--c-accent); border-color: var(--c-accent); color: var(--c-on-accent); }
+.day[disabled] { opacity: .45; cursor: not-allowed; text-decoration: line-through; }
+.slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: var(--s-2); }
+.slot { height: 44px; border: 1px solid var(--c-border-input); background: var(--c-bg); border-radius: var(--r-md); font: 600 var(--fs-base)/1 var(--font-sans); cursor: pointer; color: var(--c-text); }
+.slot:hover { border-color: var(--c-accent); color: var(--c-accent); }
+.slot[aria-pressed="true"] { background: var(--c-accent); border-color: var(--c-accent); color: var(--c-on-accent); }
+.summary { display: flex; flex-direction: column; gap: var(--s-1); }
+.ok-mark { width: 56px; height: 56px; border-radius: 50%; background: var(--c-success-soft); color: var(--c-success); display: grid; place-items: center; font-size: 28px; font-weight: 700; }
+.foot { text-align: center; }

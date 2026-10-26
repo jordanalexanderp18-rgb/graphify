@@ -17,7 +17,7 @@ const SECURITY = {
   'x-content-type-options': 'nosniff',
   'referrer-policy': 'same-origin',
   'x-frame-options': 'SAMEORIGIN',
-  'content-security-policy': "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'; frame-ancestors 'self'; base-uri 'none'; form-action 'self'",
+  'content-security-policy': "default-src 'self'; img-src 'self' data: blob:; style-src 'self'; script-src 'self'; connect-src 'self'; frame-ancestors 'self'; base-uri 'none'; form-action 'self'",
 };
 
 // Páginas: rutas amigables -> archivo HTML.
@@ -76,6 +76,14 @@ export function createApp(db, { trustProxy = false } = {}) {
   return createServer(async (req, res) => {
     const url = new URL(req.url, 'http://localhost');
     const pathname = url.pathname;
+    const photo = /^\/photos\/([\w-]{36})$/.exec(pathname);
+    if (photo && req.method === 'GET') {
+      const row = db.get('select photo from staff where id = ?', photo[1]);
+      const m = /^data:(image\/(?:jpeg|png|webp));base64,(.+)$/.exec(row?.photo || '');
+      if (!m) return send(res, 404, 'No encontrado');
+      res.writeHead(200, { ...SECURITY, 'content-type': m[1], 'cache-control': 'public, max-age=86400' });
+      return res.end(Buffer.from(m[2], 'base64'));
+    }
     if (!pathname.startsWith('/api/')) {
       if (req.method !== 'GET' && req.method !== 'HEAD') return send(res, 405, 'Método no permitido');
       return serveStatic(req, res, pathname);

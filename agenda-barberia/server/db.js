@@ -13,7 +13,20 @@ export function openDb(file) {
   const db = new DatabaseSync(file);
   db.exec('pragma journal_mode = wal; pragma foreign_keys = on; pragma busy_timeout = 5000;');
   db.exec(readFileSync(new URL('../db/schema.sql', import.meta.url), 'utf8'));
+  migrate(db);
   return wrap(db);
+}
+
+// Columnas agregadas después de la primera versión: se suman a bases existentes.
+const ADDED = [
+  ['businesses', 'phone_prefix', "text not null default '56'"],
+  ['staff', 'photo', "text not null default ''"],
+];
+function migrate(db) {
+  for (const [table, col, def] of ADDED) {
+    const cols = db.prepare(`pragma table_info(${table})`).all().map((c) => c.name);
+    if (!cols.includes(col)) db.exec(`alter table ${table} add column ${col} ${def}`);
+  }
 }
 
 function wrap(db) {

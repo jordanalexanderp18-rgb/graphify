@@ -250,6 +250,19 @@ test('importar CSV, borrar datos de un cliente, mensajes manuales y "te toca cor
   assert.equal(gone.phone, '');
 });
 
+test('foto del barbero: valida formato y se sirve', async () => {
+  const { c } = await signup(srv.base, 9);
+  const st = (await c.get('/api/staff')).data[0];
+  assert.equal((await c.put(`/api/staff/${st.id}/photo`, { data_url: 'data:text/html;base64,PGgxPg==' })).status, 400);
+  const png = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFklEQVR4nGNk+M/AwMDAxMDAwMDAAAANHQEDasKb6QAAAABJRU5ErkJggg==';
+  const r = await c.put(`/api/staff/${st.id}/photo`, { data_url: png });
+  assert.equal(r.status, 200);
+  const img = await fetch(srv.base + r.data.photo_url);
+  assert.equal(img.headers.get('content-type'), 'image/png');
+  const list = (await c.get('/api/staff')).data;
+  assert.ok(list[0].photo_url && !('photo' in list[0]), 'el listado no arrastra la imagen completa');
+});
+
 test('solo JSON en escrituras y errores claros', async () => {
   const r = await fetch(`${srv.base}/api/auth/login`, { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: 'email=a&password=b' });
   assert.equal(r.status, 415);

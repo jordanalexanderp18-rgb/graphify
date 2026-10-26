@@ -33,6 +33,7 @@ create table if not exists staff (
   name text not null,
   specialty text not null default '',
   color text not null default 'c1',
+  photo text not null default '',      -- data URL (jpeg/png/webp, máx. ~300 KB)
   phone text not null default '',
   active integer not null default 1 check (active in (0,1)),
   commission_service_pct integer not null default 40 check (commission_service_pct between 0 and 100),

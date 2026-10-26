@@ -133,8 +133,9 @@ on('POST', '/api/auth/logout', ({ db, sessionToken, setCookie }) => {
   return { ok: true };
 });
 
+// Sin sesión responde 200 con user null: la app muestra el ingreso sin ensuciar la consola.
 on('GET', '/api/me', ({ db, user }) => {
-  allow(user, 'agenda');
+  if (!user) return { user: null };
   const { expires_at, ...u } = user;
   return { user: u, business: biz(db, user.business_id) };
 });
@@ -233,9 +234,12 @@ const staffSpec = {
   sort: (v, k) => int(v, k, { max: 1000 }),
 };
 
+const photoUrl = (s) => (s.photo ? `/photos/${s.id}?v=${s.photo.length}` : '');
+
 function withStaffDetails(db, rows) {
-  return rows.map((s) => ({
+  return rows.map(({ photo, ...s }) => ({
     ...s,
+    photo_url: photoUrl({ ...s, photo }),
     hours: db.all('select weekday, start_min, end_min from staff_hours where staff_id = ? order by weekday, start_min', s.id)
       .map((h) => ({ weekday: h.weekday, start: minToHHMM(h.start_min), end: minToHHMM(h.end_min) })),
     service_ids: db.all('select service_id from staff_services where staff_id = ?', s.id).map((r) => r.service_id),
@@ -293,6 +297,18 @@ on('PUT', '/api/staff/:id', ({ db, user, body, params }) => {
     saveStaffExtras(db, user.business_id, params.id, body);
     return withStaffDetails(db, [db.get('select * from staff where id = ?', params.id)])[0];
   });
+});
+
+on('PUT', '/api/staff/:id/photo', ({ db, user, body, params }) => {
+  allow(user, 'catalog');
+  owned(db, 'staff', params.id, user.business_id, 'Barbero');
+  const data = String(body.data_url || '');
+  if (data && !/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(data)) {
+    throw new HttpError(400, 'La foto debe ser JPG, PNG o WebP.', { field: 'photo' });
+  }
+  if (data.length > 400_000) throw new HttpError(413, 'La foto pesa demasiado (máximo ~300 KB).', { field: 'photo' });
+  db.update('staff', params.id, user.business_id, { photo: data });
+  return { photo_url: photoUrl({ id: params.id, photo: data }) };
 });
 
 on('DELETE', '/api/staff/:id', ({ db, user, params }) => {
@@ -899,8 +915,8 @@ on('GET', '/api/public/:slug', ({ db, params }) => {
                            where business_id = ? and active = 1 and online = 1
                            and exists (select 1 from staff_services ss join staff st on st.id = ss.staff_id where ss.service_id = s.id and st.active = 1)
                            order by sort, name`, b.id);
-  const staff = db.all('select id, name, specialty, color from staff where business_id = ? and active = 1 order by sort, name', b.id)
-    .map((s) => ({ ...s, service_ids: db.all('select service_id from staff_services where staff_id = ?', s.id).map((r) => r.service_id) }));
+  const staff = db.all('select id, name, specialty, color, photo from staff where business_id = ? and active = 1 order by sort, name', b.id)
+    .map(({ photo, ...s }) => ({ ...s, photo_url: photoUrl({ ...s, photo }), service_ids: db.all('select service_id from staff_services where staff_id = ?', s.id).map((r) => r.service_id) }));
   return { business: publicBusiness(b), services, staff, today: todayIn(b.timezone) };
 });
 
