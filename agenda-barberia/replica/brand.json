@@ -1,0 +1,6 @@
+{
+  "name": "Silla Llena",
+  "avoid": ["AgendaPro", "Agenda Pro", "agendapro", "Filo"],
+  "domains": ["agendapro.com", "agendapro.mx"],
+  "colors": ["#3a4ccf"]
+}

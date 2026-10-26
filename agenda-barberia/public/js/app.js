@@ -511,13 +511,16 @@ async function viewPos(main, _arg, params) {
   ]);
   S.products = await api('GET', '/api/products');
   const cart = { items: [], appt: null, client: null, discount: 0, tip: 0, method: reg.open ? 'cash' : 'card' };
-  const pending = todayAppts.filter((a) => !a.sale_id && a.status !== 'cancelled' && a.status !== 'no_show');
+  // Las visitas con varios servicios aparecen una vez (su primera cita).
+  const pending = todayAppts.filter((a) => !a.sale_id && a.status !== 'cancelled' && a.status !== 'no_show' && (!a.group_id || a.group_id === a.id));
   const firstStaff = S.staff.find((s) => s.active)?.id || null;
 
-  const loadAppt = (a) => {
-    cart.appt = a;
+  const loadAppt = (a, pool = todayAppts) => {
+    // Una visita con varios servicios se cobra junta.
+    const visit = a.group_id ? pool.filter((x) => x.group_id === a.group_id && x.status !== 'cancelled' && !x.sale_id) : [a];
+    cart.appt = visit[0] || a;
     cart.client = { id: a.client_id, name: a.client_name };
-    cart.items = [{ kind: 'service', ref_id: a.service_id, name: a.service_name, staff_id: a.staff_id, qty: 1, unit: a.price }];
+    cart.items = (visit.length ? visit : [a]).map((x) => ({ kind: 'service', ref_id: x.service_id, name: x.service_name, staff_id: x.staff_id, qty: 1, unit: x.price }));
     renderCart();
   };
   const addItem = (kind, ref) => {
@@ -591,7 +594,9 @@ async function viewPos(main, _arg, params) {
         h('div', { class: 'stack' },
           h('section', { class: 'stack-sm' }, h('h2', {}, 'Citas de hoy por cobrar'),
             pending.length ? h('div', { class: 'pick-list' }, pending.map((a) => h('button', { class: `pick sc-${a.staff_color}`, type: 'button', onclick: () => loadAppt(a) },
-              h('span', { class: 'row' }, h('span', { class: 'dot' }), h('strong', {}, partsIn(a.start_at, tz).time)), h('span', {}, a.client_name), h('span', { class: 'xs muted' }, `${a.service_name} · ${fmt(a.price)}`))))
+              h('span', { class: 'row' }, h('span', { class: 'dot' }), h('strong', {}, partsIn(a.start_at, tz).time)), h('span', {}, a.client_name), h('span', { class: 'xs muted' }, a.group_id
+                ? `${todayAppts.filter((x) => x.group_id === a.group_id).map((x) => x.service_name).join(' + ')}`
+                : `${a.service_name} · ${fmt(a.price)}`))))
               : h('p', { class: 'muted' }, 'No quedan citas por cobrar hoy.')),
           h('section', { class: 'stack-sm' }, h('h2', {}, 'Servicios'),
             h('div', { class: 'pick-list' }, services.map((s) => h('button', { class: 'pick', type: 'button', onclick: () => addItem('service', s) }, h('strong', {}, s.name), h('span', { class: 'xs muted num' }, fmt(s.price)))))),
@@ -618,7 +623,7 @@ async function viewPos(main, _arg, params) {
     // Cita de otro día: traerla igual para cobrarla.
     const all = await api('GET', `/api/appointments?from=${addDays(today, -60)}&to=${addDays(today, 60)}`).catch(() => []);
     const a = all.find((x) => x.id === params.appt);
-    if (a && !a.sale_id) loadAppt(a); else renderCart();
+    if (a && !a.sale_id) loadAppt(a, all); else renderCart();
   } else renderCart();
 }
 
@@ -951,6 +956,7 @@ function staffModal(s) {
       : h('span', { class: 'xs muted' }, 'No atiende')))));
   renderHours();
   const svcIds = new Set(s ? s.service_ids : S.services.filter((x) => x.active).map((x) => x.id));
+  const durations = { ...(s?.durations || {}) };
   let photoData = null;
   const preview = h('span', {}, avatar(s || { name: '?', color: 'c1' }, 56));
   const photoInput = h('input', { type: 'file', accept: 'image/jpeg,image/png,image/webp', class: 'input', onchange: async (e) => {
@@ -969,9 +975,12 @@ function staffModal(s) {
       field('Comisión servicios (%)', input({ name: 'commission_service_pct', type: 'number', min: 0, max: 100, value: s?.commission_service_pct ?? 40 })),
       field('Comisión productos (%)', input({ name: 'commission_product_pct', type: 'number', min: 0, max: 100, value: s?.commission_product_pct ?? 10 }))),
     h('div', { class: 'stack-sm' }, h('div', { class: 'label' }, 'Horario semanal'), hoursBox),
-    h('div', { class: 'stack-sm' }, h('div', { class: 'label' }, 'Servicios que hace'),
-      h('div', { class: 'grid-2' }, S.services.filter((x) => x.active).map((x) => h('label', { class: 'check' },
-        h('input', { type: 'checkbox', checked: svcIds.has(x.id), onchange: (e) => (e.target.checked ? svcIds.add(x.id) : svcIds.delete(x.id)) }), x.name)))),
+    h('div', { class: 'stack-sm' }, h('div', { class: 'label' }, 'Servicios que hace y cuánto se demora'),
+      h('p', { class: 'xs muted' }, 'Deja la duración vacía para usar la del servicio. Útil si este barbero es más rápido o más lento.'),
+      S.services.filter((x) => x.active).map((x) => h('div', { class: 'svc-dur' },
+        h('label', { class: 'check' }, h('input', { type: 'checkbox', checked: svcIds.has(x.id), onchange: (e) => (e.target.checked ? svcIds.add(x.id) : svcIds.delete(x.id)) }), x.name),
+        h('input', { class: 'input', type: 'number', min: 5, max: 480, step: 5, placeholder: `${x.duration_min} min`, value: durations[x.id] ?? '',
+          'aria-label': `Duración de ${x.name} con este barbero`, onchange: (e) => { durations[x.id] = e.target.value === '' ? null : Number(e.target.value); } })))),
     s ? h('label', { class: 'check' }, h('input', { type: 'checkbox', name: 'active', checked: !!s.active }), 'Activo (aparece en la agenda y en reservas)') : null);
   const save = h('button', { class: 'btn btn-primary', type: 'button' }, 'Guardar');
   save.addEventListener('click', () => busy(save, async () => {
@@ -981,6 +990,7 @@ function staffModal(s) {
       commission_service_pct: Number(d.commission_service_pct), commission_product_pct: Number(d.commission_product_pct),
       hours: Object.entries(hours).flatMap(([wd, list]) => list.map((r) => ({ weekday: Number(wd), start: r.start, end: r.end }))),
       service_ids: [...svcIds],
+      service_durations: durations,
     };
     if (s) body.active = d.active;
     try {

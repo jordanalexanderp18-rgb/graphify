@@ -1,9 +1,9 @@
 {
-  "name": "Filo — agenda para barberías",
-  "short_name": "Filo",
+  "name": "Silla Llena — agenda y caja para barberías",
+  "short_name": "Silla Llena",
   "start_url": "/app",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#3a4ccf",
+  "theme_color": "#a63d14",
   "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
 }

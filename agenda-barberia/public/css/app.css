@@ -211,3 +211,7 @@ dialog.modal::backdrop { background: var(--c-scrim); }
 /* Auth */
 .auth { min-height: 100vh; display: grid; place-items: center; padding: var(--s-4); background: var(--c-surface); }
 .auth .card { width: min(420px, 100%); }
+
+/* Servicios por barbero con duración propia */
+.svc-dur { display: grid; grid-template-columns: 1fr 96px; gap: var(--s-2); align-items: center; }
+.svc-dur .input { min-height: 34px; padding: var(--s-1) var(--s-2); }

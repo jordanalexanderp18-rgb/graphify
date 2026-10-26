@@ -34,6 +34,7 @@ export function client(base) {
 }
 
 export async function signup(base, n = 1, extra = {}) {
+  resetRateLimits(); // el límite de registros por IP no es lo que se prueba aquí
   const c = client(base);
   const r = await c.post('/api/auth/signup', {
     business_name: `Barbería Prueba ${n}`, name: 'Dueño', email: `dueno${n}@example.com`, password: 'clave-segura-1', ...extra,

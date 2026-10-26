@@ -21,6 +21,8 @@ export function openDb(file) {
 const ADDED = [
   ['businesses', 'phone_prefix', "text not null default '56'"],
   ['staff', 'photo', "text not null default ''"],
+  ['staff_services', 'duration_min', 'integer check (duration_min between 5 and 480)'],
+  ['appointments', 'group_id', 'text'],
 ];
 function migrate(db) {
   for (const [table, col, def] of ADDED) {

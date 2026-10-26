@@ -7,7 +7,7 @@ import {
 import { str, int, bool, oneOf, email, phone, pick, slugify, parseCsv } from './validate.js';
 import { isValidTz, isDate, dayRangeUtc, todayIn, addDays, zonedToUtc, localParts, weekdayOf, iso } from './time.js';
 import {
-  slotsFor, staffForService, isBookable, pickStaff, withinPolicyWindow, hhmmToMin, minToHHMM,
+  slotsFor, staffForServices, isBookable, pickStaff, withinPolicyWindow, hhmmToMin, minToHHMM, minutesFor, visitMinutes,
 } from './availability.js';
 import { scheduleForAppointment, dropPending, queue, waLink, money } from './notify.js';
 import { seedBusiness } from './seed.js';
@@ -243,6 +243,8 @@ function withStaffDetails(db, rows) {
     hours: db.all('select weekday, start_min, end_min from staff_hours where staff_id = ? order by weekday, start_min', s.id)
       .map((h) => ({ weekday: h.weekday, start: minToHHMM(h.start_min), end: minToHHMM(h.end_min) })),
     service_ids: db.all('select service_id from staff_services where staff_id = ?', s.id).map((r) => r.service_id),
+    durations: Object.fromEntries(db.all('select service_id, duration_min from staff_services where staff_id = ? and duration_min is not null', s.id)
+      .map((r) => [r.service_id, r.duration_min])),
   }));
 }
 
@@ -263,10 +265,16 @@ function saveStaffExtras(db, businessId, staffId, body) {
     for (const h of hours) db.insert('staff_hours', { id: uid(), staff_id: staffId, weekday: h.weekday, start_min: h.start, end_min: h.end });
   }
   if (Array.isArray(body.service_ids)) {
+    // Duración propia del barbero por servicio (p. ej. corta en 20 en vez de 30). Vacío = la del servicio.
+    const durations = body.service_durations && typeof body.service_durations === 'object' ? body.service_durations : {};
     db.run('delete from staff_services where staff_id = ?', staffId);
     for (const sid of new Set(body.service_ids)) {
       if (db.get('select 1 from services where id = ? and business_id = ?', sid, businessId)) {
-        db.insert('staff_services', { staff_id: staffId, service_id: sid });
+        const d = durations[sid];
+        db.insert('staff_services', {
+          staff_id: staffId, service_id: sid,
+          duration_min: d === undefined || d === null || d === '' ? null : int(d, 'service_durations', { min: 5, max: 480, label: 'la duración' }),
+        });
       }
     }
   }
@@ -404,7 +412,7 @@ on('GET', '/api/availability', ({ db, user, query }) => {
   const b = biz(db, user.business_id);
   const service = owned(db, 'services', query.service_id, user.business_id, 'Servicio');
   if (!isDate(query.date)) throw new HttpError(400, 'Fecha no válida.');
-  return slotsFor(db, b, service, query.date, query.staff_id || null, { now: 0 });
+  return slotsFor(db, b, [service], query.date, query.staff_id || null, { now: 0 });
 });
 
 on('POST', '/api/appointments', ({ db, user, body }) => {
@@ -425,12 +433,13 @@ on('POST', '/api/appointments', ({ db, user, body }) => {
         email: email(c.email, 'client.email'),
       });
     }
-    const check = isBookable(db, b, staff, service, start, { checkHours: !body.force });
+    const len = minutesFor(db, staff.id, service);
+    const check = isBookable(db, b, staff, len, start, { checkHours: !body.force });
     if (!check.ok) throw conflict(check.reason);
     const price = body.price !== undefined && body.price !== '' ? int(body.price, 'price', { max: 1e10, label: 'el precio' }) : service.price;
     const appt = db.insert('appointments', {
       id: uid(), business_id: b.id, staff_id: staff.id, client_id: client.id, service_id: service.id,
-      start_at: iso(start), end_at: iso(start + (service.duration_min + service.buffer_min) * 60000),
+      start_at: iso(start), end_at: iso(start + len * 60000),
       status: 'booked', source, price, notes: str(body.notes, 'notes', { max: 500 }), token: token(),
     });
     if (source !== 'walkin' && body.notify !== false) scheduleForAppointment(db, { appt, business: b, client, service, staff });
@@ -450,13 +459,14 @@ on('PUT', '/api/appointments/:id', ({ db, user, body, params }) => {
   const start = body.start || body.time ? startFrom(body, b.timezone) : Date.parse(appt.start_at);
   return db.tx(() => {
     const moved = start !== Date.parse(appt.start_at) || staff.id !== appt.staff_id || service.id !== appt.service_id;
+    const len = minutesFor(db, staff.id, service);
     if (moved) {
-      const check = isBookable(db, b, staff, service, start, { ignoreAppointmentId: appt.id, checkHours: !body.force });
+      const check = isBookable(db, b, staff, len, start, { ignore: appt.id, checkHours: !body.force });
       if (!check.ok) throw conflict(check.reason);
     }
     const f = {
       staff_id: staff.id, service_id: service.id, start_at: iso(start),
-      end_at: iso(start + (service.duration_min + service.buffer_min) * 60000), updated_at: nowIso(),
+      end_at: iso(start + len * 60000), updated_at: nowIso(),
     };
     if (body.notes !== undefined) f.notes = str(body.notes, 'notes', { max: 500 });
     if (body.price !== undefined && body.price !== '') f.price = int(body.price, 'price', { max: 1e10 });
@@ -481,7 +491,8 @@ on('POST', '/api/appointments/:id/status', ({ db, user, body, params }) => {
     if (status === 'booked' || status === 'confirmed') {
       if (['cancelled', 'no_show'].includes(appt.status)) {
         const ctx = apptContext(db, appt);
-        const check = isBookable(db, ctx.business, ctx.staff, ctx.service, Date.parse(appt.start_at), { ignoreAppointmentId: appt.id, checkHours: false });
+        const len = (Date.parse(appt.end_at) - Date.parse(appt.start_at)) / 60000;
+        const check = isBookable(db, ctx.business, ctx.staff, len, Date.parse(appt.start_at), { ignore: appt.id, checkHours: false });
         if (!check.ok) throw conflict(check.reason);
       }
     }
@@ -725,7 +736,11 @@ on('POST', '/api/sales', ({ db, user, body }) => {
       });
       if (l.kind === 'product') db.run('update products set stock = stock - ? where id = ?', l.qty, l.ref.id);
     }
-    if (appt) db.update('appointments', appt.id, b.id, { status: 'done', sale_id: sale.id, updated_at: nowIso() });
+    if (appt) {
+      // Una visita con varios servicios se cobra entera.
+      const visit = appt.group_id ? db.all("select id from appointments where group_id = ? and status <> 'cancelled' and sale_id is null", appt.group_id) : [appt];
+      for (const x of visit) db.update('appointments', x.id, b.id, { status: 'done', sale_id: sale.id, updated_at: nowIso() });
+    }
     return { status: 201, data: saleWithItems(db, sale.id) };
   });
 });
@@ -753,7 +768,7 @@ on('DELETE', '/api/sales/:id', ({ db, user, params }) => {
     for (const it of db.all("select * from sale_items where sale_id = ? and kind = 'product'", sale.id)) {
       db.run('update products set stock = stock + ? where id = ?', it.qty, it.ref_id);
     }
-    if (sale.appointment_id) db.run("update appointments set sale_id = null, status = 'booked' where id = ?", sale.appointment_id);
+    db.run("update appointments set sale_id = null, status = 'booked' where sale_id = ?", sale.id);
     db.run('delete from sales where id = ?', sale.id);
   });
   return { ok: true };
@@ -909,6 +924,17 @@ function publicService(db, b, id) {
   return s;
 }
 
+// Uno o varios servicios en una misma visita (máx. 4), en el orden pedido.
+function publicServices(db, b, src) {
+  let ids = src.service_ids ?? src.service_id;
+  if (typeof ids === 'string') ids = ids.split(',');
+  if (!Array.isArray(ids) || !ids.length) throw new HttpError(400, 'Elige al menos un servicio.', { field: 'service_ids' });
+  if (ids.length > 4) throw new HttpError(400, 'Máximo 4 servicios por visita.', { field: 'service_ids' });
+  if (new Set(ids).size !== ids.length) throw new HttpError(400, 'Hay servicios repetidos.', { field: 'service_ids' });
+  return ids.map((id) => publicService(db, b, String(id)));
+}
+const visitName = (services) => services.map((s) => s.name).join(' + ');
+
 on('GET', '/api/public/:slug', ({ db, params }) => {
   const b = publicBiz(db, params.slug);
   const services = db.all(`select id, name, category, description, duration_min, price, deposit from services s
@@ -916,72 +942,106 @@ on('GET', '/api/public/:slug', ({ db, params }) => {
                            and exists (select 1 from staff_services ss join staff st on st.id = ss.staff_id where ss.service_id = s.id and st.active = 1)
                            order by sort, name`, b.id);
   const staff = db.all('select id, name, specialty, color, photo from staff where business_id = ? and active = 1 order by sort, name', b.id)
-    .map(({ photo, ...s }) => ({ ...s, photo_url: photoUrl({ ...s, photo }), service_ids: db.all('select service_id from staff_services where staff_id = ?', s.id).map((r) => r.service_id) }));
+    .map(({ photo, ...s }) => {
+      const links = db.all('select service_id, duration_min from staff_services where staff_id = ?', s.id);
+      return {
+        ...s, photo_url: photoUrl({ ...s, photo }), service_ids: links.map((r) => r.service_id),
+        durations: Object.fromEntries(links.filter((r) => r.duration_min).map((r) => [r.service_id, r.duration_min])),
+      };
+    });
   return { business: publicBusiness(b), services, staff, today: todayIn(b.timezone) };
 });
 
 on('GET', '/api/public/:slug/days', ({ db, params, query }) => {
   const b = publicBiz(db, params.slug);
-  const service = publicService(db, b, query.service_id);
+  const services = publicServices(db, b, query);
   const today = todayIn(b.timezone);
   const start = isDate(query.from) && query.from >= today ? query.from : today;
   const out = [];
   for (let i = 0; i < 14; i++) {
     const date = addDays(start, i);
     if (!withinPolicyWindow(b, date)) break;
-    out.push({ date, available: slotsFor(db, b, service, date, query.staff_id || null, { enforcePolicy: true }).length > 0 });
+    out.push({ date, available: slotsFor(db, b, services, date, query.staff_id || null, { enforcePolicy: true, ignore: groupIds(db, query.ignore) }).length > 0 });
   }
   return out;
 });
 
 on('GET', '/api/public/:slug/slots', ({ db, params, query }) => {
   const b = publicBiz(db, params.slug);
-  const service = publicService(db, b, query.service_id);
+  const services = publicServices(db, b, query);
   if (!isDate(query.date) || !withinPolicyWindow(b, query.date)) return [];
-  return slotsFor(db, b, service, query.date, query.staff_id || null, { enforcePolicy: true })
+  return slotsFor(db, b, services, query.date, query.staff_id || null, { enforcePolicy: true, ignore: groupIds(db, query.ignore) })
     .map(({ start, time, staff_ids }) => ({ start, time, staff_count: staff_ids.length }));
 });
 
-function bookPublic(db, b, service, body, ignoreAppointmentId) {
+// Al reprogramar, la propia visita no cuenta como ocupada (se pasa su token).
+function groupIds(db, tok) {
+  if (!tok) return [];
+  const a = db.get('select * from appointments where token = ?', String(tok));
+  return a ? visitOf(db, a).map((x) => x.id) : [];
+}
+
+function bookPublic(db, b, services, body, ignore = []) {
   const start = Date.parse(body.start);
   if (!Number.isFinite(start)) throw new HttpError(400, 'Elige una hora.', { field: 'start' });
   const date = localParts(start, b.timezone).date;
   if (!withinPolicyWindow(b, date) || start < Date.now() + b.min_notice_min * 60000) {
     throw new HttpError(409, 'Esa hora ya no se puede reservar. Elige otra.', { reason: 'policy' });
   }
-  let candidates = staffForService(db, b.id, service.id);
+  let candidates = staffForServices(db, b.id, services.map((s) => s.id));
   if (body.staff_id && body.staff_id !== 'any') candidates = candidates.filter((s) => s.id === body.staff_id);
-  const free = candidates.filter((s) => isBookable(db, b, s, service, start, { ignoreAppointmentId }).ok);
+  const free = candidates.filter((s) => isBookable(db, b, s, visitMinutes(db, s.id, services), start, { ignore }).ok);
   if (!free.length) throw new HttpError(409, 'Alguien acaba de tomar esa hora. Elige otra, por favor.', { reason: 'taken' });
-  return { start, staff: pickStaff(db, b, free, start, b.timezone) };
+  return { start, staff: pickStaff(db, free, start, b.timezone) };
+}
+
+// Escribe los servicios uno tras otro con el mismo barbero. Devuelve las citas.
+function writeVisit(db, b, staff, services, start, existing, extra) {
+  let cursor = start;
+  const out = [];
+  services.forEach((sv, i) => {
+    const len = minutesFor(db, staff.id, sv);
+    const fields = { staff_id: staff.id, service_id: sv.id, start_at: iso(cursor), end_at: iso(cursor + len * 60000), status: 'booked', updated_at: nowIso() };
+    if (existing) {
+      db.update('appointments', existing[i].id, b.id, fields);
+      out.push({ ...existing[i], ...fields });
+    } else {
+      const row = { id: uid(), business_id: b.id, ...fields, price: sv.price, token: token(), ...extra };
+      if (services.length > 1) row.group_id = out[0]?.id ?? row.id;
+      out.push(db.insert('appointments', row));
+    }
+    cursor += len * 60000;
+  });
+  return out;
+}
+
+// Mensajes de una visita: uno solo por visita, no uno por servicio.
+function scheduleVisit(db, b, visit, services, staff, client) {
+  scheduleForAppointment(db, { appt: visit[0], business: b, client, staff, service: { ...services[0], name: visitName(services) } });
 }
 
 on('POST', '/api/public/:slug/book', ({ db, params, body, ip }) => {
   rateLimit(`book:${ip}`, 12, 600000);
   const b = publicBiz(db, params.slug);
-  const service = publicService(db, b, body.service_id);
+  const services = publicServices(db, b, body);
   const name = str(body.name, 'name', { required: true, max: 80, label: 'tu nombre' });
   const tel = phone(body.phone, b.phone_prefix, 'phone', { required: true });
   const mail = email(body.email);
   const notes = str(body.notes, 'notes', { max: 300 });
   return db.tx(() => {
-    const { start, staff } = bookPublic(db, b, service, body);
+    const { start, staff } = bookPublic(db, b, services, body);
     const client = findOrCreateClient(db, b, { name, phone: tel, email: mail });
-    const appt = db.insert('appointments', {
-      id: uid(), business_id: b.id, staff_id: staff.id, client_id: client.id, service_id: service.id,
-      start_at: iso(start), end_at: iso(start + (service.duration_min + service.buffer_min) * 60000),
-      status: 'booked', source: 'online', price: service.price, notes, token: token(),
-    });
-    scheduleForAppointment(db, { appt, business: b, client, service, staff });
+    const visit = writeVisit(db, b, staff, services, start, null, { client_id: client.id, source: 'online', notes });
+    scheduleVisit(db, b, visit, services, staff, client);
     db.run("update waitlist set status = 'booked' where client_id = ? and day = ? and status <> 'removed'", client.id, localParts(start, b.timezone).date);
-    return { status: 201, data: { token: appt.token } };
+    return { status: 201, data: { token: visit[0].token } };
   });
 });
 
 on('POST', '/api/public/:slug/waitlist', ({ db, params, body, ip }) => {
   rateLimit(`wait:${ip}`, 6, 600000);
   const b = publicBiz(db, params.slug);
-  const service = publicService(db, b, body.service_id);
+  const service = publicServices(db, b, body)[0];
   if (!isDate(body.day) || !withinPolicyWindow(b, body.day)) throw new HttpError(400, 'Fecha no válida.', { field: 'day' });
   const staffId = body.staff_id && body.staff_id !== 'any' ? owned(db, 'staff', body.staff_id, b.id, 'Barbero').id : null;
   const client = findOrCreateClient(db, b, {
@@ -994,22 +1054,34 @@ on('POST', '/api/public/:slug/waitlist', ({ db, params, body, ip }) => {
   return { status: 201, data: { ok: true } };
 });
 
+// Todas las citas de la visita (una sola si no tiene grupo), en orden.
+function visitOf(db, a) {
+  return a.group_id
+    ? db.all('select * from appointments where group_id = ? order by start_at', a.group_id)
+    : [db.get('select * from appointments where id = ?', a.id)];
+}
+
 function publicAppt(db, tok) {
   const a = db.get(`${APPT_SELECT} where a.token = ?`, String(tok));
   if (!a) throw notFound('Reserva');
   const b = biz(db, a.business_id);
-  const canChange = ['booked', 'confirmed'].includes(a.status) && Date.parse(a.start_at) - b.cancel_window_min * 60000 > Date.now();
-  return { a, b, canChange };
+  const visit = visitOf(db, a).filter((x) => x.status !== 'cancelled' || a.status === 'cancelled');
+  const first = visit[0] || a;
+  const canChange = ['booked', 'confirmed'].includes(a.status) && Date.parse(first.start_at) - b.cancel_window_min * 60000 > Date.now();
+  return { a, b, visit, canChange };
 }
 
 on('GET', '/api/public/r/:token', ({ db, params }) => {
-  const { a, b, canChange } = publicAppt(db, params.token);
+  const { a, b, visit, canChange } = publicAppt(db, params.token);
+  const services = visit.map((x) => db.get('select id, name from services where id = ?', x.service_id));
+  const price = visit.reduce((s, x) => s + x.price, 0);
   return {
     business: publicBusiness(b),
     appointment: {
-      start_at: a.start_at, end_at: a.end_at, status: a.status, service_id: a.service_id, service_name: a.service_name,
-      staff_id: a.staff_id, staff_name: a.staff_name, client_name: a.client_name, price: a.price,
-      price_text: money(a.price, b.currency),
+      start_at: visit[0].start_at, end_at: visit.at(-1).end_at, status: a.status,
+      service_id: services[0].id, service_ids: services.map((s) => s.id), service_name: services.map((s) => s.name).join(' + '),
+      staff_id: a.staff_id, staff_name: a.staff_name, client_name: a.client_name, price,
+      price_text: money(price, b.currency),
     },
     can_change: canChange,
   };
@@ -1017,28 +1089,28 @@ on('GET', '/api/public/r/:token', ({ db, params }) => {
 
 on('POST', '/api/public/r/:token/cancel', ({ db, params, ip }) => {
   rateLimit(`manage:${ip}`, 20, 600000);
-  const { a, canChange } = publicAppt(db, params.token);
+  const { a, visit, canChange } = publicAppt(db, params.token);
   if (!canChange) throw new HttpError(409, 'Ya no se puede cancelar en línea. Escríbele directo a la barbería.');
   db.tx(() => {
-    db.update('appointments', a.id, a.business_id, { status: 'cancelled', updated_at: nowIso() });
-    dropPending(db, a.id);
+    for (const x of visit) {
+      db.update('appointments', x.id, a.business_id, { status: 'cancelled', updated_at: nowIso() });
+      dropPending(db, x.id);
+    }
   });
   return { ok: true };
 });
 
 on('POST', '/api/public/r/:token/reschedule', ({ db, params, body, ip }) => {
   rateLimit(`manage:${ip}`, 20, 600000);
-  const { a, b, canChange } = publicAppt(db, params.token);
+  const { a, b, visit, canChange } = publicAppt(db, params.token);
   if (!canChange) throw new HttpError(409, 'Ya no se puede cambiar en línea. Escríbele directo a la barbería.');
-  const service = db.get('select * from services where id = ?', a.service_id);
+  const services = visit.map((x) => db.get('select * from services where id = ?', x.service_id));
   return db.tx(() => {
-    const { start, staff } = bookPublic(db, b, service, { start: body.start, staff_id: body.staff_id || a.staff_id }, a.id);
-    db.update('appointments', a.id, b.id, {
-      staff_id: staff.id, start_at: iso(start), end_at: iso(start + (service.duration_min + service.buffer_min) * 60000),
-      status: 'booked', updated_at: nowIso(),
-    });
-    dropPending(db, a.id);
-    scheduleForAppointment(db, apptContext(db, db.get('select * from appointments where id = ?', a.id)));
+    const ids = visit.map((x) => x.id);
+    const { start, staff } = bookPublic(db, b, services, { start: body.start, staff_id: body.staff_id || a.staff_id }, ids);
+    const moved = writeVisit(db, b, staff, services, start, visit);
+    ids.forEach((id) => dropPending(db, id));
+    scheduleVisit(db, b, moved, services, staff, db.get('select * from clients where id = ?', a.client_id));
     return { ok: true };
   });
 });

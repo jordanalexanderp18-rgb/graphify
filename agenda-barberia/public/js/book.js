@@ -13,19 +13,19 @@ const fmtWhen = (iso, tz) => {
 
 // ------------------------------------------------------------ selector de día y hora
 
-function dayPicker({ slug, serviceId, staffId, tz, onPick, onNoSlots, initialDate }) {
+function dayPicker({ slug, serviceIds, staffId, tz, onPick, onNoSlots, initialDate, ignoreToken }) {
   const box = h('div', { class: 'stack' });
   const strip = h('div', { class: 'days', role: 'group', 'aria-label': 'Día' });
   const slotsBox = h('div', { class: 'stack-sm', 'aria-live': 'polite' });
   let from = null;
   let selected = null;
-  const staffQ = staffId && staffId !== 'any' ? `&staff_id=${staffId}` : '';
+  const staffQ = `service_ids=${serviceIds.join(',')}${staffId && staffId !== 'any' ? `&staff_id=${staffId}` : ''}${ignoreToken ? `&ignore=${encodeURIComponent(ignoreToken)}` : ''}`;
 
   const loadSlots = async (date) => {
     selected = date;
     strip.querySelectorAll('.day').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.date === date)));
     clear(slotsBox, h('p', { class: 'muted' }, 'Buscando horas…'));
-    const slots = await api('GET', `/api/public/${slug}/slots?service_id=${serviceId}${staffQ}&date=${date}`);
+    const slots = await api('GET', `/api/public/${slug}/slots?${staffQ}&date=${date}`);
     if (!slots.length) return clear(slotsBox, h('p', { class: 'muted' }, 'Ese día ya no quedan horas.'), onNoSlots ? onNoSlots(date) : null);
     const groups = [['Mañana', (m) => m < 720], ['Tarde', (m) => m >= 720 && m < 1080], ['Noche', (m) => m >= 1080]];
     clear(slotsBox, groups.map(([label, test]) => {
@@ -41,7 +41,7 @@ function dayPicker({ slug, serviceId, staffId, tz, onPick, onNoSlots, initialDat
 
   const loadDays = async () => {
     clear(strip, h('span', { class: 'muted' }, 'Cargando días…'));
-    const days = await api('GET', `/api/public/${slug}/days?service_id=${serviceId}${staffQ}${from ? `&from=${from}` : ''}`);
+    const days = await api('GET', `/api/public/${slug}/days?${staffQ}${from ? `&from=${from}` : ''}`);
     if (!days.length) return clear(strip, h('p', { class: 'muted' }, 'No hay más días disponibles para reservar en línea.'));
     clear(strip, days.map((d) => {
       const [y, m, dd] = d.date.split('-').map(Number);
@@ -75,7 +75,11 @@ async function bookingFlow(slug) {
   const b = info.business;
   const tz = b.timezone;
   document.title = `Reserva en ${b.name}`;
-  const st = { service: null, staffId: null, start: null };
+  const st = { services: [], staffId: null, start: null };
+  const totalPrice = () => st.services.reduce((x, s) => x + s.price, 0);
+  const names = () => st.services.map((s) => s.name).join(' + ');
+  // Minutos de la visita con un barbero (cada uno puede tener su propia duración).
+  const minutesWith = (staff) => st.services.reduce((x, s) => x + (staff?.durations?.[s.id] || s.duration_min), 0);
   const header = () => h('header', { class: 'book-head' },
     h('h1', {}, b.name),
     b.address ? h('p', { class: 'muted' }, b.address) : null,
@@ -88,34 +92,58 @@ async function bookingFlow(slug) {
   const stepService = () => {
     if (!info.services.length) return show(h('div', { class: 'card' }, h('p', {}, 'Por ahora no hay servicios para reservar en línea. Escríbenos para agendar.')));
     const cats = [...new Set(info.services.map((s) => s.category || ''))];
+    const chosen = new Set(st.services.map((s) => s.id));
+    const next = h('button', { class: 'btn btn-primary btn-block book-next', type: 'button', onclick: () => {
+      st.services = info.services.filter((s) => chosen.has(s.id));
+      stepStaff();
+    } });
+    const refresh = () => {
+      const list = info.services.filter((s) => chosen.has(s.id));
+      next.disabled = !list.length;
+      next.textContent = list.length
+        ? `Continuar · ${list.length} servicio${list.length > 1 ? 's' : ''} · ${list.reduce((x, s) => x + s.duration_min, 0)} min · ${money(list.reduce((x, s) => x + s.price, 0), b.currency)}`
+        : 'Elige uno o más servicios';
+    };
     show(steps(0), h('section', { class: 'stack' }, h('h2', {}, '¿Qué te quieres hacer?'),
+      h('p', { class: 'xs muted' }, 'Puedes elegir varios: los hacemos seguidos en la misma visita.'),
       cats.map((c) => h('div', { class: 'stack-sm' }, c ? h('div', { class: 'label' }, c) : null,
-        info.services.filter((s) => (s.category || '') === c).map((s) => h('button', { class: 'opt', type: 'button', onclick: () => { st.service = s; stepStaff(); } },
-          h('span', { class: 'stack-sm' }, h('strong', {}, s.name), h('span', { class: 'xs muted' }, `${s.duration_min} min${s.description ? ` · ${s.description}` : ''}`)),
-          h('strong', { class: 'num' }, money(s.price, b.currency))))))));
+        info.services.filter((s) => (s.category || '') === c).map((s) => h('button', { class: 'opt', type: 'button', 'aria-pressed': String(chosen.has(s.id)), onclick: (e) => {
+          if (chosen.has(s.id)) chosen.delete(s.id);
+          else if (chosen.size >= 4) return;
+          else chosen.add(s.id);
+          e.currentTarget.setAttribute('aria-pressed', String(chosen.has(s.id)));
+          refresh();
+        } },
+        h('span', { class: 'stack-sm' }, h('strong', {}, s.name), h('span', { class: 'xs muted' }, `${s.duration_min} min${s.description ? ` · ${s.description}` : ''}`)),
+        h('strong', { class: 'num' }, money(s.price, b.currency)))))),
+      next));
+    refresh();
   };
 
   const stepStaff = () => {
-    const team = info.staff.filter((x) => x.service_ids.includes(st.service.id));
+    const team = info.staff.filter((x) => st.services.every((sv) => x.service_ids.includes(sv.id)));
+    if (!team.length) {
+      return show(steps(1), h('section', { class: 'stack' }, back(stepService), h('div', { class: 'card' }, h('p', {}, 'Ningún barbero hace todos esos servicios en una misma visita. Quita alguno e intenta de nuevo.'))));
+    }
     if (team.length === 1) { st.staffId = team[0].id; return stepTime(true); }
     show(steps(1), h('section', { class: 'stack' }, back(stepService), h('h2', {}, '¿Con quién?'),
       h('button', { class: 'opt', type: 'button', onclick: () => { st.staffId = 'any'; stepTime(); } },
         h('span', { class: 'stack-sm' }, h('strong', {}, 'Me da igual'), h('span', { class: 'xs muted' }, 'Te mostramos todas las horas libres')), h('span', { 'aria-hidden': 'true' }, '→')),
       team.map((x) => h('button', { class: `opt sc-${x.color}`, type: 'button', onclick: () => { st.staffId = x.id; stepTime(); } },
-        h('span', { class: 'row' }, avatar(x, 44), h('span', { class: 'stack-sm' }, h('strong', {}, x.name), x.specialty ? h('span', { class: 'xs muted' }, x.specialty) : null)),
+        h('span', { class: 'row' }, avatar(x, 44), h('span', { class: 'stack-sm' }, h('strong', {}, x.name), h('span', { class: 'xs muted' }, [x.specialty, `${minutesWith(x)} min`].filter(Boolean).join(' · ')))),
         h('span', { 'aria-hidden': 'true' }, '→')))));
   };
 
   const stepTime = (skippedStaff = false) => {
     const next = h('button', { class: 'btn btn-primary btn-block', type: 'button', disabled: true, onclick: stepDetails }, 'Continuar');
     const picker = dayPicker({
-      slug, serviceId: st.service.id, staffId: st.staffId, tz,
+      slug, serviceIds: st.services.map((s) => s.id), staffId: st.staffId, tz,
       onPick: (start) => { st.start = start; next.disabled = false; },
       onNoSlots: (date) => waitlistOffer(date),
     });
     show(steps(2), h('section', { class: 'stack' }, back(skippedStaff ? stepService : stepStaff),
       h('h2', {}, 'Elige tu hora'),
-      h('p', { class: 'muted' }, `${st.service.name} · ${st.service.duration_min} min${st.staffId !== 'any' ? ` · ${info.staff.find((x) => x.id === st.staffId)?.name}` : ''}`),
+      h('p', { class: 'muted' }, `${names()}${st.staffId !== 'any' ? ` · ${minutesWith(info.staff.find((x) => x.id === st.staffId))} min · ${info.staff.find((x) => x.id === st.staffId)?.name}` : ''}`),
       picker, next));
   };
 
@@ -130,7 +158,7 @@ async function bookingFlow(slug) {
         ev.preventDefault();
         await busy(form.querySelector('[type=submit]'), async () => {
           try {
-            await api('POST', `/api/public/${slug}/waitlist`, { ...formData(form), service_id: st.service.id, staff_id: st.staffId, day: date });
+            await api('POST', `/api/public/${slug}/waitlist`, { ...formData(form), service_ids: st.services.map((s) => s.id), staff_id: st.staffId, day: date });
             clear(box, h('p', {}, 'Listo. Si se libera una hora ese día te escribimos por WhatsApp.'));
           } catch (e) { showFormError(form, e); }
         });
@@ -153,7 +181,7 @@ async function bookingFlow(slug) {
       ev.preventDefault();
       await busy(form.querySelector('[type=submit]'), async () => {
         try {
-          const r = await api('POST', `/api/public/${slug}/book`, { ...formData(form), service_id: st.service.id, staff_id: st.staffId, start: st.start });
+          const r = await api('POST', `/api/public/${slug}/book`, { ...formData(form), service_ids: st.services.map((s) => s.id), staff_id: st.staffId, start: st.start });
           location.href = `/r/${r.token}?nueva=1`;
         } catch (e) {
           if (e.status === 409) {
@@ -165,8 +193,8 @@ async function bookingFlow(slug) {
       });
     });
     show(steps(3), h('section', { class: 'stack' }, back(() => stepTime()),
-      h('div', { class: 'card summary' }, h('strong', {}, st.service.name), h('span', {}, fmtWhen(st.start, tz)),
-        h('span', { class: 'muted' }, `${staffName ? `Con ${staffName} · ` : ''}${money(st.service.price, b.currency)}`)),
+      h('div', { class: 'card summary' }, h('strong', {}, names()), h('span', {}, fmtWhen(st.start, tz)),
+        h('span', { class: 'muted' }, `${staffName ? `Con ${staffName} · ` : ''}${money(totalPrice(), b.currency)}`)),
       h('h2', {}, 'Tus datos'), form));
     form.querySelector('input').focus();
   };
@@ -209,7 +237,7 @@ async function manage(token) {
     }));
     clear(root, h('header', { class: 'book-head' }, h('h1', {}, 'Cambiar hora'), h('p', { class: 'muted' }, `${a.service_name} con ${a.staff_name}`)),
       h('button', { class: 'btn btn-ghost btn-sm', type: 'button', onclick: () => manage(token) }, '← Volver'),
-      dayPicker({ slug: b.slug, serviceId: a.service_id, staffId: a.staff_id, tz, initialDate: partsIn(a.start_at, tz).date, onPick: (s) => { start = s; save.disabled = false; } }),
+      dayPicker({ slug: b.slug, serviceIds: a.service_ids, staffId: a.staff_id, tz, ignoreToken: token, initialDate: partsIn(a.start_at, tz).date, onPick: (s) => { start = s; save.disabled = false; } }),
       save);
   };
 

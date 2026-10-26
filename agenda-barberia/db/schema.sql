@@ -105,6 +105,7 @@ create index if not exists services_business on services (business_id);
 create table if not exists staff_services (
   staff_id text not null references staff(id) on delete cascade,
   service_id text not null references services(id) on delete cascade,
+  duration_min integer check (duration_min between 5 and 480),  -- null = la del servicio
   primary key (staff_id, service_id)
 );
 create index if not exists staff_services_service on staff_services (service_id);
@@ -138,6 +139,7 @@ create table if not exists appointments (
   notes text not null default '',
   token text not null unique,          -- enlace de gestión para el cliente
   sale_id text,
+  group_id text,                       -- visita con varios servicios: id de la primera cita
   created_at text not null default (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
   updated_at text not null default (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
   check (end_at > start_at)
@@ -145,6 +147,7 @@ create table if not exists appointments (
 create index if not exists appointments_staff_time on appointments (staff_id, start_at);
 create index if not exists appointments_business_time on appointments (business_id, start_at);
 create index if not exists appointments_client on appointments (client_id);
+create index if not exists appointments_group on appointments (group_id) where group_id is not null;
 
 create table if not exists products (
   id text primary key,

@@ -1,21 +1,36 @@
-// Motor de disponibilidad: qué horas puede tomar un servicio con un barbero.
+// Motor de disponibilidad: qué horas puede tomar una visita (uno o varios
+// servicios seguidos) con un barbero. Cada barbero puede tener su propia
+// duración para un servicio (staff_services.duration_min).
 import { zonedToUtc, weekdayOf, localParts, addDays, todayIn, iso } from './time.js';
 
 const ACTIVE = "status in ('booked','confirmed','done')";
 
-export function staffForService(db, businessId, serviceId) {
+// Barberos activos que hacen todos los servicios pedidos.
+export function staffForServices(db, businessId, serviceIds) {
+  const ids = [...new Set(serviceIds)];
   return db.all(
-    `select s.* from staff s join staff_services ss on ss.staff_id = s.id
-     where s.business_id = ? and ss.service_id = ? and s.active = 1 order by s.sort, s.name`,
-    businessId, serviceId);
+    `select s.* from staff s where s.business_id = ? and s.active = 1
+       and (select count(*) from staff_services ss where ss.staff_id = s.id
+            and ss.service_id in (${ids.map(() => '?').join(',')})) = ?
+     order by s.sort, s.name`,
+    businessId, ...ids, ids.length);
 }
+export const staffForService = (db, businessId, serviceId) => staffForServices(db, businessId, [serviceId]);
+
+// Minutos que ocupa un servicio con un barbero (incluye el tiempo extra).
+export function minutesFor(db, staffId, service) {
+  const o = db.get('select duration_min from staff_services where staff_id = ? and service_id = ?', staffId, service.id);
+  return (o?.duration_min ?? service.duration_min) + service.buffer_min;
+}
+export const visitMinutes = (db, staffId, services) => services.reduce((s, sv) => s + minutesFor(db, staffId, sv), 0);
 
 // Intervalos ocupados [ms, ms) de un barbero que tocan [fromMs, toMs).
-export function busyIntervals(db, staffId, fromMs, toMs, ignoreAppointmentId = '') {
+export function busyIntervals(db, staffId, fromMs, toMs, ignore = []) {
+  const skip = Array.isArray(ignore) ? ignore : [ignore];
   const a = db.all(
-    `select start_at, end_at from appointments
-     where staff_id = ? and ${ACTIVE} and end_at > ? and start_at < ? and id <> ?`,
-    staffId, iso(fromMs), iso(toMs), ignoreAppointmentId);
+    `select id, start_at, end_at from appointments
+     where staff_id = ? and ${ACTIVE} and end_at > ? and start_at < ?`,
+    staffId, iso(fromMs), iso(toMs)).filter((r) => !skip.includes(r.id));
   const t = db.all(
     'select start_at, end_at from time_off where staff_id = ? and end_at > ? and start_at < ?',
     staffId, iso(fromMs), iso(toMs));
@@ -29,22 +44,22 @@ export function hoursFor(db, staffId, weekday) {
 
 const overlaps = (s, e, list) => list.some(([bs, be]) => s < be && e > bs);
 
-// Horas libres de un barbero en una fecha local. Devuelve ms UTC de inicio.
-// opts.enforcePolicy aplica anticipación mínima y días máximos (reserva pública).
-export function staffSlots(db, business, staff, service, date, opts = {}) {
+// Horas libres de un barbero en una fecha local para una visita de lenMin
+// minutos. Devuelve ms UTC de inicio. opts.enforcePolicy aplica la
+// anticipación mínima (reserva pública).
+export function staffSlots(db, business, staff, lenMin, date, opts = {}) {
   const tz = business.timezone;
-  const len = (service.duration_min + service.buffer_min) * 60000;
-  const step = business.slot_step_min;
+  const len = lenMin * 60000;
   const ranges = hoursFor(db, staff.id, weekdayOf(date));
   if (!ranges.length) return [];
   const dayStart = zonedToUtc(date, 0, tz);
   const dayEnd = zonedToUtc(addDays(date, 1), 0, tz);
-  const busy = busyIntervals(db, staff.id, dayStart, dayEnd + len, opts.ignoreAppointmentId);
+  const busy = busyIntervals(db, staff.id, dayStart, dayEnd + len, opts.ignore);
   const now = opts.now ?? Date.now();
   const earliest = opts.enforcePolicy ? now + business.min_notice_min * 60000 : now;
   const out = [];
   for (const { start_min, end_min } of ranges) {
-    for (let m = start_min; m + service.duration_min + service.buffer_min <= end_min; m += step) {
+    for (let m = start_min; m + lenMin <= end_min; m += business.slot_step_min) {
       const s = zonedToUtc(date, m, tz);
       if (s < earliest) continue;
       if (overlaps(s, s + len, busy)) continue;
@@ -59,12 +74,12 @@ export function withinPolicyWindow(business, date) {
   return date >= today && date <= addDays(today, business.max_days_ahead);
 }
 
-// Huecos para "cualquier barbero" o uno puntual. [{ start, staff_ids }]
-export function slotsFor(db, business, service, date, staffId, opts = {}) {
-  const team = staffForService(db, business.id, service.id).filter((s) => !staffId || s.id === staffId);
+// Huecos para "cualquier barbero" o uno puntual. [{ start, time, staff_ids }]
+export function slotsFor(db, business, services, date, staffId, opts = {}) {
+  const team = staffForServices(db, business.id, services.map((s) => s.id)).filter((s) => !staffId || s.id === staffId);
   const byStart = new Map();
   for (const st of team) {
-    for (const s of staffSlots(db, business, st, service, date, opts)) {
+    for (const s of staffSlots(db, business, st, visitMinutes(db, st.id, services), date, opts)) {
       if (!byStart.has(s)) byStart.set(s, []);
       byStart.get(s).push(st.id);
     }
@@ -74,22 +89,22 @@ export function slotsFor(db, business, service, date, staffId, opts = {}) {
   }));
 }
 
-// ¿Puede este barbero tomar [start, start+len) ? Revisa horario y solapamientos.
-export function isBookable(db, business, staff, service, startMs, { ignoreAppointmentId, checkHours = true } = {}) {
-  const len = (service.duration_min + service.buffer_min) * 60000;
+// ¿Puede este barbero tomar [start, start+lenMin) ? Revisa horario y solapamientos.
+export function isBookable(db, business, staff, lenMin, startMs, { ignore, checkHours = true } = {}) {
+  const len = lenMin * 60000;
   if (checkHours) {
     const lp = localParts(startMs, business.timezone);
-    const endMin = lp.min + service.duration_min + service.buffer_min;
+    const endMin = lp.min + lenMin;
     const fits = hoursFor(db, staff.id, lp.weekday).some((r) => lp.min >= r.start_min && endMin <= r.end_min);
     if (!fits) return { ok: false, reason: 'outside_hours' };
   }
-  const busy = busyIntervals(db, staff.id, startMs, startMs + len, ignoreAppointmentId);
+  const busy = busyIntervals(db, staff.id, startMs, startMs + len, ignore);
   if (overlaps(startMs, startMs + len, busy)) return { ok: false, reason: 'overlap' };
   return { ok: true };
 }
 
 // Para "cualquiera": el barbero libre con menos citas ese día (reparte la carga).
-export function pickStaff(db, business, candidates, startMs, tz) {
+export function pickStaff(db, candidates, startMs, tz) {
   if (candidates.length < 2) return candidates[0];
   const date = localParts(startMs, tz).date;
   const from = iso(zonedToUtc(date, 0, tz));

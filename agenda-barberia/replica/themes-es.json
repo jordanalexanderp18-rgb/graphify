@@ -1,0 +1,179 @@
+{
+ "_about": "Temas en español para software de agenda de belleza/barbería. Usado con reviews.py --themes.",
+ "request_patterns": [
+  "me gustar[ií]a",
+  "deber[ií]a",
+  "podr[ií]a(n)? (mejorar|tener|poner|agregar|integrar|cambiar)",
+  "\\bfalta\\b",
+  "no se puede",
+  "no (tiene|tienen|permite|deja)",
+  "ser[ií]a bueno",
+  "carece",
+  "desear[ií]a",
+  "ojal[aá]",
+  "tendr[ií]an que",
+  "se sugiere",
+  "conf[ií]o en que"
+ ],
+ "themes": [
+  {
+   "id": "whatsapp_cost",
+   "label": "Mensajes de WhatsApp limitados o cobrados aparte",
+   "kind": "complaint",
+   "patterns": [
+    "mensajes? de whats?app",
+    "recordatorios? por whats?app",
+    "se acaban? (muy r[aá]pido )?los mensajes",
+    "se (me )?termina el n[uú]mero de recordatorios",
+    "pagar m[aá]s por recordatorios",
+    "cobraran los mensajes",
+    "comprar aparte",
+    "mensajes de confirmaci[oó]n"
+   ]
+  },
+  {
+   "id": "mobile_app",
+   "label": "App móvil lenta o que falla",
+   "kind": "complaint",
+   "patterns": [
+    "\\bapp\\b",
+    "celular",
+    "tel[eé]fono",
+    "se queda cargando",
+    "velocidad",
+    "robustez",
+    "no sirve",
+    "cerrar y abrir la aplicacion",
+    "versi[oó]n.*(tel[eé]fonos|celulares)"
+   ]
+  },
+  {
+   "id": "multi_service",
+   "label": "No se pueden reservar varios servicios juntos",
+   "kind": "request",
+   "patterns": [
+    "varios servicios",
+    "carrito",
+    "varias citas",
+    "m[uú]ltiples servicios",
+    "agrupar",
+    "adicionales o paquetes"
+   ]
+  },
+  {
+   "id": "payments",
+   "label": "Pagos, abonos y cobros complicados",
+   "kind": "complaint",
+   "patterns": [
+    "\\bpagos?\\b",
+    "abonos?",
+    "cobro",
+    "apartado",
+    "membres[ií]a",
+    "tarjeta",
+    "marcar que pagaron"
+   ]
+  },
+  {
+   "id": "pricing",
+   "label": "Precio y funciones cobradas aparte",
+   "kind": "complaint",
+   "patterns": [
+    "\\bprecio\\b",
+    "aumento",
+    "obliga a pagar",
+    "se cobra",
+    "tarifas",
+    "pagar muchas funciones"
+   ]
+  },
+  {
+   "id": "rebooking",
+   "label": "Reactivar clientes que no vuelven",
+   "kind": "request",
+   "patterns": [
+    "recompra",
+    "no agendaron",
+    "es hora de una nueva cita",
+    "cliente frecuente",
+    "fideliz"
+   ]
+  },
+  {
+   "id": "per_staff_duration",
+   "label": "Duración del servicio distinta por barbero",
+   "kind": "request",
+   "patterns": [
+    "tiempos de servicios independientes",
+    "cada barbero",
+    "por cada profesional"
+   ]
+  },
+  {
+   "id": "editing",
+   "label": "Corregir o mover citas es engorroso",
+   "kind": "complaint",
+   "patterns": [
+    "correcciones en agendamiento",
+    "cancelar y partir de 0",
+    "no se borra",
+    "editar",
+    "se equivoca"
+   ]
+  },
+  {
+   "id": "cash",
+   "label": "Cuadre de caja poco claro",
+   "kind": "complaint",
+   "patterns": [
+    "manejo de caja",
+    "cortes? de caja",
+    "cuadre",
+    "flujos de dinero",
+    "ventas"
+   ]
+  },
+  {
+   "id": "team_view",
+   "label": "El equipo no ve la agenda de los demás",
+   "kind": "request",
+   "patterns": [
+    "ver las agendas",
+    "mi compa[nñ]ero"
+   ]
+  },
+  {
+   "id": "marketing",
+   "label": "Marketing y campañas difíciles",
+   "kind": "request",
+   "patterns": [
+    "marketing",
+    "campa[nñ]as",
+    "listas para poder hacer env[ií]o",
+    "redes sociales"
+   ]
+  },
+  {
+   "id": "learning",
+   "label": "Curva de aprendizaje y capacitación",
+   "kind": "complaint",
+   "patterns": [
+    "capacitaci[oó]n",
+    "complex",
+    "entender el funcionamiento",
+    "aprendiendo",
+    "cuesta acostumbrarse",
+    "no se notifica a tiempo",
+    "cambia mucho"
+   ]
+  },
+  {
+   "id": "client_calendar",
+   "label": "La cita no llega al calendario del cliente",
+   "kind": "request",
+   "patterns": [
+    "google calendar"
+   ]
+  }
+ ]
+}

@@ -1,14 +1,14 @@
 /* Generado por scripts/tokens.mjs desde replica/design/tokens.json. No editar a mano. */
 :root {
   --c-bg: #ffffff;
-  --c-surface: #f5f6f8;
-  --c-surface-2: #eceef2;
-  --c-border: #e1e4e9;
-  --c-border-input: #7d8591;
-  --c-text: #15181d;
-  --c-text-muted: #59616d;
-  --c-accent: #3a4ccf;
-  --c-accent-soft: #e8ebfb;
+  --c-surface: #f7f5f2;
+  --c-surface-2: #eeeae4;
+  --c-border: #e4dfd8;
+  --c-border-input: #857c72;
+  --c-text: #1b1714;
+  --c-text-muted: #5e5650;
+  --c-accent: #a63d14;
+  --c-accent-soft: #fbede6;
   --c-on-accent: #ffffff;
   --c-danger: #b42828;
   --c-danger-soft: #fbeaea;
@@ -16,13 +16,13 @@
   --c-success-soft: #e6f4ec;
   --c-warning: #8a5a00;
   --c-warning-soft: #fdf3dc;
-  --c-staff-1: #3a4ccf;
+  --c-staff-1: #a63d14;
   --c-staff-2: #1d7148;
-  --c-staff-3: #a1471a;
-  --c-staff-4: #7a3db8;
+  --c-staff-3: #1f4e8c;
+  --c-staff-4: #7a5a00;
   --c-staff-5: #0f6f86;
   --c-staff-6: #a8325e;
-  --c-scrim: rgba(16,24,40,.45);
+  --c-scrim: rgba(27,23,20,.5);
   --font-sans: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
   --fs-xs: 0.75rem;
@@ -56,8 +56,8 @@
   --r-md: 10px;
   --r-lg: 16px;
   --r-pill: 999px;
-  --shadow-card: 0 1px 2px rgba(16,24,40,.06), 0 1px 3px rgba(16,24,40,.10);
-  --shadow-pop: 0 12px 32px rgba(16,24,40,.18);
+  --shadow-card: 0 1px 2px rgba(27,23,20,.06), 0 1px 3px rgba(27,23,20,.10);
+  --shadow-pop: 0 12px 32px rgba(27,23,20,.18);
   --motion-fast: 120ms;
   --motion-base: 200ms;
   --motion-ease: cubic-bezier(.2,.8,.2,1);

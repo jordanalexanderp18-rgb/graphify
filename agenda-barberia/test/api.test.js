@@ -263,6 +263,52 @@ test('foto del barbero: valida formato y se sirve', async () => {
   assert.ok(list[0].photo_url && !('photo' in list[0]), 'el listado no arrastra la imagen completa');
 });
 
+test('visita con varios servicios y duración propia por barbero', async () => {
+  const { c, business } = await signup(srv.base, 10, { demo: false });
+  const corte = (await c.post('/api/services', { name: 'Corte', duration_min: 30, price: 10000 })).data;
+  const barba = (await c.post('/api/services', { name: 'Barba', duration_min: 20, price: 6000 })).data;
+  const week = [1, 2, 3, 4, 5].map((weekday) => ({ weekday, start: '10:00', end: '12:00' }));
+  // Rápido corta en 20; Lento usa la duración del servicio.
+  const rapido = (await c.post('/api/staff', { name: 'Rápido', hours: week, service_ids: [corte.id, barba.id], service_durations: { [corte.id]: 20 } })).data;
+  const lento = (await c.post('/api/staff', { name: 'Lento', hours: week, service_ids: [corte.id] })).data;
+  assert.equal(rapido.durations[corte.id], 20);
+  const pub = client(srv.base);
+  const date = nextWeekday(3);
+  const q = (ids, staff) => `/api/public/${business.slug}/slots?service_ids=${ids.join(',')}&staff_id=${staff}&date=${date}`;
+  // 10:00-12:00 con paso de 15: Rápido (20 min) llega hasta 11:30; Lento (30) hasta 11:30 también, pero 11:45 no.
+  assert.ok((await pub.get(q([corte.id], rapido.id))).data.some((s) => s.time === '11:30'));
+  assert.ok(!(await pub.get(q([corte.id], lento.id))).data.some((s) => s.time === '11:45'));
+  // Corte + barba: solo Rápido hace ambos; 20 + 20 = 40 min -> última 11:15.
+  const both = (await pub.get(`/api/public/${business.slug}/slots?service_ids=${corte.id},${barba.id}&date=${date}`)).data;
+  assert.equal(both.at(-1).time, '11:15');
+  const book = await pub.post(`/api/public/${business.slug}/book`, {
+    service_ids: [corte.id, barba.id], staff_id: 'any', start: at(date, '10:00'), name: 'Combo', phone: '911110000',
+  });
+  assert.equal(book.status, 201, JSON.stringify(book.data));
+  const view = (await pub.get(`/api/public/r/${book.data.token}`)).data;
+  assert.equal(view.appointment.service_name, 'Corte + Barba');
+  assert.equal(view.appointment.price, 16000);
+  assert.equal(view.appointment.end_at, at(date, '10:40'));
+  const agenda = (await c.get(`/api/appointments?from=${date}&to=${date}`)).data;
+  assert.equal(agenda.length, 2);
+  assert.ok(agenda.every((a) => a.staff_id === rapido.id && a.group_id === agenda[0].group_id));
+  // Un solo recordatorio por visita, no uno por servicio.
+  const rem = (await c.get('/api/reminders')).data.filter((r) => r.client_name === 'Combo');
+  assert.equal(rem.filter((r) => r.kind === 'reminder').length, 1);
+  assert.match(rem[0].body, /Corte \+ Barba/);
+  // Reprogramar a 10:15 (se cruza con su propia hora actual) funciona.
+  assert.equal((await pub.post(`/api/public/r/${book.data.token}/reschedule`, { start: at(date, '10:15') })).status, 200);
+  const moved = (await c.get(`/api/appointments?from=${date}&to=${date}`)).data;
+  assert.deepEqual(moved.map((a) => a.start_at), [at(date, '10:15'), at(date, '10:35')]);
+  // Cobrar la primera cobra la visita completa.
+  const sale = await c.post('/api/sales', { appointment_id: moved[0].id, payment_method: 'card', items: moved.map((a) => ({ kind: 'service', ref_id: a.service_id, unit_price: a.price })) });
+  assert.equal(sale.status, 201);
+  assert.ok((await c.get(`/api/appointments?from=${date}&to=${date}`)).data.every((a) => a.status === 'done' && a.sale_id === sale.data.id));
+  // Anular devuelve ambas a por cobrar.
+  assert.equal((await c.del(`/api/sales/${sale.data.id}`)).status, 200);
+  assert.ok((await c.get(`/api/appointments?from=${date}&to=${date}`)).data.every((a) => a.status === 'booked' && !a.sale_id));
+});
+
 test('solo JSON en escrituras y errores claros', async () => {
   const r = await fetch(`${srv.base}/api/auth/login`, { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: 'email=a&password=b' });
   assert.equal(r.status, 415);

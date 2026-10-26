@@ -46,3 +46,11 @@ Integración Google Calendar,integraciones,could,yes,partial,el cliente agrega s
 Reservar con Google (Reserve with Google),integraciones,could,yes,skip,requiere ser partner aprobado de Google; no es parte del producto que se puede reconstruir
 Marketplace de AgendaPro,integraciones,could,yes,skip,es la red y los usuarios del original
 Facturación electrónica por país,caja,could,yes,skip,regulado por país (SII/SAT/DIAN); se integra con un proveedor certificado después
+Reservar varios servicios en una visita (carrito),reservas online,should,no,yes,fix replica-entrepreneur: 5 reseñas piden agrupar servicios
+Un solo recordatorio por visita y no por servicio,notificaciones,should,no,yes,fix: queja de recordatorio por servicio
+Duración del servicio distinta por barbero,equipo,should,no,yes,fix: barberos rápidos y lentos
+"Aviso automático ""te toca corte"" según última visita",marketing,should,no,yes,fix: pedido de recompra
+Mensajes de WhatsApp sin límite ni costo por mensaje,notificaciones,must,no,partial,fix: envío con un toque ilimitado; automático con la cuenta Meta del dueño (paga a Meta directo)
+Cuadre de caja con desglose por medio de pago y diferencia,caja,should,no,yes,fix: queja de cortes de caja inexactos
+Cliente agrega su cita a Google Calendar o .ics,reservas online,could,no,yes,fix: pedido de calendario del cliente
+Lista de espera cuando el día está lleno,reservas online,could,no,yes,mejora propia

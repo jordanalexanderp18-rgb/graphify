@@ -94,6 +94,41 @@ to it by construction.
 
 ## Log
 
+## 2026-10-26 — Silla Llena: agenda para barberías (Replica)
+
+- **Branch:** `claude/agenda-pro-barberia-xh123i`
+- **Touched:** `agenda-barberia/` (app nueva, independiente de graphify)
+
+### Context
+Jordan quería saber qué es AgendaPro y luego clonarlo "o algo mucho mejor"
+para barberías. Se corrió el pack Replica (skill `replica-clonar-apps`) de
+recon a launch. El deploy no se hizo: requiere que Jordan diga "go".
+
+### Decisions
+- Node 22 + `node:sqlite` + JS puro, **cero dependencias npm**, en lugar del
+  stack Next.js + Supabase del pack. Corre con `npm start` sin cuentas ni
+  claves; el esquema es SQL estándar, migrable a Postgres.
+- Sin claves de Meta, los mensajes de WhatsApp quedan "por enviar" con un
+  enlace wa.me (un toque, sin límite). Con `WHATSAPP_TOKEN` salen solos.
+- Visitas con varios servicios: N citas consecutivas con `group_id` = id de la
+  primera; un recordatorio, un enlace y un cobro por visita.
+- Ingresos en reportes por fecha de cobro (cuadra con la caja), no de la cita.
+- Nombre de trabajo "Silla Llena"; la búsqueda de marca registrada está
+  pendiente (`agenda-barberia/replica/brand.md`).
+
+### Rejected
+- Nombres Filo, Navaja (NavajaBook es competidor directo), Turnio, Rasura
+  (marca ® de afeitado), Perfila, Fadeo, Cortia: ya en uso.
+- Comparación visual con el original: no se guardaron capturas suyas
+  (solo fuentes públicas de texto); `replica/screens/` está vacío a propósito.
+
+### Open
+- Faltan 2 obligatorias para el envío automático de WhatsApp: plantillas Meta
+  y la cuenta del dueño. Pendientes: anticipo y pago online, suscripción y
+  límites por plan (la landing anuncia precios y una prueba de 30 días que
+  aún no se cobran ni se aplican), SMS, campañas y multi-sucursal.
+- Para `graphify update .` hubo que correr `pip install -e .` en el contenedor.
+
 ## 2026-10-02 — Command board across agents
 
 - **Branch:** `claude/session-history-c0kdq7` (restarted from v8 after PR #2 merged)

@@ -1,7 +1,7 @@
 // Utilidades de interfaz compartidas. Todo el texto entra con textContent:
 // nunca se arma HTML con datos de usuarios.
 
-export const APP_NAME = 'Filo';
+export const APP_NAME = 'Silla Llena';
 
 export function h(tag, attrs = {}, ...children) {
   const el = document.createElement(tag);

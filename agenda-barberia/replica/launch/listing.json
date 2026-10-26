@@ -1,0 +1,16 @@
+{
+  "avoid": ["AgendaPro", "Agenda Pro", "agendapro"],
+  "app_store": {
+    "name": "Silla Llena: Barbería",
+    "subtitle": "Reservas, caja y comisiones",
+    "promotional_text": "Nuevo: varios servicios en una sola reserva y duración propia para cada barbero. Mensajes de WhatsApp sin límite.",
+    "description": "Silla Llena es la agenda de tu barbería, hecha para el celular.\n\nTus clientes reservan solos desde un enlace: eligen servicio, barbero y hora, sin descargar nada. Reciben su confirmación y recordatorio por WhatsApp, sin límite de mensajes.\n\nQué incluye:\n- Agenda del día y de la semana por barbero\n- Reservas online 24/7 sin dobles reservas\n- Varios servicios en una misma visita\n- Duración propia por barbero\n- Aviso automático de \"te toca corte\"\n- Caja con cuadre exacto por medio de pago\n- Comisiones y propinas por barbero\n- Clientes con historial, inventario y reportes\n- Lista de espera para días llenos\n\nGratis para un barbero. Plan Barbería US$15 al mes hasta 5 barberos.",
+    "keywords": "barberia,barbero,citas,turnos,agenda,peluqueria,whatsapp,recordatorios,corte,barba",
+    "whats_new": "Varios servicios en una sola reserva y duración por barbero."
+  },
+  "google_play": {
+    "title": "Silla Llena: Barbería",
+    "short_description": "Reservas online, recordatorios por WhatsApp y caja para tu barbería.",
+    "full_description": "Silla Llena es la agenda de tu barbería, hecha para el celular.\n\nTus clientes reservan solos desde un enlace y reciben confirmación y recordatorio por WhatsApp, sin límite de mensajes. Tú ves la agenda por barbero, cobras con cuadre de caja exacto y las comisiones se calculan solas.\n\nGratis para un barbero. Plan Barbería US$15 al mes hasta 5 barberos."
+  }
+}

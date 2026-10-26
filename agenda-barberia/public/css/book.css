@@ -19,3 +19,4 @@ body { background: var(--c-surface); }
 .summary { display: flex; flex-direction: column; gap: var(--s-1); }
 .ok-mark { width: 56px; height: 56px; border-radius: 50%; background: var(--c-success-soft); color: var(--c-success); display: grid; place-items: center; font-size: 28px; font-weight: 700; }
 .foot { text-align: center; }
+.book-next { position: sticky; bottom: var(--s-4); box-shadow: var(--shadow-pop); }

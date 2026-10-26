@@ -36,6 +36,10 @@ async function step(name, fn) {
     throw e;
   }
 }
+const pickServices = async (page, ...names) => {
+  for (const n of names) await page.getByRole('button', { name: n }).click();
+  await page.getByRole('button', { name: /^Continuar · / }).click();
+};
 const shot = (page, id) => page.screenshot({ path: `${SHOTS}${id}.png`, fullPage: false });
 
 const browser = await chromium.launch();
@@ -59,6 +63,7 @@ try {
   await step('S02 agenda del día con columnas por barbero', async () => {
     await page.getByText('Matías Rojas').first().waitFor();
     await shot(page, 'S02');
+    await page.screenshot({ path: new URL('../public/img/agenda.png', import.meta.url).pathname });
   });
 
   await step('S03 vista semanal', async () => {
@@ -107,7 +112,7 @@ try {
     await guest.goto(`${BASE}/b/${slug}`);
     await guest.getByRole('heading', { name: 'Barbería El Bigote' }).waitFor();
     await shot(guest, 'S15');
-    await guest.getByRole('button', { name: /Degradado \(fade\)/ }).click();
+    await pickServices(guest, /Degradado \(fade\)/);
     await guest.getByRole('button', { name: /Me da igual/ }).click();
     await guest.getByRole('button', { name: new RegExp(`^${await guest.evaluate((d) => {
       const [y, m, dd] = d.split('-').map(Number);
@@ -116,6 +121,7 @@ try {
     }, target)}$`) }).click();
     await guest.getByRole('button', { name: '11:00', exact: true }).click();
     await shot(guest, 'S16');
+    await guest.screenshot({ path: new URL('../public/img/reserva.png', import.meta.url).pathname });
     await guest.getByRole('button', { name: 'Continuar' }).click();
     await guest.getByLabel('Nombre y apellido').fill('Ana María Núñez');
     await guest.getByLabel('WhatsApp').fill('9 8765 4321');
@@ -124,6 +130,21 @@ try {
     await guest.getByRole('heading', { name: '¡Reserva lista!' }).waitFor();
     await shot(guest, 'S18');
     manageUrl = guest.url().split('?')[0];
+  });
+
+  await step('F01b visita con dos servicios seguidos y un solo cobro', async () => {
+    await guest.goto(`${BASE}/b/${slug}`);
+    await pickServices(guest, /Corte clásico/, /Cejas/);
+    await guest.getByRole('button', { name: /Diego Fuentes/ }).click();
+    await guest.getByText('Corte clásico + Cejas').waitFor();
+    await guest.locator('.slot').first().click();
+    await guest.getByRole('button', { name: 'Continuar' }).click();
+    await guest.getByLabel('Nombre y apellido').fill('Doble Servicio');
+    await guest.getByLabel('WhatsApp').fill('987650555');
+    await guest.getByRole('button', { name: 'Confirmar reserva' }).click();
+    await guest.getByRole('heading', { name: '¡Reserva lista!' }).waitFor();
+    await guest.getByText('Corte clásico + Cejas').waitFor();
+    await guest.getByText('$13.000').waitFor();
   });
 
   await step('F02 cliente reprograma su hora', async () => {
@@ -262,7 +283,7 @@ try {
 
   await step('F02 cliente cancela y la hora se libera', async () => {
     await guest.goto(`${BASE}/b/${slug}`);
-    await guest.getByRole('button', { name: /Perfilado de barba/ }).click();
+    await pickServices(guest, /Perfilado de barba/);
     await guest.getByRole('button', { name: /Diego Fuentes/ }).click();
     await guest.locator('.slot').first().waitFor();
     const time = await guest.locator('.slot').first().innerText();
@@ -275,7 +296,7 @@ try {
     await guest.getByRole('dialog').getByRole('button', { name: 'Sí, cancelar' }).click();
     await guest.getByText('Esta reserva está cancelada.').waitFor();
     await guest.goto(`${BASE}/b/${slug}`);
-    await guest.getByRole('button', { name: /Perfilado de barba/ }).click();
+    await pickServices(guest, /Perfilado de barba/);
     await guest.getByRole('button', { name: /Diego Fuentes/ }).click();
     await guest.getByRole('button', { name: time, exact: true }).first().waitFor();
   });
@@ -285,6 +306,8 @@ try {
     watch(k, 'teclado');
     await k.goto(`${BASE}/b/${slug}`);
     await k.getByRole('button', { name: /Corte clásico/ }).focus();
+    await k.keyboard.press('Enter');
+    await k.getByRole('button', { name: /^Continuar · / }).focus();
     await k.keyboard.press('Enter');
     await k.getByRole('button', { name: /Me da igual/ }).focus();
     await k.keyboard.press('Enter');
@@ -300,6 +323,22 @@ try {
     await k.keyboard.press('Enter');
     await k.getByRole('heading', { name: '¡Reserva lista!' }).waitFor();
     await k.close();
+  });
+
+  await step('página de inicio sin errores, en escritorio y celular', async () => {
+    for (const vp of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+      const l = await browser.newPage({ viewport: vp });
+      watch(l, `inicio-${vp.width}`);
+      await l.goto(`${BASE}/`);
+      await l.getByRole('heading', { level: 1 }).waitFor();
+      const broken = await l.evaluate(() => [...document.images].filter((i) => !i.naturalWidth).map((i) => i.src));
+      if (broken.length) throw new Error(`imágenes rotas: ${broken.join(', ')}`);
+      if (await l.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1)) throw new Error(`scroll horizontal a ${vp.width}px`);
+      await l.screenshot({ path: `${SHOTS}landing-${vp.width}.png`, fullPage: true });
+      await l.getByRole('link', { name: 'Crear mi barbería gratis' }).first().click();
+      await l.getByRole('heading', { name: 'Crea tu barbería' }).waitFor();
+      await l.close();
+    }
   });
 
   if (problems.length) throw new Error(`Problemas detectados:\n${problems.join('\n')}`);
