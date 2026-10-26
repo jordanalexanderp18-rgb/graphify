@@ -23,6 +23,17 @@ create table if not exists businesses (
   cancel_window_min integer not null default 120 check (cancel_window_min >= 0),
   reminder_hours integer not null default 24 check (reminder_hours between 1 and 72),
   rebook_days integer not null default 28 check (rebook_days between 7 and 120),
+  -- anticipo: instrucciones de transferencia y/o enlace de pago propio (Mercado Pago, etc.)
+  deposit_instructions text not null default '',
+  payment_link text not null default '',
+  message_channel text not null default 'whatsapp' check (message_channel in ('whatsapp','sms')),
+  -- suscripción
+  plan text not null default 'barberia' check (plan in ('free','barberia','cadena')),
+  plan_status text not null default 'trialing' check (plan_status in ('trialing','active','past_due','canceled')),
+  trial_ends_at text,
+  stripe_customer_id text,
+  stripe_subscription_id text,
+  owner_business_id text,              -- sucursal: id del negocio principal (para facturar una vez)
   created_at text not null default (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
   updated_at text not null default (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
 );
@@ -58,6 +69,7 @@ create index if not exists users_business on users (business_id);
 create table if not exists sessions (
   id text primary key,          -- sha256 del token; el token solo vive en la cookie
   user_id text not null references users(id) on delete cascade,
+  business_id text,             -- sucursal activa (si el usuario tiene varias)
   expires_at text not null,
   created_at text not null default (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
 );
@@ -119,6 +131,7 @@ create table if not exists clients (
   notes text not null default '',
   tags text not null default '',
   birthday text not null default '',  -- MM-DD
+  marketing_opt_out integer not null default 0 check (marketing_opt_out in (0,1)),
   created_at text not null default (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
 );
 create index if not exists clients_business on clients (business_id, name);
@@ -140,6 +153,8 @@ create table if not exists appointments (
   token text not null unique,          -- enlace de gestión para el cliente
   sale_id text,
   group_id text,                       -- visita con varios servicios: id de la primera cita
+  deposit integer not null default 0,  -- anticipo pedido
+  deposit_status text not null default 'none' check (deposit_status in ('none','pending','paid')),
   created_at text not null default (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
   updated_at text not null default (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
   check (end_at > start_at)
@@ -188,6 +203,7 @@ create table if not exists sales (
   discount integer not null default 0 check (discount >= 0),
   tip integer not null default 0 check (tip >= 0),
   tip_staff_id text references staff(id) on delete set null,
+  prepaid integer not null default 0 check (prepaid >= 0),  -- anticipo ya recibido, se descuenta del total
   total integer not null,
   payment_method text not null check (payment_method in ('cash','card','transfer','online')),
   created_by text references users(id) on delete set null,
@@ -216,7 +232,7 @@ create table if not exists reminders (
   business_id text not null references businesses(id) on delete cascade,
   appointment_id text references appointments(id) on delete cascade,
   client_id text references clients(id) on delete cascade,
-  kind text not null check (kind in ('confirmation','reminder','rebook','cancelled')),
+  kind text not null check (kind in ('confirmation','reminder','rebook','cancelled','campaign')),
   channel text not null check (channel in ('whatsapp','email','sms')),
   send_at text not null,
   status text not null default 'pending' check (status in ('pending','sent','manual','failed','skipped')),
@@ -240,3 +256,20 @@ create table if not exists waitlist (
   created_at text not null default (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
 );
 create index if not exists waitlist_day on waitlist (business_id, day, status);
+
+-- Sucursales: un usuario puede trabajar en varios negocios.
+create table if not exists memberships (
+  user_id text not null references users(id) on delete cascade,
+  business_id text not null references businesses(id) on delete cascade,
+  role text not null check (role in ('owner','reception','barber')),
+  staff_id text references staff(id) on delete set null,
+  primary key (user_id, business_id)
+);
+create index if not exists memberships_business on memberships (business_id);
+
+-- Eventos de Stripe ya procesados (los webhooks llegan repetidos).
+create table if not exists billing_events (
+  id text primary key,
+  type text not null,
+  created_at text not null default (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+);

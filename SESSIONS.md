@@ -123,10 +123,16 @@ recon a launch. El deploy no se hizo: requiere que Jordan diga "go".
   (solo fuentes públicas de texto); `replica/screens/` está vacío a propósito.
 
 ### Open
-- Faltan 2 obligatorias para el envío automático de WhatsApp: plantillas Meta
-  y la cuenta del dueño. Pendientes: anticipo y pago online, suscripción y
-  límites por plan (la landing anuncia precios y una prueba de 30 días que
-  aún no se cobran ni se aplican), SMS, campañas y multi-sucursal.
+- Faltan 2 obligatorias para el envío automático de WhatsApp: la cuenta Meta
+  del dueño y las plantillas aprobadas. Además, `sendWhatsApp` envía texto
+  libre y debe pasar a `type: template` cuando existan los nombres.
+- Segunda pasada ("solo termina"): se agregaron planes con prueba de 30 días,
+  Stripe (Checkout, Portal y webhooks), anticipos por transferencia o enlace,
+  SMS con Twilio, campañas con baja, sucursales (`memberships` + sucursal
+  activa en la sesión), privacidad y términos en borrador, Dockerfile y
+  fly.toml. Deploy listo en `replica/deploy.md`, a la espera del "go".
+- El Dockerfile no se construyó aquí (no hay daemon de Docker). Corre como
+  root a propósito, porque los volúmenes se montan como root.
 - Para `graphify update .` hubo que correr `pip install -e .` en el contenedor.
 
 ## 2026-10-02 — Command board across agents

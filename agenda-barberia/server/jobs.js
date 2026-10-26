@@ -2,6 +2,7 @@
 import { nowIso } from './db.js';
 import { deliver, queue } from './notify.js';
 import { todayIn, localParts } from './time.js';
+import { has } from './plans.js';
 
 export async function runReminders(db, limit = 50) {
   const due = db.all(
@@ -19,6 +20,7 @@ export function runRebook(db, now = Date.now()) {
   for (const business of db.all('select * from businesses')) {
     const today = todayIn(business.timezone);
     if (lastRun.get(business.id) === today) continue;
+    if (!has(db, business, 'rebook')) continue;
     if (localParts(now, business.timezone).min < 600) continue;
     lastRun.set(business.id, today);
     const cutoff = new Date(now - business.rebook_days * 86400000).toISOString();

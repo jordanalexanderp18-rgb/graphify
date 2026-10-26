@@ -40,7 +40,7 @@ Muestra: **68 reseñas, 2 fuentes**. Son 67 de Capterra (páginas 1 a 3 de 159; 
 | App rápida en el celular | Web instalable sin dependencias. Ver el peso medido en `launch/landing.md`. | S | hecho |
 | Cualquier país | Moneda, zona horaria y código de WhatsApp por negocio desde el registro. | S | hecho |
 
-Pendiente (no hecho): cobro de anticipo en línea (Mercado Pago/Stripe con la cuenta del dueño), SMS, campañas masivas y multi-sucursal.
+Después se agregó: anticipos (transferencia o enlace de pago propio), SMS, campañas por segmento con baja, sucursales y suscripción con cancelación de un clic.
 
 ## El ángulo
 

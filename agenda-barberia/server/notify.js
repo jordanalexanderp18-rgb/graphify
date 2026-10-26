@@ -4,6 +4,7 @@
 import { uid, nowIso } from './db.js';
 import { localParts, iso } from './time.js';
 import { minToHHMM } from './availability.js';
+import { has } from './plans.js';
 
 const DAYS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
 const MONTHS = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
@@ -46,20 +47,26 @@ function body(kind, { business, client, service, staff, appt }) {
   }
 }
 
-export function channelFor(client) {
-  if (client.phone) return 'whatsapp';
+export function channelFor(client, business) {
+  if (client.phone) return business?.message_channel === 'sms' ? 'sms' : 'whatsapp';
   if (client.email) return 'email';
   return null;
 }
 
 // Agrega un mensaje a la cola. sendAt en ms.
-export function queue(db, kind, ctx, sendAt) {
-  const channel = channelFor(ctx.client);
+// text reemplaza el texto por defecto (campañas).
+export function queue(db, kind, ctx, sendAt, text) {
+  const channel = channelFor(ctx.client, ctx.business);
   if (!channel) return null;
   return db.insert('reminders', {
     id: uid(), business_id: ctx.business.id, appointment_id: ctx.appt?.id ?? null, client_id: ctx.client.id,
-    kind, channel, send_at: iso(sendAt), status: 'pending', body: body(kind, ctx),
+    kind, channel, send_at: iso(sendAt), status: 'pending', body: text ?? body(kind, ctx),
   });
+}
+
+// Texto de campaña con {nombre} y {enlace}.
+export function fillTemplate(text, business, client) {
+  return text.replaceAll('{nombre}', (client.name || '').split(' ')[0] || 'hola').replaceAll('{enlace}', `${baseUrl()}/b/${business.slug}`);
 }
 
 // Mensajes de una cita nueva: confirmación ya, recordatorio N horas antes.
@@ -94,6 +101,18 @@ async function sendWhatsApp(phone, text) {
   return { status: 'sent' };
 }
 
+async function sendSms(phone, text) {
+  const sid = process.env.TWILIO_ACCOUNT_SID, tok = process.env.TWILIO_AUTH_TOKEN, from = process.env.TWILIO_FROM;
+  if (!sid || !tok || !from) return { status: 'manual' };
+  const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
+    method: 'POST',
+    headers: { authorization: `Basic ${Buffer.from(`${sid}:${tok}`).toString('base64')}`, 'content-type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ To: `+${phone}`, From: from, Body: text }).toString(),
+  });
+  if (!res.ok) throw new Error(`SMS ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  return { status: 'sent' };
+}
+
 async function sendEmail(to, subject, text) {
   const key = process.env.RESEND_API_KEY;
   const from = process.env.EMAIL_FROM;
@@ -107,16 +126,19 @@ async function sendEmail(to, subject, text) {
   return { status: 'sent' };
 }
 
-const SUBJECT = { confirmation: 'Tu hora está reservada', reminder: 'Recordatorio de tu hora', cancelled: 'Tu hora fue cancelada', rebook: 'Te toca corte' };
+const SUBJECT = { confirmation: 'Tu hora está reservada', reminder: 'Recordatorio de tu hora', cancelled: 'Tu hora fue cancelada', rebook: 'Te toca corte', campaign: 'Novedades' };
 
 export async function deliver(db, r) {
   const client = db.get('select phone, email from clients where id = ?', r.client_id);
   if (!client) return db.run("update reminders set status = 'skipped' where id = ?", r.id);
   db.run('update reminders set attempts = attempts + 1 where id = ?', r.id);
   try {
+    const business = db.get('select * from businesses where id = ?', r.business_id);
+    // El envío automático por WhatsApp es del plan Cadena; en los demás queda para enviar con un toque.
     const out = r.channel === 'whatsapp'
-      ? await sendWhatsApp(client.phone, r.body)
-      : await sendEmail(client.email, SUBJECT[r.kind] || 'Mensaje', r.body);
+      ? (has(db, business, 'whatsapp_auto') ? await sendWhatsApp(client.phone, r.body) : { status: 'manual' })
+      : r.channel === 'sms' ? await sendSms(client.phone, r.body)
+        : await sendEmail(client.email, SUBJECT[r.kind] || 'Mensaje', r.body);
     db.run('update reminders set status = ?, sent_at = ?, error = ? where id = ?',
       out.status, out.status === 'sent' ? nowIso() : null, '', r.id);
   } catch (e) {

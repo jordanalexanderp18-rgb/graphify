@@ -114,7 +114,7 @@ async function bookingFlow(slug) {
           e.currentTarget.setAttribute('aria-pressed', String(chosen.has(s.id)));
           refresh();
         } },
-        h('span', { class: 'stack-sm' }, h('strong', {}, s.name), h('span', { class: 'xs muted' }, `${s.duration_min} min${s.description ? ` · ${s.description}` : ''}`)),
+        h('span', { class: 'stack-sm' }, h('strong', {}, s.name), h('span', { class: 'xs muted' }, `${s.duration_min} min${info.deposits && s.deposit ? ` · anticipo ${money(s.deposit, b.currency)}` : ''}${s.description ? ` · ${s.description}` : ''}`)),
         h('strong', { class: 'num' }, money(s.price, b.currency)))))),
       next));
     refresh();
@@ -139,7 +139,7 @@ async function bookingFlow(slug) {
     const picker = dayPicker({
       slug, serviceIds: st.services.map((s) => s.id), staffId: st.staffId, tz,
       onPick: (start) => { st.start = start; next.disabled = false; },
-      onNoSlots: (date) => waitlistOffer(date),
+      onNoSlots: info.waitlist ? (date) => waitlistOffer(date) : null,
     });
     show(steps(2), h('section', { class: 'stack' }, back(skippedStaff ? stepService : stepStaff),
       h('h2', {}, 'Elige tu hora'),
@@ -251,6 +251,12 @@ async function manage(token) {
       active ? h('div', { class: 'row' },
         h('a', { class: 'btn btn-sm', href: gcal, target: '_blank', rel: 'noopener' }, 'Agregar a Google Calendar'),
         h('button', { class: 'btn btn-sm', type: 'button', onclick: ics }, 'Descargar al calendario')) : null),
+    active && a.deposit && a.deposit_status === 'pending' ? h('div', { class: 'card stack-sm' },
+      h('strong', {}, `Anticipo pendiente: ${a.deposit_text}`),
+      h('p', { class: 'muted' }, 'Tu hora queda asegurada cuando la barbería confirme el anticipo.'),
+      r.deposit_instructions ? h('p', { class: 'card-flat' }, r.deposit_instructions) : null,
+      r.payment_link ? h('a', { class: 'btn btn-primary', href: r.payment_link, target: '_blank', rel: 'noopener' }, 'Pagar anticipo en línea') : null)
+      : active && a.deposit_status === 'paid' ? h('p', { class: 'badge badge-ok' }, `Anticipo recibido: ${a.deposit_text}`) : null,
     active && r.can_change ? h('div', { class: 'stack-sm' },
       h('button', { class: 'btn', type: 'button', onclick: reschedule }, 'Cambiar hora'),
       h('button', { class: 'btn btn-danger', type: 'button', onclick: async (e) => {

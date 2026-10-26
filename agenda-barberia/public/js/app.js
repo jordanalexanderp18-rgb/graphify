@@ -10,6 +10,7 @@ const S = { me: null, services: [], staff: [], products: [] };
 const biz = () => S.me.business;
 const cur = () => biz().currency;
 const fmt = (v) => money(v, cur());
+const feature = (f) => !!S.me.plan?.features?.[f];
 const can = (perm) => ({
   owner: ['settings', 'catalog', 'reports', 'operate', 'agenda', 'users'],
   reception: ['operate', 'agenda'],
@@ -62,6 +63,10 @@ function route() {
   clear(root, h('div', { class: 'shell' }, sidebar(navKey), main));
   document.title = `${NAV.find((n) => n[0] === navKey)?.[1] || 'Panel'} · ${biz().name} · ${APP_NAME}`;
   Promise.resolve(VIEWS[view](main, arg, params)).catch((e) => {
+    if (e.status === 402) {
+      return clear(main, h('div', { class: 'card stack' }, h('h2', {}, 'Función de un plan pago'), h('p', {}, e.message),
+        can('settings') ? h('a', { class: 'btn btn-primary', href: '#/config?tab=plan' }, 'Ver planes') : h('p', { class: 'muted' }, 'Pídele al dueño que active el plan.')));
+    }
     clear(main, h('div', { class: 'card stack' }, h('h2', {}, 'Algo salió mal'), h('p', {}, e.message),
       h('button', { class: 'btn', onclick: route }, 'Reintentar')));
   });
@@ -74,7 +79,14 @@ function sidebar(active) {
     NAV.filter((n) => can(n[3])).map(([key, label, ic, , secondary]) =>
       h('a', { class: 'nav-link', href: `#/${key}`, 'aria-current': key === active ? 'page' : null, 'data-secondary': secondary || null }, icon(ic), h('span', {}, label))),
     h('div', { class: 'side-foot stack-sm' },
-      h('div', { class: 'xs muted' }, biz().name),
+      S.me.plan?.status === 'trialing' && S.me.plan.trial_ends_at && can('settings')
+        ? h('a', { class: 'badge badge-accent', href: '#/config?tab=plan' }, `Prueba: ${Math.max(0, Math.ceil((Date.parse(S.me.plan.trial_ends_at) - Date.now()) / 86400000))} días`) : null,
+      S.me.branches?.length > 1
+        ? select({ 'aria-label': 'Sucursal', class: 'input', onchange: async (e) => {
+          await api('POST', '/api/branches/switch', { business_id: e.target.value });
+          location.hash = '#/agenda'; location.reload();
+        } }, S.me.branches.map((x) => [x.id, x.name]), biz().id)
+        : h('div', { class: 'xs muted' }, biz().name),
       h('div', { class: 'xs muted' }, `${S.me.user.name || S.me.user.email} · ${{ owner: 'Dueño', reception: 'Recepción', barber: 'Barbero' }[S.me.user.role]}`),
       h('button', { class: 'btn btn-ghost btn-sm', type: 'button', onclick: logout }, icon('logout'), 'Salir')));
 }
@@ -284,6 +296,16 @@ function apptDetail(a) {
       h('div', {}, h('div', { class: 'label' }, 'Origen'), h('div', {}, { online: 'Reserva online', panel: 'Panel', walkin: 'Sin cita' }[a.source])),
       a.client_phone ? h('div', {}, h('div', { class: 'label' }, 'Teléfono'), h('a', { href: `https://wa.me/${a.client_phone}?text=${encodeURIComponent(waText)}`, target: '_blank', rel: 'noopener' }, `+${a.client_phone} · WhatsApp`)) : null,
     ),
+    a.deposit ? h('div', { class: 'row-between card-flat' },
+      h('span', {}, `Anticipo ${fmt(a.deposit)}: `, h('span', { class: `badge ${a.deposit_status === 'paid' ? 'badge-ok' : 'badge-warn'}` }, a.deposit_status === 'paid' ? 'recibido' : 'pendiente')),
+      can('operate') ? h('button', { class: 'btn btn-sm', type: 'button', onclick: async (e) => {
+        await busy(e.currentTarget, async () => {
+          try {
+            await api('POST', `/api/appointments/${a.id}/deposit`, { status: a.deposit_status === 'paid' ? 'pending' : 'paid' });
+            toast(a.deposit_status === 'paid' ? 'Anticipo marcado como pendiente.' : 'Anticipo recibido.'); m.close(); route();
+          } catch (err) { toast(err.message, 'error'); }
+        });
+      } }, a.deposit_status === 'paid' ? 'Marcar pendiente' : 'Anticipo recibido') : null) : null,
     a.notes ? h('div', {}, h('div', { class: 'label' }, 'Notas'), h('p', {}, a.notes)) : null,
     h('a', { href: `#/cliente/${a.client_id}`, onclick: () => m.close() }, 'Ver ficha del cliente'),
   );
@@ -443,6 +465,7 @@ function clientModal(c) {
       field('Cumpleaños (MM-DD)', input({ name: 'birthday', placeholder: '08-24', value: c?.birthday || '', pattern: '\\d{2}-\\d{2}' })),
       field('Etiquetas', input({ name: 'tags', value: c?.tags || '', placeholder: 'vip, barba' }))),
     field('Notas', h('textarea', { class: 'input', name: 'notes', maxlength: 1000, placeholder: 'Preferencias, alergias, cómo le gusta el corte' }, c?.notes || '')),
+    c ? h('label', { class: 'check' }, h('input', { type: 'checkbox', name: 'marketing_opt_out', checked: !!c.marketing_opt_out }), 'No quiere recibir campañas') : null,
   );
   const save = h('button', { class: 'btn btn-primary', type: 'button' }, 'Guardar');
   save.addEventListener('click', () => busy(save, async () => {
@@ -534,7 +557,8 @@ async function viewPos(main, _arg, params) {
   const renderCart = () => {
     const subtotal = cart.items.reduce((s, i) => s + i.unit * i.qty, 0);
     cart.discount = Math.min(cart.discount, subtotal);
-    const total = subtotal - cart.discount + cart.tip;
+    const prepaid = cart.appt?.deposit_status === 'paid' ? Math.min(cart.appt.deposit, subtotal - cart.discount + cart.tip) : 0;
+    const total = subtotal - cart.discount + cart.tip - prepaid;
     const pay = h('button', { class: 'btn btn-primary btn-block', type: 'button', disabled: cart.items.length ? null : true }, `Cobrar ${fmt(total)}`);
     pay.addEventListener('click', () => busy(pay, async () => {
       try {
@@ -571,6 +595,7 @@ async function viewPos(main, _arg, params) {
         h('div', {}, h('span', {}, 'Subtotal'), h('span', {}, fmt(subtotal))),
         cart.discount ? h('div', {}, h('span', {}, 'Descuento'), h('span', {}, `− ${fmt(cart.discount)}`)) : null,
         cart.tip ? h('div', {}, h('span', {}, 'Propina'), h('span', {}, fmt(cart.tip))) : null,
+        prepaid ? h('div', {}, h('span', {}, 'Anticipo ya pagado'), h('span', {}, `− ${fmt(prepaid)}`)) : null,
         h('div', { class: 'grand' }, h('span', {}, 'Total'), h('span', {}, fmt(total)))),
       pay);
   };
@@ -792,13 +817,14 @@ async function viewReports(main, _arg, params) {
 // ------------------------------------------------------------ mensajes
 
 async function viewMessages(main, _arg, params) {
-  const tab = ['manual', 'pending', 'sent', 'failed', 'espera'].includes(params.tab) ? params.tab : 'manual';
+  const tab = ['manual', 'pending', 'sent', 'failed', 'espera', 'campana'].includes(params.tab) ? params.tab : 'manual';
   const tz = biz().timezone;
-  const tabs = [['manual', 'Por enviar'], ['pending', 'Programados'], ['sent', 'Enviados'], ['failed', 'Con error'], ['espera', 'Lista de espera']];
+  const tabs = [['manual', 'Por enviar'], ['pending', 'Programados'], ['sent', 'Enviados'], ['failed', 'Con error'], ['espera', 'Lista de espera'], ...(can('settings') ? [['campana', 'Campaña']] : [])];
   const head = h('div', { class: 'stack' },
     h('div', { class: 'page-head' }, h('h1', {}, 'Mensajes')),
     h('div', { class: 'tabs', role: 'tablist' }, tabs.map(([k, l]) =>
       h('button', { class: 'tab', role: 'tab', type: 'button', 'aria-selected': String(tab === k), onclick: () => go(`#/mensajes?tab=${k}`) }, l))));
+  if (tab === 'campana') return clear(main, head, campaignForm());
   if (tab === 'espera') {
     const rows = await api('GET', '/api/waitlist');
     return clear(main, head, rows.length ? h('div', { class: 'table-wrap' }, h('table', { class: 'table' },
@@ -813,13 +839,14 @@ async function viewMessages(main, _arg, params) {
       : h('div', { class: 'card' }, emptyState('Nadie en lista de espera. Cuando un día está lleno, los clientes pueden anotarse desde tu página de reservas.')));
   }
   const rows = await api('GET', `/api/reminders?status=${tab}`);
-  const kinds = { confirmation: 'Confirmación', reminder: 'Recordatorio', cancelled: 'Cancelación', rebook: 'Te toca corte' };
+  const kinds = { confirmation: 'Confirmación', reminder: 'Recordatorio', cancelled: 'Cancelación', rebook: 'Te toca corte', campaign: 'Campaña' };
   clear(main, head,
     tab === 'manual' ? h('p', { class: 'muted', style: { marginBottom: 'var(--s-4)' } }, 'Sin la integración de WhatsApp Business conectada, los mensajes quedan aquí: tócalos para enviarlos desde el WhatsApp del local con el texto listo.') : null,
     rows.length ? h('div', { class: 'stack-sm' }, rows.map((r) => h('div', { class: 'card stack-sm' },
       h('div', { class: 'row-between' }, h('div', { class: 'row' }, h('strong', {}, r.client_name || 'Cliente'), h('span', { class: 'badge' }, kinds[r.kind]),
-        h('span', { class: 'xs muted' }, `${r.channel === 'whatsapp' ? 'WhatsApp' : 'Email'} · ${dateTimeLabel(r.send_at, tz)}`)),
+        h('span', { class: 'xs muted' }, `${{ whatsapp: 'WhatsApp', sms: 'SMS', email: 'Email' }[r.channel]} · ${dateTimeLabel(r.send_at, tz)}`)),
         h('div', { class: 'row' },
+          tab === 'manual' && r.sms_link ? h('a', { class: 'btn btn-sm btn-primary', href: r.sms_link, onclick: () => api('POST', `/api/reminders/${r.id}/sent`).then(() => setTimeout(route, 500)) }, 'Enviar por SMS') : null,
           tab === 'manual' && r.wa_link ? h('a', { class: 'btn btn-sm btn-primary', href: r.wa_link, target: '_blank', rel: 'noopener', onclick: () => api('POST', `/api/reminders/${r.id}/sent`).then(() => setTimeout(route, 500)) }, 'Enviar por WhatsApp') : null,
           tab === 'manual' ? h('button', { class: 'btn btn-sm btn-ghost', type: 'button', onclick: () => api('POST', `/api/reminders/${r.id}/sent`).then(route) }, 'Marcar enviado') : null,
           tab === 'failed' ? h('button', { class: 'btn btn-sm', type: 'button', onclick: () => api('POST', `/api/reminders/${r.id}/retry`).then(route) }, 'Reintentar') : null)),
@@ -831,15 +858,16 @@ async function viewMessages(main, _arg, params) {
 // ------------------------------------------------------------ configuración
 
 async function viewConfig(main, _arg, params) {
-  const tab = ['negocio', 'servicios', 'equipo', 'usuarios', 'importar'].includes(params.tab) ? params.tab : 'negocio';
+  const tab = ['negocio', 'servicios', 'equipo', 'usuarios', 'importar', 'sucursales', 'plan'].includes(params.tab) ? params.tab : 'negocio';
   await loadCatalog();
   const head = h('div', { class: 'stack' },
     h('div', { class: 'page-head' }, h('h1', {}, 'Configuración')),
-    h('div', { class: 'tabs', role: 'tablist' }, [['negocio', 'Negocio'], ['servicios', 'Servicios'], ['equipo', 'Equipo'], ['usuarios', 'Usuarios'], ['importar', 'Importar clientes']].map(([k, l]) =>
+    h('div', { class: 'tabs', role: 'tablist' }, [['negocio', 'Negocio'], ['servicios', 'Servicios'], ['equipo', 'Equipo'], ['usuarios', 'Usuarios'], ['importar', 'Importar clientes'], ['sucursales', 'Sucursales'], ['plan', 'Plan']].map(([k, l]) =>
       h('button', { class: 'tab', role: 'tab', type: 'button', 'aria-selected': String(tab === k), onclick: () => go(`#/config?tab=${k}`) }, l))));
   const body = h('div', {});
   clear(main, head, body);
-  ({ negocio: cfgBusiness, servicios: cfgServices, equipo: cfgStaff, usuarios: cfgUsers, importar: cfgImport })[tab](body);
+  if (params.pago === 'ok') toast('¡Gracias! Tu plan se activa en unos segundos.');
+  ({ negocio: cfgBusiness, servicios: cfgServices, equipo: cfgStaff, usuarios: cfgUsers, importar: cfgImport, sucursales: cfgBranches, plan: cfgPlan })[tab](body);
 }
 
 function cfgBusiness(box) {
@@ -864,6 +892,12 @@ function cfgBusiness(box) {
     h('div', { class: 'grid-2' },
       field('Zona horaria', input({ name: 'timezone', value: b.timezone })),
       field('Moneda', input({ name: 'currency', value: b.currency, maxlength: 3 }))),
+    h('h2', {}, 'Mensajes y anticipos'),
+    h('div', { class: 'grid-2' },
+      field('Canal para clientes con teléfono', select({ name: 'message_channel' }, [['whatsapp', 'WhatsApp'], ['sms', 'SMS']], b.message_channel)),
+      field('Enlace de pago para anticipos (opcional)', input({ name: 'payment_link', value: b.payment_link, placeholder: 'https://mpago.la/…' }))),
+    field('Datos para transferir el anticipo', h('textarea', { class: 'input', name: 'deposit_instructions', maxlength: 500, placeholder: 'Banco, tipo y número de cuenta, RUT/RFC, correo' }, b.deposit_instructions),
+      'Se muestran al cliente cuando reserva un servicio con anticipo. El anticipo se define en cada servicio.'),
     h('div', {}, h('button', { class: 'btn btn-primary', type: 'submit' }, 'Guardar')));
   form.addEventListener('submit', async (ev) => {
     ev.preventDefault();
@@ -904,6 +938,7 @@ function serviceModal(s) {
       field('Precio', input({ name: 'price', inputmode: 'decimal', value: s ? fromMinor(s.price, cur()) : '' })),
       field('Duración (min)', input({ name: 'duration_min', type: 'number', min: 5, step: 5, value: s?.duration_min ?? 30 })),
       field('Tiempo extra después (min)', input({ name: 'buffer_min', type: 'number', min: 0, step: 5, value: s?.buffer_min ?? 0 }))),
+    feature('anticipos') ? field('Anticipo al reservar (0 = sin anticipo)', input({ name: 'deposit', inputmode: 'decimal', value: s ? fromMinor(s.deposit, cur()) : '' })) : null,
     field('Descripción (se ve al reservar)', h('textarea', { class: 'input', name: 'description', maxlength: 300 }, s?.description || '')),
     h('label', { class: 'check' }, h('input', { type: 'checkbox', name: 'online', checked: s ? !!s.online : true }), 'Se puede reservar online'),
     s ? h('label', { class: 'check' }, h('input', { type: 'checkbox', name: 'active', checked: !!s.active }), 'Activo') : null);
@@ -911,6 +946,7 @@ function serviceModal(s) {
   save.addEventListener('click', () => busy(save, async () => {
     const d = formData(form);
     const body = { ...d, price: toMinor(d.price, cur()), duration_min: Number(d.duration_min), buffer_min: Number(d.buffer_min || 0) };
+    if ('deposit' in d) body.deposit = toMinor(d.deposit || 0, cur());
     try { await api(s ? 'PUT' : 'POST', s ? `/api/services/${s.id}` : '/api/services', body); toast('Servicio guardado.'); m.close(); route(); } catch (e) { showFormError(form, e); }
   }));
   const del = s ? h('button', { class: 'btn btn-danger', type: 'button', onclick: async () => {
@@ -1089,6 +1125,85 @@ function viewDesign(main) {
     h('div', { class: 'grid-4' }, stat('Ingresos', fmt(123400), 'ticket promedio'), stat('Ocupación', '72%')),
     h('div', { class: 'row' }, ['c1', 'c2', 'c3', 'c4', 'c5', 'c6'].map((c) => h('span', { class: `row sc-${c}` }, h('span', { class: 'dot' }), c))),
     h('button', { class: 'btn', onclick: () => toast('Así se ve un aviso.') }, 'Probar aviso')));
+}
+
+// ------------------------------------------------------------ campañas, sucursales y plan
+
+function campaignForm() {
+  if (!feature('campanas')) return h('div', { class: 'card stack' }, h('p', {}, 'Las campañas son parte del plan Barbería.'), h('a', { class: 'btn btn-primary', href: '#/config?tab=plan' }, 'Ver planes'));
+  const seg = select({ name: 'segment' }, [['all', 'Todos los clientes'], ['inactive', 'No vienen hace…'], ['birthday', 'Cumplen años este mes'], ['tag', 'Con etiqueta…']], 'inactive');
+  const days = input({ name: 'days', type: 'number', min: 7, value: 45 });
+  const tag = input({ name: 'tag', placeholder: 'vip' });
+  const text = h('textarea', { class: 'input', name: 'text', maxlength: 700 }, 'Hola {nombre}, hace rato que no te vemos. Esta semana tienes 10% en tu corte. Reserva aquí: {enlace}');
+  const preview = h('p', { class: 'muted', 'aria-live': 'polite' });
+  const daysF = field('Días sin venir', days), tagF = field('Etiqueta', tag);
+  const q = () => `segment=${seg.value}&days=${days.value}&tag=${encodeURIComponent(tag.value)}`;
+  const refresh = async () => {
+    daysF.hidden = seg.value !== 'inactive'; tagF.hidden = seg.value !== 'tag';
+    try {
+      const r = await api('GET', `/api/campaigns/preview?${q()}`);
+      preview.textContent = r.count ? `Llegaría a ${r.count} cliente(s): ${r.sample.join(', ')}${r.count > 5 ? '…' : ''}` : 'Ningún cliente cumple el filtro.';
+    } catch (e) { preview.textContent = e.message; }
+  };
+  [seg, days, tag].forEach((el) => el.addEventListener('change', refresh));
+  const send = h('button', { class: 'btn btn-primary', type: 'button' }, 'Enviar campaña');
+  send.addEventListener('click', () => busy(send, async () => {
+    if (!await confirmDialog('Enviar campaña', preview.textContent, 'Enviar')) return;
+    try {
+      const r = await api('POST', '/api/campaigns', { segment: seg.value, days: Number(days.value), tag: tag.value, text: text.value });
+      toast(`${r.queued} mensaje(s) en cola.`); go('#/mensajes?tab=manual');
+    } catch (e) { toast(e.message, 'error'); }
+  }));
+  refresh();
+  return h('div', { class: 'card stack' },
+    h('p', { class: 'muted' }, 'Usa {nombre} y {enlace} (tu página de reservas). Se omiten los clientes que pidieron no recibir campañas.'),
+    h('div', { class: 'grid-2' }, field('A quién', seg), daysF, tagF),
+    field('Mensaje', text), preview, h('div', {}, send));
+}
+
+function cfgBranches(box) {
+  const list = S.me.branches || [];
+  const name = input({ name: 'name', placeholder: 'Sucursal Centro' });
+  const add = h('button', { class: 'btn btn-primary', type: 'button' }, 'Crear sucursal');
+  add.addEventListener('click', () => busy(add, async () => {
+    try { await api('POST', '/api/branches', { name: name.value }); toast('Sucursal creada. Elígela en el menú para configurarla.'); S.me = await api('GET', '/api/me'); route(); } catch (e) { toast(e.message, 'error'); }
+  }));
+  clear(box, h('div', { class: 'stack' },
+    h('div', { class: 'table-wrap' }, h('table', { class: 'table' },
+      h('thead', {}, h('tr', {}, h('th', {}, 'Sucursal'), h('th', {}, 'Enlace de reservas'), h('th', {}, h('span', { class: 'sr-only' }, 'Acciones')))),
+      h('tbody', {}, list.map((x) => h('tr', {}, h('td', {}, h('strong', {}, x.name)), h('td', {}, `/b/${x.slug}`),
+        h('td', { class: 'r' }, x.id === biz().id ? h('span', { class: 'badge badge-accent' }, 'Actual')
+          : h('button', { class: 'btn btn-sm', type: 'button', onclick: async () => { await api('POST', '/api/branches/switch', { business_id: x.id }); location.hash = '#/agenda'; location.reload(); } }, 'Cambiar a esta'))))))),
+    feature('sucursales')
+      ? h('div', { class: 'card stack' }, h('h2', {}, 'Nueva sucursal'), h('p', { class: 'muted' }, 'Cada sucursal tiene su propia agenda, equipo, caja y enlace. Se factura una sola vez en el negocio principal.'), field('Nombre', name), h('div', {}, add))
+      : h('div', { class: 'card stack' }, h('p', {}, 'Varias sucursales es parte del plan Cadena.'), h('a', { class: 'btn btn-primary', href: '#/config?tab=plan' }, 'Ver planes'))));
+}
+
+async function cfgPlan(box) {
+  const p = await api('GET', '/api/billing');
+  const days = p.trial_ends_at ? Math.ceil((Date.parse(p.trial_ends_at) - Date.now()) / 86400000) : 0;
+  const status = { trialing: days > 0 ? `En prueba: quedan ${days} día(s)` : 'La prueba terminó', active: 'Activo', past_due: 'Pago pendiente: revisa tu tarjeta', canceled: 'Cancelado' }[p.status];
+  const checkout = (plan, interval) => async (e) => busy(e.currentTarget, async () => {
+    try { location.href = (await api('POST', '/api/billing/checkout', { plan, interval })).url; } catch (err) { toast(err.message, 'error'); }
+  });
+  const offer = (plan, label, price, perks) => h('article', { class: `card stack ${p.effective === plan ? 'lp-featured' : ''}` },
+    h('h3', {}, label), h('p', { class: 'stat-value' }, price), h('ul', { class: 'lp-list' }, perks.map((x) => h('li', {}, x))),
+    p.billing_enabled && !p.is_branch ? h('div', { class: 'row' },
+      h('button', { class: 'btn btn-primary btn-sm', type: 'button', onclick: checkout(plan, 'month') }, 'Pagar mensual'),
+      h('button', { class: 'btn btn-sm', type: 'button', onclick: checkout(plan, 'year') }, 'Anual (2 meses gratis)')) : null);
+  clear(box, h('div', { class: 'stack' },
+    h('div', { class: 'card row-between' },
+      h('div', { class: 'stack-sm' }, h('div', { class: 'label' }, 'Tu plan'), h('h2', {}, p.label), h('span', { class: 'muted' }, status),
+        p.staff_limit ? h('span', { class: 'xs muted' }, `Hasta ${p.staff_limit} barbero(s) activos.`) : null),
+      p.has_subscription && p.billing_enabled ? h('button', { class: 'btn', type: 'button', onclick: async (e) => busy(e.currentTarget, async () => {
+        try { location.href = (await api('POST', '/api/billing/portal')).url; } catch (err) { toast(err.message, 'error'); }
+      }) }, 'Cambiar tarjeta o cancelar') : null),
+    p.is_branch ? h('p', { class: 'muted' }, 'Esta sucursal usa el plan del negocio principal.') : null,
+    !p.billing_enabled ? h('p', { class: 'form-error' }, 'Los pagos aún no están conectados en este servidor (faltan las claves de Stripe). Escríbenos para activar tu plan.') : null,
+    h('div', { class: 'grid-2' },
+      offer('barberia', 'Barbería', 'US$15 / mes', ['Hasta 5 barberos', 'Caja, comisiones e inventario', 'Reportes', '"Te toca corte", lista de espera y campañas', 'Anticipos', 'Roles de recepción y barbero']),
+      offer('cadena', 'Cadena', 'US$29 / mes', ['Barberos ilimitados', 'Todo lo de Barbería', 'Varias sucursales', 'WhatsApp automático'])),
+    h('p', { class: 'xs muted' }, 'Cancelas con un clic y sigues usando el plan hasta el fin del periodo pagado. Si no pagas al terminar la prueba, pasas a Gratis sin perder datos.')));
 }
 
 boot();

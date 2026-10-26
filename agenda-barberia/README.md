@@ -14,11 +14,13 @@ npm run e2e        # pruebas en Chromium (requiere Playwright instalado)
 
 Crea una cuenta en `/app#/registro` con "Cargar datos de ejemplo" y comparte el enlace `/b/<tu-barberia>`.
 
-Configuración opcional: copia `.env.example` a `.env` (`PUBLIC_URL`, WhatsApp Cloud API y Resend).
+Configuración opcional: copia `.env.example` a `.env` (`PUBLIC_URL`, WhatsApp Cloud API, Resend, Twilio y Stripe).
+
+Publicar: `Dockerfile` y `fly.toml` incluidos; los pasos, el DNS y las claves están en `replica/deploy.md`.
 
 ## Estructura
 
-- `server/`: HTTP, API (`api.js`), disponibilidad (`availability.js`), mensajes (`notify.js`), tareas (`jobs.js`)
+- `server/`: HTTP, API (`api.js`), disponibilidad (`availability.js`), mensajes (`notify.js`), tareas (`jobs.js`), planes (`plans.js`), cobro (`billing.js`)
 - `db/schema.sql`: esquema SQLite
 - `public/`: landing, panel (`js/app.js`) y página de reservas (`js/book.js`); estilos con tokens generados por `npm run tokens`
 - `test/`, `e2e/`: pruebas

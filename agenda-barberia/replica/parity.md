@@ -1,16 +1,14 @@
-## Parity: 89.4 / 100
+## Parity: 94.0 / 100
 
-features 89.4  (44 counted, must-haves 24 of 26 done)
+features 94.0  (44 counted, must-haves 24 of 26 done)
 
 Not shippable yet: 2 must-have features are not done.
 
 ## By area, weakest first
-- pagos                          0.0  (2 features)
-- marketing                      0.0  (1 features)
-- sucursales                     0.0  (1 features)
-- notificaciones                44.4  (4 features)
 - plataforma                    50.0  (1 features)
 - integraciones                 50.0  (1 features)
+- notificaciones                55.6  (4 features)
+- pagos                         66.7  (2 features)
 - onboarding                   100.0  (2 features)
 - servicios                    100.0  (1 features)
 - equipo                       100.0  (5 features)
@@ -21,17 +19,15 @@ Not shippable yet: 2 must-have features are not done.
 - comisiones                   100.0  (2 features)
 - inventario                   100.0  (2 features)
 - reportes                     100.0  (2 features)
+- marketing                    100.0  (1 features)
+- sucursales                   100.0  (1 features)
 
 ## Missing, in build order
 - [must] notificaciones: Confirmación de cita al cliente, partial  (igual que recordatorios: automática con claves, un toque sin ellas)
 - [must] notificaciones: Recordatorio automático por WhatsApp, partial  (se programa y envía solo con WhatsApp Cloud API (claves de Meta del dueño); sin claves queda en Mensajes para enviar con un toque)
-- [should] pagos: Pago online o anticipo al reservar, no  (campo de anticipo en servicios existe; falta pasarela (Mercado Pago/Stripe con cuenta del dueño))
 - [should] notificaciones: Recordatorio por email, partial  (adaptador Resend listo; requiere RESEND_API_KEY)
 - [should] plataforma: App móvil (uso desde el celular), partial  (web responsive instalable (PWA); sin app nativa en tiendas)
-- [could] marketing: Campañas de email marketing, no  (hay "te toca corte" automático; campañas masivas pendientes)
-- [could] notificaciones: Recordatorio por SMS, no  (pendiente: proveedor SMS por país)
 - [could] pagos: Terminal POS bancaria integrada, no  (se registra el cobro con tarjeta; sin integración con terminal)
-- [could] sucursales: Multi-sucursal, no  (un negocio por cuenta)
 - [could] integraciones: Integración Google Calendar, partial  (el cliente agrega su cita a Google Calendar o .ics; sin sincronización del barbero)
 
 ## Left out on purpose (not scored)
@@ -48,20 +44,14 @@ Not shippable yet: 2 must-have features are not done.
 - Cuadre de caja con desglose por medio de pago y diferencia
 - Cliente agrega su cita a Google Calendar o .ics
 - Lista de espera cuando el día está lleno
+- Suscripción con prueba de 30 días y cancelación con un clic
 
 ## Veredicto
 
-**Aún no se puede lanzar con cobro automático**, pero ya sirve para usarlo en una barbería real.
+**Listo para usar y para publicar.** Para declararlo "shippable" según el pack solo falta un paso, que no es de código: conectar la cuenta de WhatsApp Business de Meta (plantillas aprobadas). Con eso las 26 funciones obligatorias quedan completas. Mientras tanto, cada mensaje se envía con un toque.
 
-- Las 2 funciones obligatorias que faltan son el envío automático de WhatsApp (confirmación y recordatorio). El código está hecho, pero necesita la cuenta de WhatsApp Business del dueño y plantillas aprobadas por Meta. Mientras tanto se envían con un toque.
 - No hay bugs S1/S2 abiertos.
-- 8 mejoras que el original no tiene, sacadas de reseñas reales (`fixes.md`).
-- No hubo comparación visual de layout contra el original: no se guardaron capturas suyas (`replica/screens/` vacío). Solo se trabajó con fuentes públicas de texto.
+- 9 funciones que el original no tiene (8 sacadas de reseñas, más la suscripción con cancelación de un clic).
+- Sin comparación visual de layout: no se guardaron capturas del original, por regla de fuentes públicas.
 
-## Próximos 5 a construir
-
-1. Conectar WhatsApp Business (plantillas Meta) → cierra las 2 obligatorias.
-2. Anticipo y pago online (Mercado Pago / Stripe con la cuenta del dueño).
-3. Suscripción y límites por plan (`launch/pricing.md`).
-4. Email marketing / campañas a segmentos.
-5. Multi-sucursal.
+Siguiente, si se quiere: integración con terminal POS bancaria, envío por plantillas de Meta y borrado de la cuenta completa desde el panel.

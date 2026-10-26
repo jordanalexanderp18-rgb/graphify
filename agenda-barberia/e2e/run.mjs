@@ -262,6 +262,57 @@ try {
     if (photo.headers()['content-type'] !== 'image/jpeg') throw new Error('la foto no se sirve como JPEG');
   });
 
+  await step('plan: prueba visible y planes ofrecidos', async () => {
+    await page.goto(`${BASE}/app#/config?tab=plan`);
+    await page.getByText(/En prueba: quedan 30 día/).waitFor();
+    await page.getByRole('heading', { name: 'Cadena' }).waitFor();
+    await shot(page, 'S21-plan');
+  });
+
+  await step('anticipo: se pide al reservar y la recepción lo marca recibido', async () => {
+    await page.goto(`${BASE}/app#/config?tab=negocio`);
+    await page.getByLabel('Datos para transferir el anticipo').fill('Banco Estado, Cuenta Vista 123456, a nombre de El Bigote');
+    await page.getByRole('button', { name: 'Guardar', exact: true }).click();
+    await page.getByText('Datos guardados.').waitFor();
+    await page.goto(`${BASE}/app#/config?tab=servicios`);
+    await page.getByRole('row', { name: /Afeitado con toalla/ }).getByRole('button', { name: 'Editar' }).click();
+    await page.getByRole('dialog').getByLabel(/Anticipo al reservar/).fill('3000');
+    await page.getByRole('dialog').getByRole('button', { name: 'Guardar' }).click();
+    await page.getByText('Servicio guardado.').waitFor();
+    await guest.goto(`${BASE}/b/${slug}`);
+    await guest.getByText(/anticipo \$3\.000/).waitFor();
+    await pickServices(guest, /Afeitado con toalla/);
+    await guest.getByRole('button', { name: /Matías Rojas/ }).click();
+    await guest.locator('.slot').first().click();
+    await guest.getByRole('button', { name: 'Continuar' }).click();
+    await guest.getByLabel('Nombre y apellido').fill('Con Anticipo');
+    await guest.getByLabel('WhatsApp').fill('987650444');
+    await guest.getByRole('button', { name: 'Confirmar reserva' }).click();
+    await guest.getByText('Anticipo pendiente: $3.000').waitFor();
+    await guest.getByText(/Cuenta Vista 123456/).waitFor();
+    await shot(guest, 'S18-anticipo');
+    // Ir al día de la cita usando la API con la sesión del panel.
+    const r = await page.evaluate(async () => (await fetch('/api/clients?q=anticipo')).json());
+    const c = await page.evaluate(async (id) => (await fetch(`/api/clients/${id}`)).json(), r[0].id);
+    const d = c.appointments[0].start_at;
+    const local = await page.evaluate((iso) => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Santiago' }).format(new Date(iso)), d);
+    await page.goto(`${BASE}/app#/agenda?date=${local}`);
+    await page.getByRole('button', { name: /Con Anticipo/ }).click();
+    await page.getByRole('dialog').getByText('pendiente').waitFor();
+    await page.getByRole('dialog').getByRole('button', { name: 'Anticipo recibido' }).click();
+    await page.getByText('Anticipo recibido.').waitFor();
+  });
+
+  await step('campaña a clientes que no vuelven', async () => {
+    await page.goto(`${BASE}/app#/mensajes?tab=campana`);
+    await page.getByLabel('A quién').selectOption('all');
+    await page.getByText(/Llegaría a \d+ cliente/).waitFor();
+    await shot(page, 'S22-campana');
+    await page.getByRole('button', { name: 'Enviar campaña' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Enviar' }).click();
+    await page.getByText(/mensaje\(s\) en cola/).waitFor();
+  });
+
   await step('agenda usable en el celular (390 px)', async () => {
     const m = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: 'es-CL', timezoneId: 'America/Santiago' });
     await m.addCookies((await ctx.cookies()).map((c) => ({ ...c })));

@@ -20,7 +20,7 @@ Políticas de anticipación mínima y cancelación,reservas online,should,yes,ye
 Enlace para Instagram Google Maps y WhatsApp,reservas online,must,yes,yes,
 Recordatorio automático por WhatsApp,notificaciones,must,yes,partial,se programa y envía solo con WhatsApp Cloud API (claves de Meta del dueño); sin claves queda en Mensajes para enviar con un toque
 Recordatorio por email,notificaciones,should,yes,partial,adaptador Resend listo; requiere RESEND_API_KEY
-Recordatorio por SMS,notificaciones,could,yes,no,pendiente: proveedor SMS por país
+Recordatorio por SMS,notificaciones,could,yes,yes,"Twilio con claves; sin ellas, enlace sms: de un toque"
 Confirmación de cita al cliente,notificaciones,must,yes,partial,"igual que recordatorios: automática con claves, un toque sin ellas"
 Ficha de cliente con historial y notas,clientes,must,yes,yes,
 Búsqueda de clientes,clientes,must,yes,yes,
@@ -36,10 +36,10 @@ Inventario de productos con stock,inventario,should,yes,yes,
 Alerta de stock bajo,inventario,could,yes,yes,
 Reportes de ventas ocupación y servicios top,reportes,must,yes,yes,
 Clientes nuevos vs recurrentes,reportes,should,yes,yes,
-Pago online o anticipo al reservar,pagos,should,yes,no,campo de anticipo en servicios existe; falta pasarela (Mercado Pago/Stripe con cuenta del dueño)
+Pago online o anticipo al reservar,pagos,should,yes,yes,"anticipo por servicio: datos de transferencia y/o enlace de pago propio (Mercado Pago, etc.); recepción lo marca recibido y se descuenta en caja"
 Terminal POS bancaria integrada,pagos,could,yes,no,se registra el cobro con tarjeta; sin integración con terminal
-Campañas de email marketing,marketing,could,yes,no,"hay ""te toca corte"" automático; campañas masivas pendientes"
-Multi-sucursal,sucursales,could,yes,no,un negocio por cuenta
+Campañas de email marketing,marketing,could,yes,yes,"campañas a segmentos (todos, inactivos, cumpleaños, etiqueta) por WhatsApp/SMS/email, con baja de marketing"
+Multi-sucursal,sucursales,could,yes,yes,"sucursales con agenda, equipo y caja propios; cambio desde el menú; plan Cadena"
 Roles dueño / recepción / barbero,equipo,should,yes,yes,
 App móvil (uso desde el celular),plataforma,should,yes,partial,web responsive instalable (PWA); sin app nativa en tiendas
 Integración Google Calendar,integraciones,could,yes,partial,el cliente agrega su cita a Google Calendar o .ics; sin sincronización del barbero
@@ -54,3 +54,4 @@ Mensajes de WhatsApp sin límite ni costo por mensaje,notificaciones,must,no,par
 Cuadre de caja con desglose por medio de pago y diferencia,caja,should,no,yes,fix: queja de cortes de caja inexactos
 Cliente agrega su cita a Google Calendar o .ics,reservas online,could,no,yes,fix: pedido de calendario del cliente
 Lista de espera cuando el día está lleno,reservas online,could,no,yes,mejora propia
+Suscripción con prueba de 30 días y cancelación con un clic,pagos,should,no,yes,Stripe Checkout + Portal + webhooks firmados; se activa con claves

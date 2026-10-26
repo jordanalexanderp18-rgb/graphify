@@ -25,6 +25,8 @@ function pageFor(pathname) {
   if (pathname === '/') return 'index.html';
   if (pathname === '/app' || pathname === '/app/') return 'app.html';
   if (/^\/b\/[^/]+\/?$/.test(pathname) || /^\/r\/[^/]+\/?$/.test(pathname)) return 'book.html';
+  if (pathname === '/privacidad') return 'privacidad.html';
+  if (pathname === '/terminos') return 'terminos.html';
   return null;
 }
 
@@ -76,6 +78,9 @@ export function createApp(db, { trustProxy = false } = {}) {
   return createServer(async (req, res) => {
     const url = new URL(req.url, 'http://localhost');
     const pathname = url.pathname;
+    if (pathname === '/healthz') {
+      try { db.get('select 1 ok'); return send(res, 200, 'ok'); } catch { return send(res, 503, 'db'); }
+    }
     const photo = /^\/photos\/([\w-]{36})$/.exec(pathname);
     if (photo && req.method === 'GET') {
       const row = db.get('select photo from staff where id = ?', photo[1]);
@@ -93,9 +98,10 @@ export function createApp(db, { trustProxy = false } = {}) {
       const route = match(req.method, pathname);
       if (!route) throw new HttpError(404, 'Ruta no encontrada.');
       let body = {};
+      let raw = '';
       if (req.method !== 'GET') {
         // Solo JSON: un formulario de otro sitio no puede enviar esto sin CORS.
-        const raw = await readBody(req);
+        raw = await readBody(req);
         if (raw) {
           if (!String(req.headers['content-type'] || '').startsWith('application/json')) {
             throw new HttpError(415, 'Se espera JSON.');
@@ -109,7 +115,7 @@ export function createApp(db, { trustProxy = false } = {}) {
       const sessionToken = parseCookies(req.headers.cookie)[COOKIE];
       const fwd = trustProxy ? String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() : '';
       const ctx = {
-        db, body, params: route.params, query: Object.fromEntries(url.searchParams),
+        db, body, raw, headers: req.headers, params: route.params, query: Object.fromEntries(url.searchParams),
         user: sessionUser(db, sessionToken), sessionToken,
         ip: fwd || req.socket.remoteAddress || '',
         secure: trustProxy ? req.headers['x-forwarded-proto'] === 'https' : false,

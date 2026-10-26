@@ -31,10 +31,20 @@ export function createSession(db, userId) {
 export function sessionUser(db, token) {
   if (!token) return null;
   const row = db.get(
-    `select u.id, u.business_id, u.email, u.name, u.role, u.staff_id, s.expires_at
+    `select u.id, u.business_id, u.email, u.name, u.role, u.staff_id, s.expires_at, s.business_id active_business_id
      from sessions s join users u on u.id = s.user_id where s.id = ?`, sha(token));
   if (!row || row.expires_at < new Date().toISOString()) return null;
-  return row;
+  // Sucursal activa: el negocio y el rol salen de la membresía.
+  const { active_business_id: active, ...user } = row;
+  if (active && active !== user.business_id) {
+    const m = db.get('select role, staff_id from memberships where user_id = ? and business_id = ?', user.id, active);
+    if (m) Object.assign(user, { business_id: active, role: m.role, staff_id: m.staff_id });
+  }
+  return user;
+}
+
+export function setSessionBusiness(db, token, businessId) {
+  db.run('update sessions set business_id = ? where id = ?', businessId, sha(token));
 }
 
 export function destroySession(db, token) {

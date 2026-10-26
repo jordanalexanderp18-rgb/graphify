@@ -29,10 +29,10 @@ const CLIENTS = [
   ['Lucas Navarro', '912345607'], ['Sebastián Vega', '912345608'],
 ];
 
-export function seedBusiness(db, business, { withAppointments = true } = {}) {
+export function seedBusiness(db, business, { withAppointments = true, maxStaff = STAFF.length } = {}) {
   const services = SERVICES.map(([name, category, duration, price], i) =>
     db.insert('services', { id: uid(), business_id: business.id, name, category, duration_min: duration, price, sort: i }));
-  const staff = STAFF.map(([name, specialty, color, pct], i) =>
+  const staff = STAFF.slice(0, maxStaff).map(([name, specialty, color, pct], i) =>
     db.insert('staff', { id: uid(), business_id: business.id, name, specialty, color, commission_service_pct: pct, commission_product_pct: 10, sort: i }));
   for (const st of staff) {
     for (const wd of [1, 2, 3, 4, 5, 6]) {
@@ -60,7 +60,7 @@ export function seedBusiness(db, business, { withAppointments = true } = {}) {
       if (weekdayOf(date) === 0) continue;
       for (const [si, startMin] of [[0, 600], [1, 660], [2, 900], [0, 960], [1, 1020]]) {
         const sv = services[(k + si) % 3];
-        const st = staff[si];
+        const st = staff[si % staff.length];
         const start = zonedToUtc(date, startMin, business.timezone);
         db.insert('appointments', {
           id: uid(), business_id: business.id, staff_id: st.id, client_id: clients[k % clients.length].id,

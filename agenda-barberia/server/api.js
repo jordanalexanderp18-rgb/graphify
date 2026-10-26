@@ -2,14 +2,16 @@
 import { randomBytes } from 'node:crypto';
 import { uid, nowIso, HttpError } from './db.js';
 import {
-  hashPassword, verifyPassword, createSession, destroySession, sessionCookie, clearCookie, rateLimit, allow,
+  hashPassword, verifyPassword, createSession, destroySession, sessionCookie, clearCookie, rateLimit, allow, setSessionBusiness,
 } from './auth.js';
+import { requireFeature, checkStaffLimit, has, planInfo, TRIAL_DAYS } from './plans.js';
+import { checkoutUrl, portalUrl, verifySignature, handleEvent } from './billing.js';
 import { str, int, bool, oneOf, email, phone, pick, slugify, parseCsv } from './validate.js';
 import { isValidTz, isDate, dayRangeUtc, todayIn, addDays, zonedToUtc, localParts, weekdayOf, iso } from './time.js';
 import {
   slotsFor, staffForServices, isBookable, pickStaff, withinPolicyWindow, hhmmToMin, minToHHMM, minutesFor, visitMinutes,
 } from './availability.js';
-import { scheduleForAppointment, dropPending, queue, waLink, money } from './notify.js';
+import { scheduleForAppointment, dropPending, queue, waLink, money, baseUrl, fillTemplate } from './notify.js';
 import { seedBusiness } from './seed.js';
 
 const token = () => randomBytes(18).toString('base64url');
@@ -106,9 +108,14 @@ on('POST', '/api/auth/signup', ({ db, body, ip, setCookie, secure }) => {
   return db.tx(() => {
     let slug = slugify(businessName);
     for (let i = 2; db.get('select 1 from businesses where slug = ?', slug); i++) slug = `${slugify(businessName)}-${i}`;
-    const business = db.insert('businesses', { id: uid(), name: businessName, slug, timezone: tz, currency, phone_prefix: prefix });
+    const plan = ['free', 'barberia', 'cadena'].includes(body.plan) ? body.plan : 'barberia';
+    const business = db.insert('businesses', {
+      id: uid(), name: businessName, slug, timezone: tz, currency, phone_prefix: prefix,
+      plan, plan_status: plan === 'free' ? 'active' : 'trialing', trial_ends_at: new Date(Date.now() + TRIAL_DAYS * 86400000).toISOString(),
+    });
     const user = db.insert('users', { id: uid(), business_id: business.id, email: mail, name, password_hash: hashPassword(pw), role: 'owner' });
-    if (body.demo !== false) seedBusiness(db, biz(db, business.id));
+    db.insert('memberships', { user_id: user.id, business_id: business.id, role: 'owner' });
+    if (body.demo !== false) seedBusiness(db, biz(db, business.id), { maxStaff: plan === 'free' ? 1 : 3 });
     const s = createSession(db, user.id);
     setCookie(sessionCookie(s.token, s.expires, secure));
     return { status: 201, data: { user: { id: user.id, name, email: mail, role: 'owner' }, business: biz(db, business.id) } };
@@ -137,7 +144,10 @@ on('POST', '/api/auth/logout', ({ db, sessionToken, setCookie }) => {
 on('GET', '/api/me', ({ db, user }) => {
   if (!user) return { user: null };
   const { expires_at, ...u } = user;
-  return { user: u, business: biz(db, user.business_id) };
+  const b = biz(db, user.business_id);
+  const branches = db.all(`select b.id, b.name, b.slug from memberships m join businesses b on b.id = m.business_id
+                           where m.user_id = ? order by b.created_at`, user.id);
+  return { user: u, business: b, plan: planInfo(db, b), branches };
 });
 
 // ---------------------------------------------------------------- negocio
@@ -165,6 +175,13 @@ on('PUT', '/api/business', ({ db, user, body }) => {
     cancel_window_min: (v, k) => int(v, k, { max: 10080 }),
     reminder_hours: (v, k) => int(v, k, { min: 1, max: 72 }),
     rebook_days: (v, k) => int(v, k, { min: 7, max: 120 }),
+    deposit_instructions: (v, k) => str(v, k, { max: 500 }),
+    payment_link: (v, k) => {
+      const u = str(v, k, { max: 300 });
+      if (u && !/^https:\/\/[^\s]+$/.test(u)) throw new HttpError(400, 'El enlace de pago debe empezar con https://', { field: k });
+      return u;
+    },
+    message_channel: (v, k) => oneOf(v, k, ['whatsapp', 'sms']),
   });
   db.update('businesses', user.business_id, null, { ...f, updated_at: nowIso() });
   return biz(db, user.business_id);
@@ -289,6 +306,7 @@ on('POST', '/api/staff', ({ db, user, body }) => {
   allow(user, 'catalog');
   const f = pick(body, staffSpec);
   if (!f.name) throw new HttpError(400, 'Falta el nombre.', { field: 'name' });
+  if (f.active !== 0) checkStaffLimit(db, biz(db, user.business_id));
   return db.tx(() => {
     const count = db.get('select count(*) n from staff where business_id = ?', user.business_id).n;
     const s = db.insert('staff', { id: uid(), business_id: user.business_id, color: `c${(count % 6) + 1}`, ...f });
@@ -299,9 +317,11 @@ on('POST', '/api/staff', ({ db, user, body }) => {
 
 on('PUT', '/api/staff/:id', ({ db, user, body, params }) => {
   allow(user, 'catalog');
-  owned(db, 'staff', params.id, user.business_id, 'Barbero');
+  const current = owned(db, 'staff', params.id, user.business_id, 'Barbero');
+  const f = pick(body, staffSpec);
+  if (f.active === 1 && !current.active) checkStaffLimit(db, biz(db, user.business_id));
   return db.tx(() => {
-    db.update('staff', params.id, user.business_id, pick(body, staffSpec));
+    db.update('staff', params.id, user.business_id, f);
     saveStaffExtras(db, user.business_id, params.id, body);
     return withStaffDetails(db, [db.get('select * from staff where id = ?', params.id)])[0];
   });
@@ -371,6 +391,7 @@ on('POST', '/api/users', ({ db, user, body }) => {
   const pw = str(body.password, 'password', { required: true, label: 'la contraseña' });
   if (pw.length < 8) throw new HttpError(400, 'La contraseña debe tener al menos 8 caracteres.', { field: 'password' });
   const role = oneOf(body.role, 'role', ['owner', 'reception', 'barber']);
+  requireFeature(db, biz(db, user.business_id), 'roles');
   let staffId = null;
   if (role === 'barber') {
     staffId = owned(db, 'staff', body.staff_id, user.business_id, 'Barbero').id;
@@ -380,6 +401,7 @@ on('POST', '/api/users', ({ db, user, body }) => {
     id: uid(), business_id: user.business_id, email: mail, name: str(body.name, 'name', { max: 80 }),
     password_hash: hashPassword(pw), role, staff_id: staffId,
   });
+  db.insert('memberships', { user_id: u.id, business_id: user.business_id, role, staff_id: staffId });
   return { status: 201, data: { id: u.id, email: u.email, name: u.name, role, staff_id: staffId } };
 });
 
@@ -563,6 +585,7 @@ on('PUT', '/api/clients/:id', ({ db, user, body, params }) => {
     notes: (v, k) => str(v, k, { max: 1000 }),
     tags: (v, k) => str(v, k, { max: 200 }),
     birthday: (v) => (/^\d{2}-\d{2}$/.test(v || '') ? v : ''),
+    marketing_opt_out: bool,
   });
   if (f.phone && db.get('select 1 from clients where business_id = ? and phone = ? and id <> ?', b.id, f.phone, params.id)) {
     throw new HttpError(409, 'Otro cliente ya tiene ese teléfono.', { field: 'phone' });
@@ -633,6 +656,7 @@ on('GET', '/api/products', ({ db, user }) => {
 
 on('POST', '/api/products', ({ db, user, body }) => {
   allow(user, 'catalog');
+  requireFeature(db, biz(db, user.business_id), 'inventario');
   const f = pick(body, productSpec);
   if (!f.name || f.price === undefined) throw new HttpError(400, 'Nombre y precio son obligatorios.');
   return { status: 201, data: db.insert('products', { id: uid(), business_id: user.business_id, ...f }) };
@@ -658,6 +682,7 @@ function registerSummary(db, reg) {
 
 on('GET', '/api/register', ({ db, user }) => {
   allow(user, 'operate');
+  requireFeature(db, biz(db, user.business_id), 'caja');
   const open = db.get('select * from cash_registers where business_id = ? and closed_at is null', user.business_id);
   const history = db.all('select * from cash_registers where business_id = ? and closed_at is not null order by opened_at desc limit 10', user.business_id);
   return { open: open ? registerSummary(db, open) : null, history };
@@ -665,6 +690,7 @@ on('GET', '/api/register', ({ db, user }) => {
 
 on('POST', '/api/register/open', ({ db, user, body }) => {
   allow(user, 'operate');
+  requireFeature(db, biz(db, user.business_id), 'caja');
   if (db.get('select 1 from cash_registers where business_id = ? and closed_at is null', user.business_id)) {
     throw new HttpError(409, 'La caja ya está abierta.');
   }
@@ -692,6 +718,7 @@ on('POST', '/api/register/close', ({ db, user, body }) => {
 on('POST', '/api/sales', ({ db, user, body }) => {
   allow(user, 'operate');
   const b = biz(db, user.business_id);
+  requireFeature(db, b, 'caja');
   const method = oneOf(body.payment_method, 'payment_method', ['cash', 'card', 'transfer', 'online']);
   if (!Array.isArray(body.items) || !body.items.length) throw new HttpError(400, 'Agrega al menos un servicio o producto.');
   if (body.items.length > 50) throw new HttpError(400, 'Máximo 50 líneas por venta.');
@@ -715,6 +742,8 @@ on('POST', '/api/sales', ({ db, user, body }) => {
     const discount = int(body.discount ?? 0, 'discount', { max: subtotal, label: 'el descuento' });
     const tip = int(body.tip ?? 0, 'tip', { max: 1e10, label: 'la propina' });
     const net = subtotal - discount;
+    // Anticipo ya recibido: se descuenta de lo que paga hoy (no entra a la caja).
+    const prepaid = appt?.deposit_status === 'paid' ? Math.min(appt.deposit, net + tip) : 0;
     // Prorratear el descuento para que la comisión salga de lo realmente cobrado.
     let assigned = 0;
     lines.forEach((l, i) => {
@@ -725,7 +754,7 @@ on('POST', '/api/sales', ({ db, user, body }) => {
     const tipStaff = tip ? (body.tip_staff_id ? owned(db, 'staff', body.tip_staff_id, b.id, 'Barbero').id : appt?.staff_id ?? lines.find((l) => l.staffId)?.staffId ?? null) : null;
     const sale = db.insert('sales', {
       id: uid(), business_id: b.id, register_id: register?.id ?? null, client_id: clientId, appointment_id: appt?.id ?? null,
-      subtotal, discount, tip, tip_staff_id: tipStaff, total: net + tip, payment_method: method, created_by: user.id,
+      subtotal, discount, tip, tip_staff_id: tipStaff, prepaid, total: net + tip - prepaid, payment_method: method, created_by: user.id,
     });
     for (const l of lines) {
       const st = l.staffId ? db.get('select * from staff where id = ?', l.staffId) : null;
@@ -779,6 +808,7 @@ on('DELETE', '/api/sales/:id', ({ db, user, params }) => {
 on('GET', '/api/reports/summary', ({ db, user, query }) => {
   allow(user, 'reports');
   const b = biz(db, user.business_id);
+  requireFeature(db, b, 'reportes');
   const { from, to, utc } = range(query, b.timezone);
   const [a, z] = utc;
   const totals = db.get(`select coalesce(sum(total),0) total, coalesce(sum(tip),0) tips, coalesce(sum(discount),0) discounts, count(*) n
@@ -847,6 +877,7 @@ on('GET', '/api/reports/summary', ({ db, user, query }) => {
 on('GET', '/api/reports/commissions', ({ db, user, query }) => {
   allow(user, 'reports');
   const b = biz(db, user.business_id);
+  requireFeature(db, b, 'comisiones');
   const { from, to, utc } = range(query, b.timezone);
   const rows = db.all(`select st.id, st.name, st.commission_service_pct, st.commission_product_pct,
       coalesce(sum(case when i.kind = 'service' then i.line_total end),0) services_total,
@@ -874,7 +905,11 @@ on('GET', '/api/reminders', ({ db, user, query }) => {
   return db.all(`select r.*, c.name client_name, c.phone client_phone, c.email client_email from reminders r
                  left join clients c on c.id = r.client_id
                  where r.business_id = ? and (? is null or r.status = ?) order by r.send_at desc limit 200`,
-    user.business_id, status, status).map((r) => ({ ...r, wa_link: r.client_phone ? waLink(r.client_phone, r.body) : null }));
+    user.business_id, status, status).map((r) => ({
+    ...r,
+    wa_link: r.client_phone && r.channel === 'whatsapp' ? waLink(r.client_phone, r.body) : null,
+    sms_link: r.client_phone && r.channel === 'sms' ? `sms:+${r.client_phone}?body=${encodeURIComponent(r.body)}` : null,
+  }));
 });
 
 on('POST', '/api/reminders/:id/sent', ({ db, user, params }) => {
@@ -894,12 +929,13 @@ on('POST', '/api/reminders/:id/retry', ({ db, user, params }) => {
 on('GET', '/api/waitlist', ({ db, user }) => {
   allow(user, 'operate');
   const b = biz(db, user.business_id);
+  requireFeature(db, b, 'waitlist');
   return db.all(`select w.*, c.name client_name, c.phone client_phone, s.name service_name, st.name staff_name from waitlist w
                  join clients c on c.id = w.client_id left join services s on s.id = w.service_id left join staff st on st.id = w.staff_id
                  where w.business_id = ? and w.day >= ? and w.status in ('waiting','notified') order by w.day, w.created_at`,
     b.id, todayIn(b.timezone)).map((w) => ({
     ...w,
-    wa_link: waLink(w.client_phone, `Hola ${w.client_name.split(' ')[0]}, se liberó una hora en ${b.name}. Resérvala aquí antes que otro: ${process.env.PUBLIC_URL || ''}/b/${b.slug}`),
+    wa_link: waLink(w.client_phone, `Hola ${w.client_name.split(' ')[0]}, se liberó una hora en ${b.name}. Resérvala aquí antes que otro: ${baseUrl()}/b/${b.slug}`),
   }));
 });
 
@@ -949,7 +985,7 @@ on('GET', '/api/public/:slug', ({ db, params }) => {
         durations: Object.fromEntries(links.filter((r) => r.duration_min).map((r) => [r.service_id, r.duration_min])),
       };
     });
-  return { business: publicBusiness(b), services, staff, today: todayIn(b.timezone) };
+  return { business: publicBusiness(b), services, staff, today: todayIn(b.timezone), waitlist: has(db, b, 'waitlist'), deposits: has(db, b, 'anticipos') };
 });
 
 on('GET', '/api/public/:slug/days', ({ db, params, query }) => {
@@ -1032,6 +1068,9 @@ on('POST', '/api/public/:slug/book', ({ db, params, body, ip }) => {
     const { start, staff } = bookPublic(db, b, services, body);
     const client = findOrCreateClient(db, b, { name, phone: tel, email: mail });
     const visit = writeVisit(db, b, staff, services, start, null, { client_id: client.id, source: 'online', notes });
+    // Anticipo: la suma de los anticipos de los servicios queda en la primera cita.
+    const deposit = has(db, b, 'anticipos') ? services.reduce((x, sv) => x + sv.deposit, 0) : 0;
+    if (deposit) db.update('appointments', visit[0].id, b.id, { deposit, deposit_status: 'pending' });
     scheduleVisit(db, b, visit, services, staff, client);
     db.run("update waitlist set status = 'booked' where client_id = ? and day = ? and status <> 'removed'", client.id, localParts(start, b.timezone).date);
     return { status: 201, data: { token: visit[0].token } };
@@ -1041,6 +1080,7 @@ on('POST', '/api/public/:slug/book', ({ db, params, body, ip }) => {
 on('POST', '/api/public/:slug/waitlist', ({ db, params, body, ip }) => {
   rateLimit(`wait:${ip}`, 6, 600000);
   const b = publicBiz(db, params.slug);
+  requireFeature(db, b, 'waitlist');
   const service = publicServices(db, b, body)[0];
   if (!isDate(body.day) || !withinPolicyWindow(b, body.day)) throw new HttpError(400, 'Fecha no válida.', { field: 'day' });
   const staffId = body.staff_id && body.staff_id !== 'any' ? owned(db, 'staff', body.staff_id, b.id, 'Barbero').id : null;
@@ -1082,7 +1122,9 @@ on('GET', '/api/public/r/:token', ({ db, params }) => {
       service_id: services[0].id, service_ids: services.map((s) => s.id), service_name: services.map((s) => s.name).join(' + '),
       staff_id: a.staff_id, staff_name: a.staff_name, client_name: a.client_name, price,
       price_text: money(price, b.currency),
+      deposit: visit[0].deposit, deposit_status: visit[0].deposit_status, deposit_text: money(visit[0].deposit, b.currency),
     },
+    deposit_instructions: b.deposit_instructions, payment_link: b.payment_link,
     can_change: canChange,
   };
 });
@@ -1113,4 +1155,119 @@ on('POST', '/api/public/r/:token/reschedule', ({ db, params, body, ip }) => {
     scheduleVisit(db, b, moved, services, staff, db.get('select * from clients where id = ?', a.client_id));
     return { ok: true };
   });
+});
+
+// ---------------------------------------------------------------- anticipos
+
+on('POST', '/api/appointments/:id/deposit', ({ db, user, body, params }) => {
+  allow(user, 'operate');
+  const appt = owned(db, 'appointments', params.id, user.business_id, 'Cita');
+  const first = appt.group_id ? db.get('select * from appointments where id = ?', appt.group_id) : appt;
+  if (!first.deposit) throw new HttpError(409, 'Esta cita no pide anticipo.');
+  db.update('appointments', first.id, user.business_id, { deposit_status: oneOf(body.status, 'status', ['pending', 'paid']), updated_at: nowIso() });
+  return db.get(`${APPT_SELECT} where a.id = ?`, appt.id);
+});
+
+// ---------------------------------------------------------------- campañas
+
+// Clientes de un segmento con forma de contacto y sin baja de marketing.
+function segmentClients(db, b, q) {
+  const segment = oneOf(q.segment || 'all', 'segment', ['all', 'inactive', 'birthday', 'tag']);
+  const params = [b.id];
+  let where = "c.business_id = ? and c.marketing_opt_out = 0 and (c.phone <> '' or c.email <> '')";
+  if (segment === 'inactive') {
+    const days = int(q.days ?? 45, 'days', { min: 7, max: 730, label: 'los días' });
+    where += ` and exists (select 1 from appointments a where a.client_id = c.id and a.status = 'done')
+               and not exists (select 1 from appointments a where a.client_id = c.id and a.status in ('done','booked','confirmed') and a.start_at > ?)`;
+    params.push(new Date(Date.now() - days * 86400000).toISOString());
+  } else if (segment === 'birthday') {
+    where += ' and substr(c.birthday, 1, 2) = ?';
+    params.push(todayIn(b.timezone).slice(5, 7));
+  } else if (segment === 'tag') {
+    const tag = str(q.tag, 'tag', { required: true, max: 40, label: 'la etiqueta' }).toLowerCase();
+    where += " and (',' || replace(lower(c.tags), ' ', '') || ',') like ?";
+    params.push(`%,${tag.replace(/\s/g, '').replace(/[%_]/g, '')},%`);
+  }
+  return db.all(`select c.* from clients c where ${where} order by c.name limit 1000`, ...params);
+}
+
+on('GET', '/api/campaigns/preview', ({ db, user, query }) => {
+  allow(user, 'settings');
+  const b = biz(db, user.business_id);
+  requireFeature(db, b, 'campanas');
+  const list = segmentClients(db, b, query);
+  return { count: list.length, sample: list.slice(0, 5).map((c) => c.name) };
+});
+
+on('POST', '/api/campaigns', ({ db, user, body }) => {
+  allow(user, 'settings');
+  const b = biz(db, user.business_id);
+  requireFeature(db, b, 'campanas');
+  const text = str(body.text, 'text', { required: true, max: 700, label: 'el mensaje' });
+  const list = segmentClients(db, b, body);
+  if (!list.length) throw new HttpError(409, 'Ningún cliente cumple ese filtro.');
+  let queued = 0;
+  db.tx(() => {
+    for (const client of list) if (queue(db, 'campaign', { business: b, client }, Date.now(), fillTemplate(text, b, client))) queued++;
+  });
+  return { status: 201, data: { queued } };
+});
+
+// ---------------------------------------------------------------- sucursales
+
+on('POST', '/api/branches', ({ db, user, body }) => {
+  allow(user, 'settings');
+  const current = biz(db, user.business_id);
+  requireFeature(db, current, 'sucursales');
+  const main = current.owner_business_id ? biz(db, current.owner_business_id) : current;
+  const name = str(body.name, 'name', { required: true, max: 80, label: 'el nombre de la sucursal' });
+  return db.tx(() => {
+    let slug = slugify(name);
+    for (let i = 2; db.get('select 1 from businesses where slug = ?', slug); i++) slug = `${slugify(name)}-${i}`;
+    const b = db.insert('businesses', {
+      id: uid(), name, slug, timezone: main.timezone, currency: main.currency, phone_prefix: main.phone_prefix,
+      owner_business_id: main.id, plan: main.plan, plan_status: main.plan_status,
+    });
+    db.insert('memberships', { user_id: user.id, business_id: b.id, role: 'owner' });
+    return { status: 201, data: biz(db, b.id) };
+  });
+});
+
+on('POST', '/api/branches/switch', ({ db, user, body, sessionToken }) => {
+  allow(user, 'agenda');
+  if (!db.get('select 1 from memberships where user_id = ? and business_id = ?', user.id, String(body.business_id))) {
+    throw new HttpError(404, 'Sucursal no encontrada.');
+  }
+  setSessionBusiness(db, sessionToken, body.business_id);
+  return { ok: true };
+});
+
+// ---------------------------------------------------------------- suscripción
+
+on('GET', '/api/billing', ({ db, user }) => {
+  allow(user, 'settings');
+  return planInfo(db, biz(db, user.business_id));
+});
+
+on('POST', '/api/billing/checkout', async ({ db, user, body }) => {
+  allow(user, 'settings');
+  const b = biz(db, user.business_id);
+  if (b.owner_business_id) throw new HttpError(409, 'La suscripción se maneja desde el negocio principal.');
+  const plan = oneOf(body.plan, 'plan', ['barberia', 'cadena']);
+  const interval = oneOf(body.interval || 'month', 'interval', ['month', 'year']);
+  return { url: await checkoutUrl(b, user, plan, interval, baseUrl()) };
+});
+
+on('POST', '/api/billing/portal', async ({ db, user }) => {
+  allow(user, 'settings');
+  const b = biz(db, user.business_id);
+  return { url: await portalUrl(b.owner_business_id ? biz(db, b.owner_business_id) : b, baseUrl()) };
+});
+
+// Webhook de Stripe: firma verificada, procesado una sola vez.
+on('POST', '/api/billing/webhook', ({ db, raw, headers }) => {
+  const secret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!secret) throw new HttpError(503, 'Webhook no configurado.');
+  if (!verifySignature(raw, headers['stripe-signature'], secret)) throw new HttpError(400, 'Firma no válida.');
+  return { received: handleEvent(db, JSON.parse(raw)) };
 });

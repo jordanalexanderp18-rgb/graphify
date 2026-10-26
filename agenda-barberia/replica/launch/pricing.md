@@ -23,10 +23,8 @@ Precio fijo por barbería y no por mensaje. Sin cargos ocultos y cancelación co
 | Barbería | 2 a 5 barberos | US$15/mes · US$150/año | caja, comisiones, inventario, reportes, "te toca corte", lista de espera, roles |
 | Cadena | 6+ barberos | US$29/mes · US$290/año | barberos ilimitados, WhatsApp automático con la cuenta Business del dueño, soporte prioritario |
 
-## Pendiente en el producto (no implementado todavía)
+## En el producto
 
-- El cobro de la suscripción todavía no existe y los límites por plan no se aplican en el código. Para activarlo:
-  1. El dueño crea su cuenta Stripe (o Mercado Pago en LatAm) y los productos "Barbería" y "Cadena" con precio mensual y anual.
-  2. Se integra Checkout + Portal de cliente para cancelar con un clic.
-  3. Se aplican los límites de barberos por plan.
-- La prueba de 30 días que anuncia la landing depende de lo mismo.
+- Prueba de 30 días al registrarse. Al vencer sin pago, la cuenta pasa a Gratis (1 barbero, sin caja ni reportes) sin perder datos.
+- Límites por plan aplicados en el servidor: barberos activos, caja, comisiones, inventario, reportes, "te toca corte", lista de espera, campañas, anticipos y roles (Barbería); sucursales y WhatsApp automático (Cadena).
+- Cobro con Stripe Checkout, cambio de tarjeta y cancelación con un clic en el Customer Portal, y webhooks firmados e idempotentes (`server/billing.js`). Se activa con las claves de `.env.example` (ver `replica/deploy.md`).
