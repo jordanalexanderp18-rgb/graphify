@@ -201,6 +201,15 @@ async function bookingFlow(slug) {
     form.querySelector('input').focus();
   };
 
+  // Enlace directo desde el aviso "te toca volver": ?s=<servicio>&p=<profesional>.
+  const q = new URLSearchParams(location.search);
+  const pre = info.services.find((x) => x.id === q.get('s'));
+  if (pre) {
+    st.services = [pre];
+    const staff = info.staff.find((x) => x.id === q.get('p') && x.service_ids.includes(pre.id));
+    if (staff) { st.staffId = staff.id; return stepTime(); }
+    return stepStaff();
+  }
   stepService();
 }
 

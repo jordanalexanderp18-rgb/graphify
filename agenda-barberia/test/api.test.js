@@ -245,8 +245,9 @@ test('importar CSV, borrar datos de un cliente, mensajes manuales y "te toca cor
   await c.post(`/api/appointments/${ap.data.id}/status`, { status: 'done' });
 
   const noon = zonedToUtc(new Date().toISOString().slice(0, 10), 12 * 60, business.timezone);
-  assert.equal(runRebook(srv.db, noon), 1);
-  assert.equal(runRebook(srv.db, noon), 0, 'una vez al día');
+  // Al atenderla se programó su aviso de regreso; el barrido general no duplica.
+  assert.equal(srv.db.get("select count(*) n from reminders where client_id = ? and kind = 'rebook' and status = 'pending'", juan.id).n, 1);
+  assert.equal(runRebook(srv.db, noon), 0, 'no duplica el aviso de la visita');
   // El aviso quedó programado para el mediodía simulado; se adelanta para que el envío no dependa de la hora real.
   srv.db.run("update reminders set send_at = '2000-01-01T00:00:00.000Z' where kind = 'rebook'");
   await runReminders(srv.db);

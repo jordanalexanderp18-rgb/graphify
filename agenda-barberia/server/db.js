@@ -40,6 +40,8 @@ const ADDED = [
   ['sales', 'prepaid', 'integer not null default 0'],
   ['sessions', 'business_id', 'text'],
   ['businesses', 'vertical', "text not null default 'barberia'"],
+  ['services', 'return_days', 'integer'],
+  ['appointments', 'return_days', 'integer'],
 ];
 function migrate(db) {
   for (const [table, col, def] of ADDED) {

@@ -216,11 +216,39 @@ try {
     await shot(page, 'S05');
   });
 
+  await step('contador de regreso: el barbero elige 15 días y el aviso queda programado', async () => {
+    await page.goto(`${BASE}/app#/clientes`);
+    await page.getByRole('link', { name: 'Ana María Núñez' }).click();
+    const card = page.getByRole('region', { name: 'Contador de regreso' });
+    await card.waitFor();
+    await card.getByRole('button', { name: '15 días' }).click();
+    await page.getByText(/Le escribiremos el/).waitFor();
+    await card.getByText(/aviso programado para el/).waitFor();
+    await shot(page, 'S24-contador');
+    await page.goto(`${BASE}/app#/clientes`);
+    await page.getByRole('row', { name: /Ana María Núñez/ }).getByText(/Vuelve en|Le toca|Atrasado/).waitFor();
+  });
+
+  await step('enlace del aviso abre la reserva con servicio y barbero elegidos', async () => {
+    const ids = await page.evaluate(async () => {
+      const [svc, staff] = await Promise.all([fetch('/api/services').then((r) => r.json()), fetch('/api/staff').then((r) => r.json())]);
+      return { s: svc.find((x) => x.name === 'Corte clásico').id, p: staff.find((x) => x.name === 'Diego Fuentes').id };
+    });
+    await guest.goto(`${BASE}/b/${slug}?s=${ids.s}&p=${ids.p}`);
+    await guest.getByRole('heading', { name: 'Elige tu hora' }).waitFor();
+    await guest.getByText(/Corte clásico · \d+ min · Diego Fuentes/).waitFor();
+  });
+
   await step('S12/S13 reportes y comisiones', async () => {
     // Los ingresos cuentan el día del cobro (hoy), igual que la caja.
     await page.goto(`${BASE}/app#/reportes?tab=resumen&p=hoy`);
     await page.getByRole('heading', { name: 'Ingresos por día' }).waitFor();
-    await page.locator('.stat', { hasText: 'Ingresos' }).getByText('$20.000', { exact: true }).waitFor();
+    await page.locator('.hero-card').getByText('$20.000', { exact: true }).first().waitFor();
+    await page.locator('.colchart .col').last().focus();
+    await page.locator('.chart-tip').getByText('$20.000').waitFor();
+    await page.getByRole('button', { name: 'Ver como tabla' }).click();
+    await page.getByRole('cell', { name: '$20.000' }).waitFor();
+    await page.getByRole('button', { name: 'Ver gráfico' }).click();
     await shot(page, 'S12');
     await page.getByRole('tab', { name: 'Comisiones' }).click();
     await page.getByRole('button', { name: 'Descargar CSV' }).waitFor();
@@ -344,7 +372,11 @@ try {
     await guest.goto(`${BASE}/b/${slug}`);
     await pickServices(guest, /Perfilado de barba/);
     await guest.getByRole('button', { name: /Diego Fuentes/ }).click();
+    // Un día futuro: una hora de hoy puede caer dentro de la ventana en que ya no se cancela.
     await guest.locator('.slot').first().waitFor();
+    await guest.locator(`.day[data-date="${target}"]`).click();
+    await guest.locator(`.day[data-date="${target}"][aria-pressed="true"]`).waitFor();
+    await guest.waitForTimeout(500);
     const time = await guest.locator('.slot').first().innerText();
     await guest.locator('.slot').first().click();
     await guest.getByRole('button', { name: 'Continuar' }).click();
@@ -357,6 +389,8 @@ try {
     await guest.goto(`${BASE}/b/${slug}`);
     await pickServices(guest, /Perfilado de barba/);
     await guest.getByRole('button', { name: /Diego Fuentes/ }).click();
+    await guest.locator('.slot').first().waitFor();
+    await guest.locator(`.day[data-date="${target}"]`).click();
     await guest.getByRole('button', { name: time, exact: true }).first().waitFor();
   });
 

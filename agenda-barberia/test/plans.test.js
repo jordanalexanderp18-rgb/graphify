@@ -138,3 +138,41 @@ test('rubro: palabras, servicios y mensaje "te toca" según el negocio', async (
   const { c: c2 } = await signup(srv.base, 109);
   assert.equal((await c2.get('/api/me')).data.terms.staff, 'barbero');
 });
+
+test('contador de regreso: se programa al atender, el profesional lo ajusta y el aviso trae horas libres', async () => {
+  const { c, business } = await signup(srv.base, 110);
+  const svc = (await c.get('/api/services')).data.find((s) => s.name === 'Corte clásico');
+  await c.put(`/api/services/${svc.id}`, { return_days: 20 });
+  const staff = (await c.get('/api/staff')).data[0];
+  const past = new Date(Date.now() - 30 * 86400000).toISOString();
+  const a = (await c.post('/api/appointments', { staff_id: staff.id, service_id: svc.id, start: past, force: true, notify: false, client: { name: 'Tomás Vuelve', phone: '933330000' } })).data;
+  // Atendida: queda programado con los 20 días del servicio.
+  await c.post(`/api/appointments/${a.id}/status`, { status: 'done' });
+  let cl = (await c.get('/api/clients?q=vuelve')).data[0];
+  assert.equal(cl.return_days, 20);
+  assert.ok(cl.return_at, 'aviso pendiente');
+  // El barbero lo cambia a 15 días: un solo aviso pendiente.
+  const r = await c.post(`/api/appointments/${a.id}/return`, { days: 15 });
+  assert.equal(r.data.return_days, 15);
+  const pend = srv.db.all("select * from reminders where client_id = ? and kind = 'rebook' and status = 'pending'", cl.id);
+  assert.equal(pend.length, 1);
+  // Al enviarse (30 días después de la visita ya venció), el texto trae horas reales y el enlace directo.
+  await runReminders(srv.db);
+  const sent = srv.db.get('select * from reminders where id = ?', pend[0].id);
+  assert.equal(sent.status, 'manual');
+  assert.match(sent.body, /^Tomás, ya pasaron 15 días desde tu corte clásico con Matías en Barbería Prueba 110\. Te toca corte\. Matías tiene libre: \S+ \d+ a las \d\d:\d\d/);
+  assert.ok(sent.body.includes(`/b/${business.slug}?s=${svc.id}&p=${staff.id}`));
+  // Apagarlo.
+  assert.equal((await c.post(`/api/appointments/${a.id}/return`, { days: null })).data.return_days, null);
+  // Si ya tiene hora futura, el aviso no se manda.
+  await c.post(`/api/appointments/${a.id}/return`, { days: 1 });
+  const future = new Date(Date.now() + 3 * 86400000);
+  future.setUTCHours(15, 0, 0, 0);
+  await c.post('/api/appointments', { staff_id: staff.id, service_id: svc.id, start: future.toISOString(), force: true, notify: false, client_id: cl.id });
+  await runReminders(srv.db);
+  const last = srv.db.get("select * from reminders where client_id = ? and kind = 'rebook' order by created_at desc limit 1", cl.id);
+  assert.equal(last.status, 'skipped');
+  // Una cita no atendida no acepta contador.
+  const other = (await c.post('/api/appointments', { staff_id: staff.id, service_id: svc.id, start: future.toISOString().replace('15:00', '18:00'), force: true, notify: false, client_id: cl.id })).data;
+  assert.equal((await c.post(`/api/appointments/${other.id}/return`, { days: 10 })).status, 409);
+});

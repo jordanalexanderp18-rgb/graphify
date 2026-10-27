@@ -1,7 +1,7 @@
 // Tareas en segundo plano. Corren en el mismo proceso cada minuto.
 import { nowIso } from './db.js';
 import { deliver, queue } from './notify.js';
-import { todayIn, localParts } from './time.js';
+import { localParts } from './time.js';
 import { has } from './plans.js';
 
 export async function runReminders(db, limit = 50) {
@@ -18,7 +18,7 @@ const lastRun = new Map();
 export function runRebook(db, now = Date.now()) {
   let queued = 0;
   for (const business of db.all('select * from businesses')) {
-    const today = todayIn(business.timezone);
+    const today = localParts(now, business.timezone).date;
     if (lastRun.get(business.id) === today) continue;
     if (!has(db, business, 'rebook')) continue;
     if (localParts(now, business.timezone).min < 600) continue;

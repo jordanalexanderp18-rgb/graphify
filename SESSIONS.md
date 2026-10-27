@@ -137,6 +137,12 @@ recon a launch. El deploy no se hizo: requiere que Jordan diga "go".
   de seguridad. Corregido: la reserva pública con un teléfono ajeno revelaba
   el nombre guardado del cliente en /r/<token>; ahora la web pública nunca
   lee ni modifica una ficha existente (`findOrCreateClient` con `trusted`).
+- Cuarta pasada: contador de regreso por visita (`server/returns.js`): al
+  atender se programa el aviso a N días (servicio o lo que elija el
+  profesional, 11:00 local); el texto se arma al enviar con 3 horas libres
+  reales y un enlace `/b/<negocio>?s=<servicio>&p=<profesional>` que abre la
+  reserva en la hora. Si ya tiene hora, el aviso se salta. Reportes y paleta
+  de profesionales rehechos con la skill dataviz (validador: light y dark OK).
 - Netlify: la red del entorno bloquea api.netlify.com; se entregó un build
   estático (`scripts/build-netlify.mjs`) para Netlify Drop.
 - El Dockerfile no se construyó aquí (no hay daemon de Docker). Corre como

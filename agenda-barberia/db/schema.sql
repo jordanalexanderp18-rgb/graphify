@@ -108,6 +108,7 @@ create table if not exists services (
   buffer_min integer not null default 0 check (buffer_min between 0 and 120),
   price integer not null check (price >= 0),
   deposit integer not null default 0 check (deposit >= 0),
+  return_days integer check (return_days between 1 and 365),  -- días sugeridos para volver
   online integer not null default 1 check (online in (0,1)),
   active integer not null default 1 check (active in (0,1)),
   sort integer not null default 0,
@@ -155,6 +156,7 @@ create table if not exists appointments (
   sale_id text,
   group_id text,                       -- visita con varios servicios: id de la primera cita
   deposit integer not null default 0,  -- anticipo pedido
+  return_days integer,                 -- aviso de regreso programado a N días (null = sin aviso)
   deposit_status text not null default 'none' check (deposit_status in ('none','pending','paid')),
   created_at text not null default (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
   updated_at text not null default (strftime('%Y-%m-%dT%H:%M:%fZ','now')),

@@ -14,6 +14,7 @@ import {
 import { scheduleForAppointment, dropPending, queue, waLink, money, baseUrl, fillTemplate } from './notify.js';
 import { seedBusiness } from './seed.js';
 import { VERTICALS, VERTICAL_OPTIONS, termsOf } from './verticals.js';
+import { scheduleReturn, ensureReturn } from './returns.js';
 
 const token = () => randomBytes(18).toString('base64url');
 const routes = [];
@@ -205,6 +206,7 @@ const serviceSpec = {
   buffer_min: (v, k) => int(v, k, { max: 120, label: 'el tiempo extra' }),
   price: (v, k) => int(v, k, { max: 1e10, label: 'el precio' }),
   deposit: (v, k) => int(v, k, { max: 1e10, label: 'el anticipo' }),
+  return_days: (v, k) => (v === null || v === '' ? null : int(v, k, { min: 1, max: 365, label: 'los días para volver' })),
   online: bool, active: bool,
   sort: (v, k) => int(v, k, { max: 1000 }),
 };
@@ -528,6 +530,8 @@ on('POST', '/api/appointments/:id/status', ({ db, user, body, params }) => {
     }
     db.update('appointments', appt.id, user.business_id, { status, updated_at: nowIso() });
     if (status === 'cancelled' || status === 'no_show') dropPending(db, appt.id);
+    if (status === 'done') ensureReturn(db, { ...appt, status });
+    else if (appt.status === 'done') scheduleReturn(db, appt, null);
     if (status === 'cancelled' && body.notify && appt.status !== 'cancelled') {
       queue(db, 'cancelled', apptContext(db, { ...appt, status }), Date.now());
     }
@@ -538,6 +542,9 @@ on('POST', '/api/appointments/:id/status', ({ db, user, body, params }) => {
 // ---------------------------------------------------------------- clientes
 
 const CLIENT_STATS = `(select max(start_at) from appointments a where a.client_id = c.id and a.status = 'done') last_visit,
+  (select a.return_days from appointments a where a.client_id = c.id and a.status = 'done' order by a.start_at desc limit 1) return_days,
+  (select min(r.send_at) from reminders r where r.client_id = c.id and r.kind = 'rebook' and r.status = 'pending') return_at,
+  (select min(a.start_at) from appointments a where a.client_id = c.id and a.status in ('booked','confirmed') and a.start_at > strftime('%Y-%m-%dT%H:%M:%fZ','now')) next_visit,
   (select count(*) from appointments a where a.client_id = c.id and a.status = 'done') visits,
   (select coalesce(sum(total),0) from sales s where s.client_id = c.id) spent`;
 
@@ -777,6 +784,9 @@ on('POST', '/api/sales', ({ db, user, body }) => {
       // Una visita con varios servicios se cobra entera.
       const visit = appt.group_id ? db.all("select id from appointments where group_id = ? and status <> 'cancelled' and sale_id is null", appt.group_id) : [appt];
       for (const x of visit) db.update('appointments', x.id, b.id, { status: 'done', sale_id: sale.id, updated_at: nowIso() });
+      if (body.return_days !== undefined) {
+        scheduleReturn(db, appt, body.return_days === null || body.return_days === '' ? null : int(body.return_days, 'return_days', { min: 1, max: 365, label: 'los días para volver' }));
+      } else ensureReturn(db, appt);
     }
     return { status: 201, data: saleWithItems(db, sale.id) };
   });
@@ -805,6 +815,7 @@ on('DELETE', '/api/sales/:id', ({ db, user, params }) => {
     for (const it of db.all("select * from sale_items where sale_id = ? and kind = 'product'", sale.id)) {
       db.run('update products set stock = stock + ? where id = ?', it.qty, it.ref_id);
     }
+    for (const x of db.all('select * from appointments where sale_id = ?', sale.id)) if (x.return_days) scheduleReturn(db, x, null);
     db.run("update appointments set sale_id = null, status = 'booked' where sale_id = ?", sale.id);
     db.run('delete from sales where id = ?', sale.id);
   });
@@ -1279,4 +1290,16 @@ on('POST', '/api/billing/webhook', ({ db, raw, headers }) => {
   if (!secret) throw new HttpError(503, 'Webhook no configurado.');
   if (!verifySignature(raw, headers['stripe-signature'], secret)) throw new HttpError(400, 'Firma no válida.');
   return { received: handleEvent(db, JSON.parse(raw)) };
+});
+
+// ---------------------------------------------------------------- contador de regreso
+
+// El profesional (o recepción) elige en cuántos días avisarle al cliente que vuelva.
+on('POST', '/api/appointments/:id/return', ({ db, user, body, params }) => {
+  allow(user, 'agenda');
+  const appt = owned(db, 'appointments', params.id, user.business_id, 'Cita');
+  if (user.role === 'barber' && appt.staff_id !== user.staff_id) throw new HttpError(403, 'Solo puedes cambiar tus propias citas.');
+  if (appt.status !== 'done') throw new HttpError(409, 'Primero marca la cita como atendida.');
+  const days = body.days === null || body.days === '' ? null : int(body.days, 'days', { min: 1, max: 365, label: 'los días' });
+  return db.tx(() => scheduleReturn(db, appt, days));
 });

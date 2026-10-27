@@ -312,6 +312,7 @@ function apptDetail(a) {
         });
       } }, a.deposit_status === 'paid' ? 'Marcar pendiente' : 'Anticipo recibido') : null) : null,
     a.notes ? h('div', {}, h('div', { class: 'label' }, 'Notas'), h('p', {}, a.notes)) : null,
+    a.status === 'done' ? h('div', { class: 'card-flat' }, returnPicker(a.return_days ?? null, async (d) => { if (await saveReturn(a.group_id || a.id, d)) { m.close(); route(); } })) : null,
     h('a', { href: `#/cliente/${a.client_id}`, onclick: () => m.close() }, 'Ver ficha del cliente'),
   );
   const active = ['booked', 'confirmed'].includes(a.status);
@@ -445,12 +446,13 @@ async function viewClients(main) {
         can('operate') ? h('button', { class: 'btn btn-primary', type: 'button', onclick: () => clientModal() }, 'Agregar cliente') : null)));
     }
     clear(list, h('div', { class: 'table-wrap' }, h('table', { class: 'table' },
-      h('thead', {}, h('tr', {}, h('th', {}, 'Nombre'), h('th', {}, 'Teléfono'), h('th', { class: 'r' }, 'Visitas'), h('th', {}, 'Última visita'), h('th', { class: 'r' }, 'Gastado'))),
+      h('thead', {}, h('tr', {}, h('th', {}, 'Nombre'), h('th', {}, 'Teléfono'), h('th', { class: 'r' }, 'Visitas'), h('th', {}, 'Última visita'), h('th', {}, 'Vuelve'), h('th', { class: 'r' }, 'Gastado'))),
       h('tbody', {}, rows.map((c) => h('tr', { class: 'click', onclick: () => go(`#/cliente/${c.id}`) },
         h('td', {}, h('a', { href: `#/cliente/${c.id}` }, c.name)),
         h('td', { class: 'num' }, c.phone ? `+${c.phone}` : '—'),
         h('td', { class: 'r num' }, c.visits),
         h('td', {}, c.last_visit ? dateTimeLabel(c.last_visit, biz().timezone) : '—'),
+        h('td', {}, returnBadge(returnStatus(c))),
         h('td', { class: 'r num' }, fmt(c.spent))))))));
   };
   let t;
@@ -505,8 +507,7 @@ async function viewClient(main, id) {
       stat('Visitas', c.visits), stat('Gastado', fmt(c.spent)),
       stat('Cada cuánto viene', c.avg_interval_days ? `${c.avg_interval_days} días` : '—'),
       stat('No llegó', c.no_shows)),
-    next ? h('div', { class: 'card-flat', style: { marginBottom: 'var(--s-4)' } }, `Próxima cita: ${dateTimeLabel(next.start_at, tz)} · ${next.service_name} con ${next.staff_name}`)
-      : due ? h('div', { class: 'card-flat', style: { marginBottom: 'var(--s-4)' } }, `Sin cita futura. Según su ritmo, le toca alrededor del ${dateLabel(due, { day: 'numeric', month: 'long' })}.`) : null,
+    returnCard(c, next, due),
     c.notes ? h('div', { class: 'card', style: { marginBottom: 'var(--s-4)' } }, h('div', { class: 'label' }, 'Notas'), h('p', {}, c.notes)) : null,
     h('h2', { style: { marginBottom: 'var(--s-3)' } }, 'Historial'),
     c.appointments.length ? h('div', { class: 'table-wrap' }, h('table', { class: 'table' },
@@ -523,7 +524,78 @@ async function viewClient(main, id) {
   );
 }
 
+function returnCard(c, next, rhythmDue) {
+  const tz = biz().timezone;
+  const st = returnStatus(c);
+  const lastDone = c.appointments.find((a) => a.status === 'done');
+  if (next) return h('div', { class: 'card-flat', style: { marginBottom: 'var(--s-4)' } }, `Próxima cita: ${dateTimeLabel(next.start_at, tz)} · ${next.service_name} con ${next.staff_name}`);
+  if (!st || !lastDone) return null;
+  const head = c.appointments.find((a) => a.id === (lastDone.group_id || lastDone.id)) || lastDone;
+  const big = st.left >= 0 ? String(st.left) : String(-st.left);
+  const unit = st.left === 0 ? 'hoy' : st.left > 0 ? (st.left === 1 ? 'día para volver' : 'días para volver') : (st.left === -1 ? 'día de atraso' : 'días de atraso');
+  const link = `${location.origin}/b/${biz().slug}?s=${head.service_id}&p=${head.staff_id}`;
+  const msg = `Hola ${c.name.split(' ')[0]}, ya va siendo hora de volver a ${biz().name}. Reserva aquí: ${link}`;
+  return h('section', { class: `card stack return-card rc-${st.kind}`, style: { marginBottom: 'var(--s-4)' }, 'aria-label': 'Contador de regreso' },
+    h('div', { class: 'row-between' },
+      h('div', { class: 'stack-sm' }, h('div', { class: 'label' }, 'Contador de regreso'),
+        h('div', { class: 'row', style: { alignItems: 'baseline' } }, h('span', { class: 'return-big' }, st.left === 0 ? '¡Hoy!' : big), st.left === 0 ? null : h('span', { class: 'muted' }, unit))),
+      returnBadge(st)),
+    h('div', { class: 'meter', role: 'meter', 'aria-valuemin': 0, 'aria-valuemax': st.days, 'aria-valuenow': Math.min(st.days, st.days - st.left), 'aria-label': `${st.days - st.left} de ${st.days} días` },
+      h('div', { class: 'meter-fill', style: { width: `${Math.round(st.progress * 100)}%` } })),
+    h('p', { class: 'xs muted' },
+      `Última visita ${dateLabel(partsIn(c.last_visit, tz).date, { day: 'numeric', month: 'short' })} · vuelve cada ${st.days} días`,
+      c.return_at ? ` · aviso programado para el ${dateTimeLabel(c.return_at, tz)}` : ' · sin aviso programado',
+      rhythmDue ? ` · según su historial viene cada ${c.avg_interval_days} días` : ''),
+    can('agenda') ? returnPicker(head.return_days ?? null, async (d) => { if (await saveReturn(head.id, d)) route(); }) : null,
+    c.phone ? h('div', {}, h('a', { class: 'btn btn-sm', href: `https://wa.me/${c.phone}?text=${encodeURIComponent(msg)}`, target: '_blank', rel: 'noopener' }, 'Escribirle ahora por WhatsApp')) : null);
+}
+
 const apptModalFor = (c) => apptModal({ date: todayIn(biz().timezone), client: c });
+
+// ------------------------------------------------------------ contador de regreso
+
+const RETURN_PRESETS = [7, 10, 15, 21, 30, 45];
+const diffDays = (a, b) => Math.round((Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / 86400000);
+
+// Estado del cliente según su última visita y los días para volver.
+function returnStatus(c) {
+  const tz = biz().timezone;
+  if (c.next_visit) {
+    return { kind: 'ok', icon: '✓', text: `Con hora el ${dateLabel(partsIn(c.next_visit, tz).date, { weekday: 'short', day: 'numeric', month: 'short' })}` };
+  }
+  if (!c.last_visit) return null;
+  const days = c.return_days ?? biz().rebook_days;
+  const due = addDays(partsIn(c.last_visit, tz).date, days);
+  const left = diffDays(todayIn(tz), due);
+  const progress = Math.max(0, Math.min(1, (days - left) / days));
+  const base = { due, days, left, progress };
+  if (left > 3) return { ...base, kind: 'neutral', icon: '◷', text: `Vuelve en ${left} días` };
+  if (left > 0) return { ...base, kind: 'warn', icon: '!', text: left === 1 ? 'Le toca mañana' : `Le toca en ${left} días` };
+  if (left === 0) return { ...base, kind: 'warn', icon: '!', text: 'Le toca hoy' };
+  return { ...base, kind: 'bad', icon: '!', text: `Atrasado ${-left} día${left === -1 ? '' : 's'}` };
+}
+const RETURN_CLASS = { ok: 'badge-ok', neutral: 'badge-accent', warn: 'badge-warn', bad: 'badge-bad' };
+const returnBadge = (st) => (st ? h('span', { class: `badge ${RETURN_CLASS[st.kind]}` }, h('span', { 'aria-hidden': 'true' }, st.icon), ` ${st.text}`) : h('span', { class: 'muted' }, '—'));
+
+// Selector "avisarle que vuelva en N días". onPick(días|null) decide qué hacer.
+function returnPicker(current, onPick) {
+  const other = h('input', { class: 'input', type: 'number', min: 1, max: 365, placeholder: 'Otro', 'aria-label': 'Otra cantidad de días', style: { width: '84px', minHeight: '32px' } });
+  other.addEventListener('change', () => other.value && onPick(Number(other.value)));
+  return h('div', { class: 'stack-sm' },
+    h('div', { class: 'label' }, 'Avisarle que vuelva en'),
+    h('div', { class: 'row', role: 'group', 'aria-label': 'Días para volver' },
+      RETURN_PRESETS.map((d) => h('button', { type: 'button', class: 'btn btn-sm chip', 'aria-pressed': String(current === d), onclick: () => onPick(d) }, `${d} días`)),
+      other,
+      h('button', { type: 'button', class: 'btn btn-sm btn-ghost', 'aria-pressed': String(current === null), onclick: () => onPick(null) }, 'Sin aviso')));
+}
+
+async function saveReturn(apptId, days) {
+  try {
+    const r = await api('POST', `/api/appointments/${apptId}/return`, { days });
+    toast(r.return_at ? `Le escribiremos el ${dateTimeLabel(r.return_at, biz().timezone)} con horas libres.` : 'Aviso de regreso desactivado.');
+    return r;
+  } catch (e) { toast(e.message, 'error'); return null; }
+}
 
 const stat = (label, value, hint) => h('div', { class: 'stat' }, h('span', { class: 'xs muted' }, label), h('span', { class: 'stat-value' }, value), hint ? h('span', { class: 'xs muted' }, hint) : null);
 
@@ -547,6 +619,8 @@ async function viewPos(main, _arg, params) {
     // Una visita con varios servicios se cobra junta.
     const visit = a.group_id ? pool.filter((x) => x.group_id === a.group_id && x.status !== 'cancelled' && !x.sale_id) : [a];
     cart.appt = visit[0] || a;
+    const svc = S.services.find((x) => x.id === cart.appt.service_id);
+    cart.returnDays = cart.appt.return_days ?? svc?.return_days ?? biz().rebook_days;
     cart.client = { id: a.client_id, name: a.client_name };
     cart.items = (visit.length ? visit : [a]).map((x) => ({ kind: 'service', ref_id: x.service_id, name: x.service_name, staff_id: x.staff_id, qty: 1, unit: x.price }));
     renderCart();
@@ -569,7 +643,7 @@ async function viewPos(main, _arg, params) {
       try {
         const sale = await api('POST', '/api/sales', {
           appointment_id: cart.appt?.id, client_id: cart.client?.id, payment_method: cart.method,
-          discount: cart.discount, tip: cart.tip,
+          discount: cart.discount, tip: cart.tip, ...(cart.appt ? { return_days: cart.returnDays } : {}),
           items: cart.items.map((i) => ({ kind: i.kind, ref_id: i.ref_id, staff_id: i.staff_id, qty: i.qty, unit_price: i.unit })),
         });
         toast(`Venta registrada: ${fmt(sale.total)} en ${METHODS[sale.payment_method].toLowerCase()}.`);
@@ -589,6 +663,7 @@ async function viewPos(main, _arg, params) {
         h('div', { class: 'stack-sm', style: { alignItems: 'flex-end' } }, h('span', { class: 'num' }, fmt(it.unit * it.qty)),
           h('button', { class: 'btn btn-ghost btn-sm', type: 'button', 'aria-label': `Quitar ${it.name}`, onclick: () => { cart.items.splice(idx, 1); if (!cart.items.some((i) => i.kind === 'service')) cart.appt = null; renderCart(); } }, icon('x'))))))
         : emptyState('Elige una cita por cobrar o agrega servicios y productos.'),
+      cart.appt ? h('div', { class: 'card-flat' }, returnPicker(cart.returnDays, (d) => { cart.returnDays = d; renderCart(); })) : null,
       h('div', { class: 'grid-2' },
         field('Descuento', input({ inputmode: 'decimal', value: cart.discount ? fromMinor(cart.discount, cur()) : '', placeholder: '0', onchange: (e) => { cart.discount = toMinor(e.target.value, cur()); renderCart(); } })),
         field('Propina', input({ inputmode: 'decimal', value: cart.tip ? fromMinor(cart.tip, cur()) : '', placeholder: '0', onchange: (e) => { cart.tip = toMinor(e.target.value, cur()); renderCart(); } }))),
@@ -789,34 +864,103 @@ async function viewReports(main, _arg, params) {
   }
 
   const r = await api('GET', `/api/reports/summary?from=${from}&to=${to}`);
-  const maxDay = Math.max(1, ...r.series.map((s) => s.total));
   const maxSvc = Math.max(1, ...r.top_services.map((s) => s.n));
+  const days = r.series.length;
   clear(main, head,
     h('div', { class: 'stack' },
-      h('div', { class: 'grid-4' },
-        stat('Ingresos', fmt(r.revenue), `${r.sales} venta(s) · ticket ${fmt(r.avg_ticket)}`),
-        stat('Citas', r.appointments, `${r.by_status.done || 0} atendidas · ${r.online_share}% online`),
-        stat('Ocupación', `${r.occupancy}%`, 'horas reservadas / horas de atención'),
-        stat('No llegaron', `${r.no_show_rate}%`, `${r.by_status.no_show || 0} cita(s)`),
-        stat('Clientes', r.clients, `${r.new_clients} nuevos · ${r.returning_clients} vuelven`),
-        stat('Servicios / productos', fmt(r.services_revenue), `productos ${fmt(r.products_revenue)} · propinas ${fmt(r.tips)}`)),
+      h('section', { class: 'card hero-card' },
+        h('div', { class: 'stack-sm' }, h('span', { class: 'label' }, 'Ingresos del periodo'), h('span', { class: 'hero-figure' }, fmt(r.revenue)),
+          h('span', { class: 'muted' }, `${r.sales} venta(s) · ticket promedio ${fmt(r.avg_ticket)} · propinas ${fmt(r.tips)}`)),
+        h('div', { class: 'grid-4 grow' },
+          stat('Citas', r.appointments, `${r.by_status.done || 0} atendidas · ${r.online_share}% online`),
+          stat('Ocupación', `${r.occupancy}%`, 'horas reservadas / horas de atención'),
+          stat('No llegaron', `${r.no_show_rate}%`, `${r.by_status.no_show || 0} cita(s)`),
+          stat('Clientes', r.clients, `${r.new_clients} nuevos · ${r.returning_clients} vuelven`))),
       h('div', { class: 'grid-2' },
-        h('section', { class: 'card stack' }, h('h2', {}, 'Ingresos por día'),
-          r.series.some((s) => s.total) ? h('div', { class: 'spark', role: 'img', 'aria-label': 'Ingresos por día' },
-            r.series.map((s) => h('div', { class: 'spark-col', title: `${dateLabel(s.date, { day: 'numeric', month: 'short' })}: ${fmt(s.total)}`, style: { height: `${Math.round((s.total / maxDay) * 100)}%` } })))
-            : emptyState('Sin ventas en este periodo.')),
+        h('section', { class: 'card stack' },
+          h('div', { class: 'row-between' }, h('h2', {}, 'Ingresos por día'), days > 1 ? h('span', { class: 'xs muted' }, `${days} días`) : null),
+          r.series.some((x) => x.total) ? dayChart(r.series) : emptyState('Sin ventas en este periodo.')),
         h('section', { class: 'card stack' }, h('h2', {}, 'Servicios más pedidos'),
-          r.top_services.length ? h('div', { class: 'bars' }, r.top_services.map((s) => h('div', { class: 'bar-row' },
-            h('span', {}, s.name), h('div', { class: 'bar-track' }, h('div', { class: 'bar-fill', style: { width: `${(s.n / maxSvc) * 100}%` } })), h('span', { class: 'num xs' }, s.n))))
+          r.top_services.length ? h('ol', { class: 'hbars' }, r.top_services.map((x) => h('li', { class: 'hbar' },
+            h('span', { class: 'hbar-label' }, x.name),
+            h('span', { class: 'hbar-track' }, h('span', { class: 'hbar-fill', style: { width: `${(x.n / maxSvc) * 100}%` } }),
+              h('span', { class: 'hbar-value num' }, `${x.n} · ${fmt(x.revenue)}`)))))
             : emptyState('Sin citas en este periodo.'))),
       h('section', { class: 'stack-sm' }, h('h2', {}, `Por ${T().staff}`),
         h('div', { class: 'table-wrap' }, h('table', { class: 'table' },
-          h('thead', {}, h('tr', {}, h('th', {}, T().Staff), h('th', { class: 'r' }, 'Atendidas'), h('th', { class: 'r' }, 'Ingresos'), h('th', { class: 'r' }, 'Ocupación'))),
-          h('tbody', {}, r.by_staff.map((s) => h('tr', {},
-            h('td', {}, h('span', { class: `row sc-${s.color}` }, h('span', { class: 'dot' }), s.name)),
-            h('td', { class: 'r num' }, s.done), h('td', { class: 'r num' }, fmt(s.revenue)), h('td', { class: 'r num' }, `${s.occupancy}%`))))))),
+          h('thead', {}, h('tr', {}, h('th', {}, T().Staff), h('th', { class: 'r' }, 'Atendidas'), h('th', { class: 'r' }, 'Ingresos'), h('th', {}, 'Ocupación'))),
+          h('tbody', {}, r.by_staff.map((x) => h('tr', {},
+            h('td', {}, h('span', { class: `row sc-${x.color}` }, avatar(x, 28), x.name)),
+            h('td', { class: 'r num' }, x.done), h('td', { class: 'r num' }, fmt(x.revenue)),
+            h('td', {}, h('div', { class: 'row occ' },
+              h('div', { class: 'meter grow', role: 'meter', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': x.occupancy, 'aria-label': `Ocupación de ${x.name}` },
+                h('div', { class: 'meter-fill', style: { width: `${x.occupancy}%` } })),
+              h('span', { class: 'num xs' }, `${x.occupancy}%`))))))))),
       r.low_stock.length ? h('section', { class: 'card stack-sm' }, h('h2', {}, 'Stock bajo'),
-        r.low_stock.map((p) => h('div', { class: 'row-between' }, h('span', {}, p.name), h('span', { class: 'badge badge-warn' }, `${p.stock} en stock`)))) : null));
+        r.low_stock.map((p) => h('div', { class: 'row-between' }, h('span', {}, p.name), h('span', { class: 'badge badge-warn' }, h('span', { 'aria-hidden': 'true' }, '! '), `${p.stock} en stock`)))) : null));
+}
+
+// Columnas de ingresos por día (dataviz: columnas <= 24px, punta redondeada de
+// 4px, eje Y con 3 marcas redondas, pico rotulado, tooltip por columna y tabla).
+const compact = (v) => {
+  const n = fromMinor(v, cur());
+  return n >= 1e6 ? `${+(n / 1e6).toFixed(1)}M` : n >= 1e3 ? `${+(n / 1e3).toFixed(1)}K` : String(Math.round(n));
+};
+function niceMax(v) {
+  const p = 10 ** Math.floor(Math.log10(v || 1));
+  return [1, 2, 2.5, 5, 10].map((m) => m * p).find((x) => x >= v) || v;
+}
+function dayChart(series) {
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = (tag, attrs = {}) => { const el = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v); return el; };
+  // Lienzo de ancho fijo: con pocos días las columnas quedan finas (<= 24px) y no se agrandan.
+  const W = 600, padL = 44, padB = 22, H = 220, plotH = H - padB - 8, n = series.length;
+  const slot = (W - padL - 4) / n;
+  const max = niceMax(Math.max(...series.map((x) => x.total)) * 1.12); // aire para la etiqueta del pico
+  const bw = Math.min(24, slot - 2), r = Math.min(4, bw / 2);
+  const root = svg('svg', { viewBox: `0 0 ${W} ${H}`, class: 'colchart', role: 'img', 'aria-label': 'Ingresos por día' });
+  for (const t of [0, max / 2, max]) {
+    const y = 8 + plotH - (t / max) * plotH;
+    root.append(svg('line', { x1: padL, x2: W, y1: y, y2: y, class: 'grid' }));
+    const tx = svg('text', { x: padL - 6, y: y + 4, 'text-anchor': 'end', class: 'tick' }); tx.textContent = compact(t); root.append(tx);
+  }
+  const wrap = h('div', { class: 'chart-wrap' });
+  const tip = h('div', { class: 'chart-tip', role: 'status', hidden: true });
+  const peak = series.reduce((a, b) => (b.total > a.total ? b : a));
+  const label = (d) => dateLabel(d, { weekday: 'short', day: 'numeric', month: 'short' });
+  series.forEach((x, i) => {
+    const cx = padL + i * slot + slot / 2, hgt = (x.total / max) * plotH, y = 8 + plotH - hgt, x0 = cx - bw / 2;
+    const g = svg('g', { class: 'col', tabindex: '0', 'aria-label': `${label(x.date)}: ${fmt(x.total)}` });
+    g.append(svg('rect', { x: padL + i * slot, y: 8, width: slot, height: plotH, class: 'hit' }));
+    if (hgt > 0) {
+      const rr = Math.min(r, hgt);
+      g.append(svg('path', { class: 'bar', d: `M${x0},${8 + plotH} V${y + rr} Q${x0},${y} ${x0 + rr},${y} H${x0 + bw - rr} Q${x0 + bw},${y} ${x0 + bw},${y + rr} V${8 + plotH} Z` }));
+    }
+    if (n <= 14 || i % Math.ceil(n / 10) === 0) {
+      const tx = svg('text', { x: cx, y: H - 6, 'text-anchor': 'middle', class: 'tick' }); tx.textContent = x.date.slice(8).replace(/^0/, ''); g.append(tx);
+    }
+    if (x === peak && x.total > 0) {
+      const pl = svg('text', { x: cx, y: Math.max(14, y - 6), 'text-anchor': 'middle', class: 'peak' }); pl.textContent = compact(x.total); g.append(pl);
+    }
+    const show = () => {
+      tip.hidden = false;
+      clear(tip, h('strong', {}, fmt(x.total)), h('span', { class: 'xs muted' }, label(x.date)));
+      tip.style.left = `${((cx) / W) * 100}%`;
+      g.classList.add('on');
+    };
+    const hide = () => { tip.hidden = true; g.classList.remove('on'); };
+    g.addEventListener('pointerenter', show); g.addEventListener('pointerleave', hide);
+    g.addEventListener('focus', show); g.addEventListener('blur', hide);
+    root.append(g);
+  });
+  const table = h('table', { class: 'table', hidden: true },
+    h('thead', {}, h('tr', {}, h('th', {}, 'Día'), h('th', { class: 'r' }, 'Ingresos'))),
+    h('tbody', {}, series.map((x) => h('tr', {}, h('td', {}, label(x.date)), h('td', { class: 'r num' }, fmt(x.total))))));
+  const toggle = h('button', { class: 'btn btn-ghost btn-sm', type: 'button', 'aria-pressed': 'false', onclick: () => {
+    const on = table.hidden; table.hidden = !on; wrap.hidden = on; toggle.setAttribute('aria-pressed', String(on)); toggle.textContent = on ? 'Ver gráfico' : 'Ver como tabla';
+  } }, 'Ver como tabla');
+  wrap.append(root, tip);
+  return h('div', { class: 'stack-sm' }, wrap, h('div', { class: 'table-wrap', style: { border: '0' } }, table), h('div', {}, toggle));
 }
 
 // ------------------------------------------------------------ mensajes
@@ -942,6 +1086,7 @@ function serviceModal(s) {
     h('div', { class: 'grid-2' },
       field('Categoría', input({ name: 'category', value: s?.category || '', placeholder: 'Cortes, Barba, Combos' })),
       field('Precio', input({ name: 'price', inputmode: 'decimal', value: s ? fromMinor(s.price, cur()) : '' })),
+      field('Avisar que vuelva en (días)', input({ name: 'return_days', type: 'number', min: 1, max: 365, value: s?.return_days ?? '', placeholder: `${biz().rebook_days} (por defecto)` })),
       field('Duración (min)', input({ name: 'duration_min', type: 'number', min: 5, step: 5, value: s?.duration_min ?? 30 })),
       field('Tiempo extra después (min)', input({ name: 'buffer_min', type: 'number', min: 0, step: 5, value: s?.buffer_min ?? 0 }))),
     feature('anticipos') ? field('Anticipo al reservar (0 = sin anticipo)', input({ name: 'deposit', inputmode: 'decimal', value: s ? fromMinor(s.deposit, cur()) : '' })) : null,
@@ -951,7 +1096,7 @@ function serviceModal(s) {
   const save = h('button', { class: 'btn btn-primary', type: 'button' }, 'Guardar');
   save.addEventListener('click', () => busy(save, async () => {
     const d = formData(form);
-    const body = { ...d, price: toMinor(d.price, cur()), duration_min: Number(d.duration_min), buffer_min: Number(d.buffer_min || 0) };
+    const body = { ...d, price: toMinor(d.price, cur()), duration_min: Number(d.duration_min), buffer_min: Number(d.buffer_min || 0), return_days: d.return_days === '' ? null : Number(d.return_days) };
     if ('deposit' in d) body.deposit = toMinor(d.deposit || 0, cur());
     try { await api(s ? 'PUT' : 'POST', s ? `/api/services/${s.id}` : '/api/services', body); toast('Servicio guardado.'); m.close(); route(); } catch (e) { showFormError(form, e); }
   }));

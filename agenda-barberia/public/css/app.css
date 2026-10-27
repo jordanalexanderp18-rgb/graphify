@@ -153,13 +153,13 @@ dialog.modal::backdrop { background: var(--c-scrim); }
 .spark-col:hover { opacity: 1; }
 
 /* Staff colors (para distinguir barberos) */
-.sc-c1 { --staff: var(--c-staff-1); } .sc-c2 { --staff: var(--c-staff-2); } .sc-c3 { --staff: var(--c-staff-3); }
-.sc-c4 { --staff: var(--c-staff-4); } .sc-c5 { --staff: var(--c-staff-5); } .sc-c6 { --staff: var(--c-staff-6); }
+.sc-c1 { --staff: var(--c-staff-1); --staff-ink: var(--c-on-staff-1); } .sc-c2 { --staff: var(--c-staff-2); --staff-ink: var(--c-on-staff-2); } .sc-c3 { --staff: var(--c-staff-3); --staff-ink: var(--c-on-staff-3); }
+.sc-c4 { --staff: var(--c-staff-4); --staff-ink: var(--c-on-staff-4); } .sc-c5 { --staff: var(--c-staff-5); --staff-ink: var(--c-on-staff-5); } .sc-c6 { --staff: var(--c-staff-6); --staff-ink: var(--c-on-staff-6); }
 .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--staff, var(--c-accent)); display: inline-block; flex: none; }
 
 /* Avatar */
 .avatar { border-radius: 50%; object-fit: cover; flex: none; display: inline-grid; place-items: center; background: var(--c-surface-2); }
-.avatar-initials { background: var(--staff, var(--c-accent)); color: var(--c-on-accent); font-weight: 700; font-size: var(--fs-xs); }
+.avatar-initials { background: var(--staff, var(--c-accent)); color: var(--staff-ink, var(--c-on-accent)); font-weight: 700; font-size: var(--fs-xs); }
 
 /* Agenda */
 .agenda-bar { display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap; margin-bottom: var(--s-4); }
@@ -215,3 +215,33 @@ dialog.modal::backdrop { background: var(--c-scrim); }
 /* Servicios por barbero con duración propia */
 .svc-dur { display: grid; grid-template-columns: 1fr 96px; gap: var(--s-2); align-items: center; }
 .svc-dur .input { min-height: 34px; padding: var(--s-1) var(--s-2); }
+
+/* Contador de regreso */
+.chip[aria-pressed="true"] { background: var(--c-accent); border-color: var(--c-accent); color: var(--c-on-accent); }
+.return-big { font-size: 48px; line-height: 1; font-weight: 700; }
+.meter { height: 10px; border-radius: var(--r-pill); overflow: hidden; background: var(--c-accent-soft); }
+.meter-fill { height: 100%; border-radius: var(--r-pill); background: var(--c-accent); }
+.rc-ok .meter { background: var(--c-success-soft); } .rc-ok .meter-fill { background: var(--c-success); }
+.rc-warn .meter { background: var(--c-warning-soft); } .rc-warn .meter-fill { background: var(--c-warning); }
+.rc-bad .meter { background: var(--c-danger-soft); } .rc-bad .meter-fill { background: var(--c-danger); }
+
+/* Reportes (dataviz) */
+.hero-card { display: flex; gap: var(--s-6); align-items: center; flex-wrap: wrap; }
+.hero-figure { font-size: 48px; line-height: 1.05; font-weight: 700; }
+.chart-wrap { position: relative; }
+.colchart { width: 100%; height: auto; display: block; overflow: visible; }
+.colchart .grid { stroke: var(--c-border); stroke-width: 1; }
+.colchart .tick { fill: var(--c-text-muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.colchart .peak { fill: var(--c-text); font-size: 11px; font-weight: 600; }
+.colchart .bar { fill: var(--c-accent); }
+.colchart .hit { fill: transparent; }
+.colchart .col { outline: none; cursor: default; }
+.colchart .col.on .bar, .colchart .col:focus-visible .bar { fill: var(--c-text); }
+.colchart .col:focus-visible .hit { stroke: var(--c-accent); stroke-width: 2; }
+.chart-tip { position: absolute; top: 0; transform: translate(-50%, -100%); background: var(--c-bg); border: 1px solid var(--c-border); box-shadow: var(--shadow-pop); border-radius: var(--r-sm); padding: var(--s-1) var(--s-2); display: flex; flex-direction: column; pointer-events: none; white-space: nowrap; z-index: 2; }
+.hbars { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s-3); }
+.hbar { display: grid; grid-template-columns: minmax(90px, 40%) 1fr; gap: var(--s-3); align-items: center; }
+.hbar-track { display: flex; align-items: center; gap: var(--s-2); min-width: 0; }
+.hbar-fill { height: 12px; background: var(--c-accent); border-radius: 0 4px 4px 0; min-width: 2px; }
+.hbar-value { font-size: var(--fs-xs); color: var(--c-text-muted); white-space: nowrap; }
+.occ { flex-wrap: nowrap; min-width: 140px; }

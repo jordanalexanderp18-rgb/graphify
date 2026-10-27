@@ -133,6 +133,13 @@ const subjectFor = (kind, business) => (kind === 'rebook' ? termsOf(business).re
 export async function deliver(db, r) {
   const client = db.get('select phone, email from clients where id = ?', r.client_id);
   if (!client) return db.run("update reminders set status = 'skipped' where id = ?", r.id);
+  if (r.kind === 'rebook' && r.appointment_id) {
+    const { returnMessage } = await import('./returns.js');
+    const text = returnMessage(db, r);
+    if (!text) return db.run("update reminders set status = 'skipped', error = 'ya tiene hora' where id = ?", r.id);
+    db.run('update reminders set body = ? where id = ?', text, r.id);
+    r = { ...r, body: text };
+  }
   db.run('update reminders set attempts = attempts + 1 where id = ?', r.id);
   try {
     const business = db.get('select * from businesses where id = ?', r.business_id);
