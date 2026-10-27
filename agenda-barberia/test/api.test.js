@@ -88,6 +88,15 @@ test('F01 reserva online, sin dobles reservas, y F02 cancelar/reprogramar', asyn
   assert.ok(rem.data.some((r) => r.kind === 'confirmation' && r.client_name === 'Ana Cliente'));
   assert.ok(rem.data.some((r) => r.kind === 'reminder' && r.client_name === 'Ana Cliente'));
 
+  // Reservar con el teléfono de otro cliente no revela su nombre ni cambia su ficha.
+  const spoof = await pub.post(`/api/public/${business.slug}/book`, {
+    service_id: service.id, staff_id: 'any', start: at(date, '17:00'), name: 'Curioso', phone: '9 8765 4321', email: 'curioso@example.com',
+  });
+  assert.equal(spoof.status, 201);
+  const leaked = (await pub.get(`/api/public/r/${spoof.data.token}`)).data;
+  assert.ok(!JSON.stringify(leaked).includes('Ana Cliente'), 'no expone el nombre guardado');
+  assert.equal((await c.get('/api/clients?q=ana')).data[0].email, '', 'no cambia la ficha existente');
+
   // F02: ver, reprogramar y cancelar con el token.
   const tok = book.data.token;
   const view = await pub.get(`/api/public/r/${tok}`);

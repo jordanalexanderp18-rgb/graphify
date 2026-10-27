@@ -65,10 +65,13 @@ function publicBusiness(b) {
   return { id, name, slug, timezone, currency, phone: tel, address, instagram, min_notice_min, cancel_window_min, max_days_ahead };
 }
 
-function findOrCreateClient(db, business, { name, phone: tel, email: mail }) {
+// trusted = lo hace el personal del negocio. Desde la web pública no se
+// modifica una ficha existente: cualquiera puede escribir un teléfono ajeno.
+function findOrCreateClient(db, business, { name, phone: tel, email: mail }, { trusted = false } = {}) {
   if (tel) {
     const c = db.get('select * from clients where business_id = ? and phone = ?', business.id, tel);
     if (c) {
+      if (!trusted) return c;
       const fix = {};
       if (!c.email && mail) fix.email = mail;
       if (name && c.name !== name && c.name === 'Cliente') fix.name = name;
@@ -458,7 +461,7 @@ on('POST', '/api/appointments', ({ db, user, body }) => {
         name: str(c.name, 'client.name', { required: true, max: 80, label: 'el nombre del cliente' }),
         phone: phone(c.phone, b.phone_prefix, 'client.phone'),
         email: email(c.email, 'client.email'),
-      });
+      }, { trusted: true });
     }
     const len = minutesFor(db, staff.id, service);
     const check = isBookable(db, b, staff, len, start, { checkHours: !body.force });
@@ -1125,7 +1128,8 @@ on('GET', '/api/public/r/:token', ({ db, params }) => {
     appointment: {
       start_at: visit[0].start_at, end_at: visit.at(-1).end_at, status: a.status,
       service_id: services[0].id, service_ids: services.map((s) => s.id), service_name: services.map((s) => s.name).join(' + '),
-      staff_id: a.staff_id, staff_name: a.staff_name, client_name: a.client_name, price,
+      // Sin el nombre del cliente: el enlace no debe revelar a quién pertenece un teléfono.
+      staff_id: a.staff_id, staff_name: a.staff_name, price,
       price_text: money(price, b.currency),
       deposit: visit[0].deposit, deposit_status: visit[0].deposit_status, deposit_text: money(visit[0].deposit, b.currency),
     },

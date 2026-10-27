@@ -131,6 +131,14 @@ recon a launch. El deploy no se hizo: requiere que Jordan diga "go".
   SMS con Twilio, campañas con baja, sucursales (`memberships` + sucursal
   activa en la sesión), privacidad y términos en borrador, Dockerfile y
   fly.toml. Deploy listo en `replica/deploy.md`, a la espera del "go".
+- Tercera pasada: rubros (`server/verticals.js`: barbería, peluquería, uñas,
+  tatuajes, masajes), SEO del lado del servidor (`server/seo.js`: landing,
+  /para/<rubro>, /b/<negocio> con LocalBusiness, robots, sitemap) y revisión
+  de seguridad. Corregido: la reserva pública con un teléfono ajeno revelaba
+  el nombre guardado del cliente en /r/<token>; ahora la web pública nunca
+  lee ni modifica una ficha existente (`findOrCreateClient` con `trusted`).
+- Netlify: la red del entorno bloquea api.netlify.com; se entregó un build
+  estático (`scripts/build-netlify.mjs`) para Netlify Drop.
 - El Dockerfile no se construyó aquí (no hay daemon de Docker). Corre como
   root a propósito, porque los volúmenes se montan como root.
 - Para `graphify update .` hubo que correr `pip install -e .` en el contenedor.

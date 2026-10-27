@@ -246,7 +246,7 @@ async function manage(token) {
   clear(root,
     h('header', { class: 'book-head' }, h('p', { class: 'muted' }, b.name), h('h1', {}, isNew && active ? '¡Reserva lista!' : 'Tu reserva')),
     h('div', { class: 'card stack' },
-      isNew && active ? h('div', { class: 'row' }, h('div', { class: 'ok-mark', 'aria-hidden': 'true' }, '✓'), h('p', {}, `Te enviaremos la confirmación por WhatsApp, ${a.client_name.split(' ')[0]}.`)) : null,
+      isNew && active ? h('div', { class: 'row' }, h('div', { class: 'ok-mark', 'aria-hidden': 'true' }, '✓'), h('p', {}, 'Te enviaremos la confirmación por WhatsApp.')) : null,
       statusLine ? h('p', { class: 'form-error' }, statusLine) : null,
       h('div', { class: 'summary' }, h('strong', {}, a.service_name), h('span', {}, fmtWhen(a.start_at, tz)),
         h('span', { class: 'muted' }, `Con ${a.staff_name} · ${a.price_text}`), b.address ? h('span', { class: 'muted' }, b.address) : null),
