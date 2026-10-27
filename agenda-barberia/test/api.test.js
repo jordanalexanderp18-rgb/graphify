@@ -238,6 +238,8 @@ test('importar CSV, borrar datos de un cliente, mensajes manuales y "te toca cor
   const noon = zonedToUtc(new Date().toISOString().slice(0, 10), 12 * 60, business.timezone);
   assert.equal(runRebook(srv.db, noon), 1);
   assert.equal(runRebook(srv.db, noon), 0, 'una vez al día');
+  // El aviso quedó programado para el mediodía simulado; se adelanta para que el envío no dependa de la hora real.
+  srv.db.run("update reminders set send_at = '2000-01-01T00:00:00.000Z' where kind = 'rebook'");
   await runReminders(srv.db);
   const manual = await c.get('/api/reminders?status=manual');
   const rb = manual.data.find((r) => r.kind === 'rebook');

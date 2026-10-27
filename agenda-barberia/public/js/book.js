@@ -26,6 +26,7 @@ function dayPicker({ slug, serviceIds, staffId, tz, onPick, onNoSlots, initialDa
     strip.querySelectorAll('.day').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.date === date)));
     clear(slotsBox, h('p', { class: 'muted' }, 'Buscando horas…'));
     const slots = await api('GET', `/api/public/${slug}/slots?${staffQ}&date=${date}`);
+    if (selected !== date) return; // el cliente ya eligió otro día mientras cargaba
     if (!slots.length) return clear(slotsBox, h('p', { class: 'muted' }, 'Ese día ya no quedan horas.'), onNoSlots ? onNoSlots(date) : null);
     const groups = [['Mañana', (m) => m < 720], ['Tarde', (m) => m >= 720 && m < 1080], ['Noche', (m) => m >= 1080]];
     clear(slotsBox, groups.map(([label, test]) => {
