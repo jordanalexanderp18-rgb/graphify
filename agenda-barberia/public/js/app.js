@@ -1,4 +1,4 @@
-// Panel de la barbería (SPA con rutas por hash).
+// Panel del negocio (SPA con rutas por hash).
 import {
   APP_NAME, h, clear, icon, api, toast, money, toMinor, fromMinor, todayIn, addDays, weekdayOf, dateLabel, dateTimeLabel,
   partsIn, minToHHMM, hhmmToMin, field, input, select, formData, showFormError, busy, modal, confirmDialog, emptyState,
@@ -11,6 +11,8 @@ const biz = () => S.me.business;
 const cur = () => biz().currency;
 const fmt = (v) => money(v, cur());
 const feature = (f) => !!S.me.plan?.features?.[f];
+// Palabras del rubro (barbero, estilista, terapeuta…), ver server/verticals.js.
+const T = () => S.me.terms;
 const can = (perm) => ({
   owner: ['settings', 'catalog', 'reports', 'operate', 'agenda', 'users'],
   reception: ['operate', 'agenda'],
@@ -87,7 +89,7 @@ function sidebar(active) {
           location.hash = '#/agenda'; location.reload();
         } }, S.me.branches.map((x) => [x.id, x.name]), biz().id)
         : h('div', { class: 'xs muted' }, biz().name),
-      h('div', { class: 'xs muted' }, `${S.me.user.name || S.me.user.email} · ${{ owner: 'Dueño', reception: 'Recepción', barber: 'Barbero' }[S.me.user.role]}`),
+      h('div', { class: 'xs muted' }, `${S.me.user.name || S.me.user.email} · ${{ owner: 'Dueño', reception: 'Recepción', barber: T().Staff }[S.me.user.role]}`),
       h('button', { class: 'btn btn-ghost btn-sm', type: 'button', onclick: logout }, icon('logout'), 'Salir')));
 }
 
@@ -99,12 +101,15 @@ async function logout() {
 
 // ------------------------------------------------------------ ingreso / registro
 
-function renderAuth(mode) {
+let verticals = [{ id: 'barberia', label: 'Barbería' }];
+async function renderAuth(mode) {
+  verticals = await api('GET', '/api/verticals').catch(() => verticals);
   const isSignup = mode === 'signup';
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Santiago';
   const country = COUNTRIES.find((c) => c.tz === tz) || COUNTRIES[0];
   const form = h('form', { class: 'stack', novalidate: true },
-    isSignup ? field('Nombre de la barbería', input({ name: 'business_name', required: true, autocomplete: 'organization' })) : null,
+    isSignup ? field('Tipo de negocio', select({ name: 'vertical' }, verticals.map((v) => [v.id, v.label]), new URLSearchParams(location.search).get('rubro') || 'barberia')) : null,
+    isSignup ? field('Nombre del negocio', input({ name: 'business_name', required: true, autocomplete: 'organization' })) : null,
     isSignup ? field('Tu nombre', input({ name: 'name', required: true, autocomplete: 'name' })) : null,
     field('Correo', input({ name: 'email', type: 'email', required: true, autocomplete: 'email' })),
     field('Contraseña', input({ name: 'password', type: 'password', required: true, autocomplete: isSignup ? 'new-password' : 'current-password', minlength: isSignup ? 8 : null }),
@@ -121,7 +126,7 @@ function renderAuth(mode) {
       try {
         if (isSignup) {
           const c = COUNTRIES[Number(d.country)] || COUNTRIES[0];
-          await api('POST', '/api/auth/signup', { business_name: d.business_name, name: d.name, email: d.email, password: d.password, demo: d.demo, timezone: c.tz, currency: c.currency, phone_prefix: c.prefix });
+          await api('POST', '/api/auth/signup', { vertical: d.vertical, business_name: d.business_name, name: d.name, email: d.email, password: d.password, demo: d.demo, timezone: c.tz, currency: c.currency, phone_prefix: c.prefix });
         } else {
           await api('POST', '/api/auth/login', { email: d.email, password: d.password });
         }
@@ -133,7 +138,7 @@ function renderAuth(mode) {
   document.title = `${isSignup ? 'Crear cuenta' : 'Entrar'} · ${APP_NAME}`;
   clear(root, h('div', { class: 'auth' }, h('div', { class: 'card stack' },
     h('div', { class: 'brand' }, h('span', { class: 'brand-mark', 'aria-hidden': 'true' }, APP_NAME[0]), h('span', {}, APP_NAME)),
-    h('h1', {}, isSignup ? 'Crea tu barbería' : 'Entra a tu panel'),
+    h('h1', {}, isSignup ? 'Crea tu negocio' : 'Entra a tu panel'),
     h('p', { class: 'muted' }, isSignup ? 'En dos minutos tienes agenda, enlace de reservas y caja.' : 'Agenda, caja y clientes en un solo lugar.'),
     form,
     h('p', { class: 'muted' }, isSignup ? '¿Ya tienes cuenta? ' : '¿Primera vez? ',
@@ -184,7 +189,7 @@ async function viewAgenda(main, _arg, params) {
       h('button', { type: 'button', 'aria-pressed': String(mode === 'day'), onclick: () => { agendaState.mode = 'day'; route(); } }, 'Día'),
       h('button', { type: 'button', 'aria-pressed': String(mode === 'week'), onclick: () => { agendaState.mode = 'week'; route(); } }, 'Semana')),
     mode === 'week' && activeStaff.length > 1
-      ? select({ 'aria-label': 'Barbero', style: { width: 'auto' }, onchange: (e) => { agendaState.staffId = e.target.value; route(); } },
+      ? select({ 'aria-label': T().Staff, style: { width: 'auto' }, onchange: (e) => { agendaState.staffId = e.target.value; route(); } },
         activeStaff.map((s) => [s.id, s.name]), agendaState.staffId)
       : null,
     can('operate') ? h('button', { class: 'btn btn-sm', type: 'button', onclick: () => apptModal({ walkin: true }) }, 'Sin cita') : null,
@@ -193,8 +198,8 @@ async function viewAgenda(main, _arg, params) {
   clear(main, bar, h('div', { class: 'cal', 'aria-busy': 'true' }, h('p', { class: 'empty' }, 'Cargando agenda…')));
 
   if (!activeStaff.length) {
-    return clear(main, bar, h('div', { class: 'card' }, emptyState('Todavía no hay barberos activos.',
-      can('catalog') ? h('a', { class: 'btn btn-primary', href: '#/config?tab=equipo' }, 'Agregar barbero') : null)));
+    return clear(main, bar, h('div', { class: 'card' }, emptyState(`Todavía no hay ${T().staffs} activos.`,
+      can('catalog') ? h('a', { class: 'btn btn-primary', href: '#/config?tab=equipo' }, `Agregar ${T().staff}`) : null)));
   }
   const [appts, off] = await Promise.all([
     api('GET', `/api/appointments?from=${from}&to=${to}`),
@@ -290,7 +295,7 @@ function apptDetail(a) {
     h('div', { class: 'row-between' }, h('h3', {}, a.client_name), statusBadge(a.status)),
     h('div', { class: 'grid-2' },
       h('div', {}, h('div', { class: 'label' }, 'Servicio'), h('div', {}, a.service_name)),
-      h('div', {}, h('div', { class: 'label' }, 'Barbero'), h('div', {}, a.staff_name)),
+      h('div', {}, h('div', { class: 'label' }, T().Staff), h('div', {}, a.staff_name)),
       h('div', {}, h('div', { class: 'label' }, 'Cuándo'), h('div', {}, `${dateLabel(p.date)} · ${p.time}`)),
       h('div', {}, h('div', { class: 'label' }, 'Precio'), h('div', { class: 'num' }, fmt(a.price))),
       h('div', {}, h('div', { class: 'label' }, 'Origen'), h('div', {}, { online: 'Reserva online', panel: 'Panel', walkin: 'Sin cita' }[a.source])),
@@ -329,7 +334,7 @@ function apptModal({ appt, date, time, staffId, walkin, client } = {}) {
   const editing = !!appt;
   const services = S.services.filter((s) => s.active);
   const staff = S.staff.filter((s) => s.active);
-  if (!services.length || !staff.length) return toast('Primero crea servicios y barberos en Configuración.', 'error');
+  if (!services.length || !staff.length) return toast(`Primero crea servicios y ${T().staffs} en Configuración.`, 'error');
   const p = appt ? partsIn(appt.start_at, tz) : null;
   let clientId = appt?.client_id || null;
 
@@ -338,7 +343,7 @@ function apptModal({ appt, date, time, staffId, walkin, client } = {}) {
   const dt = input({ name: 'date', type: 'date', value: p?.date || date || todayIn(tz), required: true });
   const tm = input({ name: 'time', type: 'time', step: 300, value: p?.time || time || '', required: !walkin });
   const price = input({ name: 'price', inputmode: 'decimal', placeholder: 'Precio del servicio', value: appt ? fromMinor(appt.price, cur()) : '' });
-  const notes = h('textarea', { class: 'input', name: 'notes', maxlength: 500, placeholder: 'Ej.: degradado bajo, número 1 a los lados' }, appt?.notes || '');
+  const notes = h('textarea', { class: 'input', name: 'notes', maxlength: 500, placeholder: 'Ej.: lo que pidió el cliente para esta cita' }, appt?.notes || '');
   const free = h('div', { class: 'row', 'aria-live': 'polite' });
 
   const loadFree = async () => {
@@ -348,7 +353,7 @@ function apptModal({ appt, date, time, staffId, walkin, client } = {}) {
       const slots = await api('GET', `/api/availability?service_id=${svc.value}&staff_id=${st.value}&date=${dt.value}`);
       const shown = slots.slice(0, 24);
       clear(free, shown.length ? shown.map((s) => h('button', { type: 'button', class: 'btn btn-sm', onclick: () => { tm.value = s.time; } }, s.time))
-        : h('span', { class: 'xs muted' }, 'Sin horas libres ese día con este barbero.'));
+        : h('span', { class: 'xs muted' }, `Sin horas libres ese día con este ${T().staff}.`));
     } catch { clear(free); }
   };
   [svc, st, dt].forEach((el) => el.addEventListener('change', loadFree));
@@ -383,13 +388,13 @@ function apptModal({ appt, date, time, staffId, walkin, client } = {}) {
 
   const form = h('form', { class: 'stack', novalidate: true },
     h('div', {}, h('div', { class: 'label' }, 'Cliente'), clientBox),
-    field('Servicio', svc), field('Barbero', st),
-    walkin ? h('p', { class: 'muted' }, 'Cliente sin cita: queda registrado desde ahora con el barbero elegido.') :
+    field('Servicio', svc), field(T().Staff, st),
+    walkin ? h('p', { class: 'muted' }, `Cliente sin cita: queda registrado desde ahora con el ${T().staff} elegido.`) :
       h('div', { class: 'grid-2' }, field('Fecha', dt), field('Hora', tm)),
     walkin ? null : h('div', { class: 'stack-sm' }, h('div', { class: 'label' }, 'Horas libres'), free),
     field('Precio (opcional)', price, 'Déjalo vacío para usar el precio del servicio.'),
     field('Notas', notes),
-    walkin ? null : h('label', { class: 'check' }, h('input', { type: 'checkbox', name: 'force' }), 'Permitir fuera del horario del barbero'),
+    walkin ? null : h('label', { class: 'check' }, h('input', { type: 'checkbox', name: 'force' }), `Permitir fuera del horario del ${T().staff}`),
     walkin || editing ? null : h('label', { class: 'check' }, h('input', { type: 'checkbox', name: 'notify', checked: true }), 'Enviar confirmación y recordatorio por WhatsApp'),
   );
   const save = h('button', { class: 'btn btn-primary', type: 'submit' }, editing ? 'Guardar cambios' : walkin ? 'Registrar' : 'Agendar');
@@ -464,7 +469,7 @@ function clientModal(c) {
     h('div', { class: 'grid-2' },
       field('Cumpleaños (MM-DD)', input({ name: 'birthday', placeholder: '08-24', value: c?.birthday || '', pattern: '\\d{2}-\\d{2}' })),
       field('Etiquetas', input({ name: 'tags', value: c?.tags || '', placeholder: 'vip, barba' }))),
-    field('Notas', h('textarea', { class: 'input', name: 'notes', maxlength: 1000, placeholder: 'Preferencias, alergias, cómo le gusta el corte' }, c?.notes || '')),
+    field('Notas', h('textarea', { class: 'input', name: 'notes', maxlength: 1000, placeholder: 'Preferencias, alergias, cómo le gusta que lo atiendan' }, c?.notes || '')),
     c ? h('label', { class: 'check' }, h('input', { type: 'checkbox', name: 'marketing_opt_out', checked: !!c.marketing_opt_out }), 'No quiere recibir campañas') : null,
   );
   const save = h('button', { class: 'btn btn-primary', type: 'button' }, 'Guardar');
@@ -505,7 +510,7 @@ async function viewClient(main, id) {
     c.notes ? h('div', { class: 'card', style: { marginBottom: 'var(--s-4)' } }, h('div', { class: 'label' }, 'Notas'), h('p', {}, c.notes)) : null,
     h('h2', { style: { marginBottom: 'var(--s-3)' } }, 'Historial'),
     c.appointments.length ? h('div', { class: 'table-wrap' }, h('table', { class: 'table' },
-      h('thead', {}, h('tr', {}, h('th', {}, 'Fecha'), h('th', {}, 'Servicio'), h('th', {}, 'Barbero'), h('th', {}, 'Estado'), h('th', { class: 'r' }, 'Precio'))),
+      h('thead', {}, h('tr', {}, h('th', {}, 'Fecha'), h('th', {}, 'Servicio'), h('th', {}, T().Staff), h('th', {}, 'Estado'), h('th', { class: 'r' }, 'Precio'))),
       h('tbody', {}, c.appointments.map((a) => h('tr', {},
         h('td', {}, dateTimeLabel(a.start_at, tz)), h('td', {}, a.service_name), h('td', {}, a.staff_name), h('td', {}, statusBadge(a.status)), h('td', { class: 'r num' }, fmt(a.price)))))))
       : h('div', { class: 'card' }, emptyState('Sin citas todavía.')),
@@ -577,7 +582,7 @@ async function viewPos(main, _arg, params) {
       cart.client ? h('div', { class: 'card-flat' }, `Cliente: ${cart.client.name}`) : null,
       cart.items.length ? h('div', {}, cart.items.map((it, idx) => h('div', { class: 'cart-line' },
         h('div', { class: 'stack-sm' }, h('strong', {}, it.name),
-          select({ 'aria-label': `Barbero para ${it.name}`, class: 'input', onchange: (e) => { it.staff_id = e.target.value; } }, staffOpts, it.staff_id)),
+          select({ 'aria-label': `${T().Staff} para ${it.name}`, class: 'input', onchange: (e) => { it.staff_id = e.target.value; } }, staffOpts, it.staff_id)),
         it.kind === 'product'
           ? h('input', { class: 'input', type: 'number', min: 1, value: it.qty, 'aria-label': `Cantidad de ${it.name}`, style: { width: '64px' }, onchange: (e) => { it.qty = Math.max(1, Number(e.target.value) || 1); renderCart(); } })
           : h('span', {}),
@@ -762,7 +767,7 @@ async function viewReports(main, _arg, params) {
     const r = await api('GET', `/api/reports/commissions?from=${from}&to=${to}`);
     const total = r.rows.reduce((s, x) => s + x.total_to_pay, 0);
     const csv = () => {
-      const lines = [['Barbero', 'Servicios', 'Ventas servicios', '% serv', 'Comisión servicios', 'Ventas productos', '% prod', 'Comisión productos', 'Propinas', 'Total a pagar']];
+      const lines = [[T().Staff, 'Servicios', 'Ventas servicios', '% serv', 'Comisión servicios', 'Ventas productos', '% prod', 'Comisión productos', 'Propinas', 'Total a pagar']];
       for (const x of r.rows) lines.push([x.name, x.services_count, fromMinor(x.services_total, cur()), x.commission_service_pct, fromMinor(x.services_commission, cur()), fromMinor(x.products_total, cur()), x.commission_product_pct, fromMinor(x.products_commission, cur()), fromMinor(x.tips, cur()), fromMinor(x.total_to_pay, cur())]);
       const blob = new Blob(['﻿' + lines.map((l) => l.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(';')).join('\n')], { type: 'text/csv' });
       const a = h('a', { href: URL.createObjectURL(blob), download: `comisiones_${from}_${to}.csv` });
@@ -772,7 +777,7 @@ async function viewReports(main, _arg, params) {
       h('div', { class: 'row-between', style: { marginBottom: 'var(--s-4)' } }, h('p', { class: 'muted' }, `Total a pagar en el periodo: `, h('strong', { class: 'num' }, fmt(total))),
         h('button', { class: 'btn btn-sm', type: 'button', onclick: csv }, 'Descargar CSV')),
       h('div', { class: 'table-wrap' }, h('table', { class: 'table' },
-        h('thead', {}, h('tr', {}, h('th', {}, 'Barbero'), h('th', { class: 'r' }, 'Servicios'), h('th', { class: 'r' }, 'Comisión servicios'), h('th', { class: 'r' }, 'Comisión productos'), h('th', { class: 'r' }, 'Propinas'), h('th', { class: 'r' }, 'Total a pagar'))),
+        h('thead', {}, h('tr', {}, h('th', {}, T().Staff), h('th', { class: 'r' }, 'Servicios'), h('th', { class: 'r' }, 'Comisión servicios'), h('th', { class: 'r' }, 'Comisión productos'), h('th', { class: 'r' }, 'Propinas'), h('th', { class: 'r' }, 'Total a pagar'))),
         h('tbody', {}, r.rows.map((x) => h('tr', {},
           h('td', {}, h('strong', {}, x.name)),
           h('td', { class: 'r num' }, `${x.services_count} · ${fmt(x.services_total)}`),
@@ -780,7 +785,7 @@ async function viewReports(main, _arg, params) {
           h('td', { class: 'r num' }, `${fmt(x.products_commission)} (${x.commission_product_pct}%)`),
           h('td', { class: 'r num' }, fmt(x.tips)),
           h('td', { class: 'r num' }, h('strong', {}, fmt(x.total_to_pay)))))))),
-      h('p', { class: 'xs muted', style: { marginTop: 'var(--s-3)' } }, 'La comisión se calcula sobre lo cobrado después de descuentos, con el porcentaje de cada barbero al momento de la venta.'));
+      h('p', { class: 'xs muted', style: { marginTop: 'var(--s-3)' } }, `La comisión se calcula sobre lo cobrado después de descuentos, con el porcentaje de cada ${T().staff} al momento de la venta.`));
   }
 
   const r = await api('GET', `/api/reports/summary?from=${from}&to=${to}`);
@@ -804,9 +809,9 @@ async function viewReports(main, _arg, params) {
           r.top_services.length ? h('div', { class: 'bars' }, r.top_services.map((s) => h('div', { class: 'bar-row' },
             h('span', {}, s.name), h('div', { class: 'bar-track' }, h('div', { class: 'bar-fill', style: { width: `${(s.n / maxSvc) * 100}%` } })), h('span', { class: 'num xs' }, s.n))))
             : emptyState('Sin citas en este periodo.'))),
-      h('section', { class: 'stack-sm' }, h('h2', {}, 'Por barbero'),
+      h('section', { class: 'stack-sm' }, h('h2', {}, `Por ${T().staff}`),
         h('div', { class: 'table-wrap' }, h('table', { class: 'table' },
-          h('thead', {}, h('tr', {}, h('th', {}, 'Barbero'), h('th', { class: 'r' }, 'Atendidas'), h('th', { class: 'r' }, 'Ingresos'), h('th', { class: 'r' }, 'Ocupación'))),
+          h('thead', {}, h('tr', {}, h('th', {}, T().Staff), h('th', { class: 'r' }, 'Atendidas'), h('th', { class: 'r' }, 'Ingresos'), h('th', { class: 'r' }, 'Ocupación'))),
           h('tbody', {}, r.by_staff.map((s) => h('tr', {},
             h('td', {}, h('span', { class: `row sc-${s.color}` }, h('span', { class: 'dot' }), s.name)),
             h('td', { class: 'r num' }, s.done), h('td', { class: 'r num' }, fmt(s.revenue)), h('td', { class: 'r num' }, `${s.occupancy}%`))))))),
@@ -839,7 +844,7 @@ async function viewMessages(main, _arg, params) {
       : h('div', { class: 'card' }, emptyState('Nadie en lista de espera. Cuando un día está lleno, los clientes pueden anotarse desde tu página de reservas.')));
   }
   const rows = await api('GET', `/api/reminders?status=${tab}`);
-  const kinds = { confirmation: 'Confirmación', reminder: 'Recordatorio', cancelled: 'Cancelación', rebook: 'Te toca corte', campaign: 'Campaña' };
+  const kinds = { confirmation: 'Confirmación', reminder: 'Recordatorio', cancelled: 'Cancelación', rebook: T().rebook, campaign: 'Campaña' };
   clear(main, head,
     tab === 'manual' ? h('p', { class: 'muted', style: { marginBottom: 'var(--s-4)' } }, 'Sin la integración de WhatsApp Business conectada, los mensajes quedan aquí: tócalos para enviarlos desde el WhatsApp del local con el texto listo.') : null,
     rows.length ? h('div', { class: 'stack-sm' }, rows.map((r) => h('div', { class: 'card stack-sm' },
@@ -875,10 +880,11 @@ function cfgBusiness(box) {
   const link = `${location.origin}/b/${b.slug}`;
   const form = h('form', { class: 'stack', novalidate: true },
     h('div', { class: 'grid-2' },
-      field('Nombre de la barbería', input({ name: 'name', value: b.name })),
+      field('Nombre del negocio', input({ name: 'name', value: b.name })),
+      field('Rubro', select({ name: 'vertical' }, S.me.verticals.map((v) => [v.id, v.label]), b.vertical), 'Cambia las palabras de la app (barbero, estilista, terapeuta…).'),
       field('Enlace de reservas', input({ name: 'slug', value: b.slug }), `${location.host}/b/…`),
       field('Teléfono', input({ name: 'phone', value: b.phone, type: 'tel' })),
-      field('Instagram', input({ name: 'instagram', value: b.instagram, placeholder: '@tubarberia' })),
+      field('Instagram', input({ name: 'instagram', value: b.instagram, placeholder: '@tunegocio' })),
       field('Dirección', input({ name: 'address', value: b.address })),
       field('Código de país (WhatsApp)', input({ name: 'phone_prefix', value: b.phone_prefix, inputmode: 'numeric' }))),
     h('h2', {}, 'Reglas de reserva online'),
@@ -888,7 +894,7 @@ function cfgBusiness(box) {
       field('Se puede reservar hasta', select({ name: 'max_days_ahead' }, [7, 14, 30, 60, 90].map((v) => [v, `${v} días antes`]), b.max_days_ahead)),
       field('Cancelar o cambiar en línea hasta', select({ name: 'cancel_window_min' }, [[0, 'Hasta la hora'], [60, '1 hora antes'], [120, '2 horas antes'], [240, '4 horas antes'], [1440, '1 día antes']], b.cancel_window_min)),
       field('Recordatorio por WhatsApp', select({ name: 'reminder_hours' }, [2, 3, 6, 12, 24, 48, 72].map((v) => [v, `${v} horas antes`]), b.reminder_hours)),
-      field('Aviso "te toca corte"', select({ name: 'rebook_days' }, [14, 21, 28, 35, 45, 60].map((v) => [v, `${v} días sin venir`]), b.rebook_days))),
+      field(`Aviso "${T().rebook.toLowerCase()}"`, select({ name: 'rebook_days' }, [14, 21, 28, 35, 45, 60].map((v) => [v, `${v} días sin venir`]), b.rebook_days))),
     h('div', { class: 'grid-2' },
       field('Zona horaria', input({ name: 'timezone', value: b.timezone })),
       field('Moneda', input({ name: 'currency', value: b.currency, maxlength: 3 }))),
@@ -922,12 +928,12 @@ function cfgServices(box) {
     rows.length ? h('div', { class: 'table-wrap' }, h('table', { class: 'table' },
       h('thead', {}, h('tr', {}, h('th', {}, 'Servicio'), h('th', { class: 'r' }, 'Duración'), h('th', { class: 'r' }, 'Precio'), h('th', {}, 'Online'), h('th', {}, h('span', { class: 'sr-only' }, 'Acciones')))),
       h('tbody', {}, rows.map((s) => h('tr', {},
-        h('td', {}, h('div', { class: 'stack-sm' }, h('strong', {}, s.name), h('span', { class: 'xs muted' }, [s.category, `${s.staff_count} barbero(s)`].filter(Boolean).join(' · ')))),
+        h('td', {}, h('div', { class: 'stack-sm' }, h('strong', {}, s.name), h('span', { class: 'xs muted' }, [s.category, `${s.staff_count} ${T().staff}(s)`].filter(Boolean).join(' · ')))),
         h('td', { class: 'r num' }, `${s.duration_min} min${s.buffer_min ? ` + ${s.buffer_min}` : ''}`),
         h('td', { class: 'r num' }, fmt(s.price)),
         h('td', {}, !s.active ? h('span', { class: 'badge' }, 'Archivado') : s.online ? h('span', { class: 'badge badge-ok' }, 'Sí') : h('span', { class: 'badge' }, 'Solo panel')),
         h('td', { class: 'r' }, h('button', { class: 'btn btn-sm', type: 'button', onclick: () => serviceModal(s) }, 'Editar')))))))
-      : h('div', { class: 'card' }, emptyState('Crea tu primer servicio: corte, barba, combo…'))));
+      : h('div', { class: 'card' }, emptyState('Crea tu primer servicio con su duración y precio.'))));
 }
 
 function serviceModal(s) {
@@ -962,10 +968,10 @@ const WEEKDAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes
 
 function cfgStaff(box) {
   clear(box, h('div', { class: 'stack' },
-    h('div', { class: 'row-between' }, h('p', { class: 'muted' }, 'Horario, servicios que hace y comisión de cada barbero.'),
-      h('button', { class: 'btn btn-primary', type: 'button', onclick: () => staffModal() }, icon('plus'), 'Barbero')),
+    h('div', { class: 'row-between' }, h('p', { class: 'muted' }, `Horario, servicios que hace y comisión de cada ${T().staff}.`),
+      h('button', { class: 'btn btn-primary', type: 'button', onclick: () => staffModal() }, icon('plus'), T().Staff)),
     S.staff.length ? h('div', { class: 'table-wrap' }, h('table', { class: 'table' },
-      h('thead', {}, h('tr', {}, h('th', {}, 'Barbero'), h('th', {}, 'Días'), h('th', { class: 'r' }, 'Comisión'), h('th', {}, h('span', { class: 'sr-only' }, 'Acciones')))),
+      h('thead', {}, h('tr', {}, h('th', {}, T().Staff), h('th', {}, 'Días'), h('th', { class: 'r' }, 'Comisión'), h('th', {}, h('span', { class: 'sr-only' }, 'Acciones')))),
       h('tbody', {}, S.staff.map((s) => h('tr', {},
         h('td', {}, h('div', { class: `row sc-${s.color}` }, avatar(s), h('div', { class: 'stack-sm' }, h('strong', {}, s.name), s.specialty ? h('span', { class: 'xs muted' }, s.specialty) : null), s.active ? null : h('span', { class: 'badge' }, 'Inactivo'))),
         h('td', {}, [...new Set(s.hours.map((x) => x.weekday))].map((d) => WEEKDAYS[d].slice(0, 3)).join(' ') || 'Sin horario'),
@@ -1007,16 +1013,16 @@ function staffModal(s) {
     h('div', { class: 'row' }, preview, h('div', { class: 'grow' }, field('Foto (se ve al reservar)', photoInput))),
     h('div', { class: 'grid-2' },
       field('Nombre', input({ name: 'name', value: s?.name || '' })),
-      field('Especialidad', input({ name: 'specialty', value: s?.specialty || '', placeholder: 'Degradados, barba…' })),
+      field('Especialidad', input({ name: 'specialty', value: s?.specialty || '', placeholder: T().staffHint })),
       field('Comisión servicios (%)', input({ name: 'commission_service_pct', type: 'number', min: 0, max: 100, value: s?.commission_service_pct ?? 40 })),
       field('Comisión productos (%)', input({ name: 'commission_product_pct', type: 'number', min: 0, max: 100, value: s?.commission_product_pct ?? 10 }))),
     h('div', { class: 'stack-sm' }, h('div', { class: 'label' }, 'Horario semanal'), hoursBox),
     h('div', { class: 'stack-sm' }, h('div', { class: 'label' }, 'Servicios que hace y cuánto se demora'),
-      h('p', { class: 'xs muted' }, 'Deja la duración vacía para usar la del servicio. Útil si este barbero es más rápido o más lento.'),
+      h('p', { class: 'xs muted' }, `Deja la duración vacía para usar la del servicio. Útil si este ${T().staff} es más rápido o más lento.`),
       S.services.filter((x) => x.active).map((x) => h('div', { class: 'svc-dur' },
         h('label', { class: 'check' }, h('input', { type: 'checkbox', checked: svcIds.has(x.id), onchange: (e) => (e.target.checked ? svcIds.add(x.id) : svcIds.delete(x.id)) }), x.name),
         h('input', { class: 'input', type: 'number', min: 5, max: 480, step: 5, placeholder: `${x.duration_min} min`, value: durations[x.id] ?? '',
-          'aria-label': `Duración de ${x.name} con este barbero`, onchange: (e) => { durations[x.id] = e.target.value === '' ? null : Number(e.target.value); } })))),
+          'aria-label': `Duración de ${x.name} con este ${T().staff}`, onchange: (e) => { durations[x.id] = e.target.value === '' ? null : Number(e.target.value); } })))),
     s ? h('label', { class: 'check' }, h('input', { type: 'checkbox', name: 'active', checked: !!s.active }), 'Activo (aparece en la agenda y en reservas)') : null);
   const save = h('button', { class: 'btn btn-primary', type: 'button' }, 'Guardar');
   save.addEventListener('click', () => busy(save, async () => {
@@ -1032,10 +1038,10 @@ function staffModal(s) {
     try {
       const saved = await api(s ? 'PUT' : 'POST', s ? `/api/staff/${s.id}` : '/api/staff', body);
       if (photoData) await api('PUT', `/api/staff/${saved.id}/photo`, { data_url: photoData });
-      toast('Barbero guardado.'); m.close(); route();
+      toast(`${T().Staff} guardado.`); m.close(); route();
     } catch (e) { showFormError(form, e); }
   }));
-  const m = modal(s ? `Editar · ${s.name}` : 'Nuevo barbero', form, [h('button', { class: 'btn', type: 'button', onclick: () => m.close() }, 'Cerrar'), save]);
+  const m = modal(s ? `Editar · ${s.name}` : `Nuevo ${T().staff}`, form, [h('button', { class: 'btn', type: 'button', onclick: () => m.close() }, 'Cerrar'), save]);
 }
 
 async function timeOffModal(s) {
@@ -1067,14 +1073,14 @@ async function timeOffModal(s) {
 
 async function cfgUsers(box) {
   const users = await api('GET', '/api/users');
-  const roleName = { owner: 'Dueño', reception: 'Recepción', barber: 'Barbero' };
+  const roleName = { owner: 'Dueño', reception: 'Recepción', barber: T().Staff };
   const form = h('form', { class: 'stack', novalidate: true },
     h('div', { class: 'grid-2' },
       field('Nombre', input({ name: 'name' })),
       field('Correo', input({ name: 'email', type: 'email' })),
       field('Contraseña inicial', input({ name: 'password', type: 'text', autocomplete: 'off' }), 'Mínimo 8 caracteres. Compártela en persona.'),
-      field('Rol', select({ name: 'role' }, [['reception', 'Recepción: agenda, caja y clientes'], ['barber', 'Barbero: solo su agenda'], ['owner', 'Dueño: todo']], 'reception')),
-      field('Barbero (si el rol es Barbero)', select({ name: 'staff_id' }, [['', '—'], ...S.staff.filter((s) => s.active).map((s) => [s.id, s.name])], ''))),
+      field('Rol', select({ name: 'role' }, [['reception', 'Recepción: agenda, caja y clientes'], ['barber', `${T().Staff}: solo su agenda`], ['owner', 'Dueño: todo']], 'reception')),
+      field(`${T().Staff} (si el rol es ${T().Staff})`, select({ name: 'staff_id' }, [['', '—'], ...S.staff.filter((s) => s.active).map((s) => [s.id, s.name])], ''))),
     h('div', {}, h('button', { class: 'btn btn-primary', type: 'submit' }, 'Crear usuario')));
   form.addEventListener('submit', async (ev) => {
     ev.preventDefault();
@@ -1130,11 +1136,11 @@ function viewDesign(main) {
 // ------------------------------------------------------------ campañas, sucursales y plan
 
 function campaignForm() {
-  if (!feature('campanas')) return h('div', { class: 'card stack' }, h('p', {}, 'Las campañas son parte del plan Barbería.'), h('a', { class: 'btn btn-primary', href: '#/config?tab=plan' }, 'Ver planes'));
+  if (!feature('campanas')) return h('div', { class: 'card stack' }, h('p', {}, `Las campañas son parte del plan ${T().planLabel}.`), h('a', { class: 'btn btn-primary', href: '#/config?tab=plan' }, 'Ver planes'));
   const seg = select({ name: 'segment' }, [['all', 'Todos los clientes'], ['inactive', 'No vienen hace…'], ['birthday', 'Cumplen años este mes'], ['tag', 'Con etiqueta…']], 'inactive');
   const days = input({ name: 'days', type: 'number', min: 7, value: 45 });
   const tag = input({ name: 'tag', placeholder: 'vip' });
-  const text = h('textarea', { class: 'input', name: 'text', maxlength: 700 }, 'Hola {nombre}, hace rato que no te vemos. Esta semana tienes 10% en tu corte. Reserva aquí: {enlace}');
+  const text = h('textarea', { class: 'input', name: 'text', maxlength: 700 }, 'Hola {nombre}, hace rato que no te vemos. Esta semana tienes 10% en tu próxima visita. Reserva aquí: {enlace}');
   const preview = h('p', { class: 'muted', 'aria-live': 'polite' });
   const daysF = field('Días sin venir', days), tagF = field('Etiqueta', tag);
   const q = () => `segment=${seg.value}&days=${days.value}&tag=${encodeURIComponent(tag.value)}`;
@@ -1194,15 +1200,15 @@ async function cfgPlan(box) {
   clear(box, h('div', { class: 'stack' },
     h('div', { class: 'card row-between' },
       h('div', { class: 'stack-sm' }, h('div', { class: 'label' }, 'Tu plan'), h('h2', {}, p.label), h('span', { class: 'muted' }, status),
-        p.staff_limit ? h('span', { class: 'xs muted' }, `Hasta ${p.staff_limit} barbero(s) activos.`) : null),
+        p.staff_limit ? h('span', { class: 'xs muted' }, `Hasta ${p.staff_limit} ${T().staff}(s) activos.`) : null),
       p.has_subscription && p.billing_enabled ? h('button', { class: 'btn', type: 'button', onclick: async (e) => busy(e.currentTarget, async () => {
         try { location.href = (await api('POST', '/api/billing/portal')).url; } catch (err) { toast(err.message, 'error'); }
       }) }, 'Cambiar tarjeta o cancelar') : null),
     p.is_branch ? h('p', { class: 'muted' }, 'Esta sucursal usa el plan del negocio principal.') : null,
     !p.billing_enabled ? h('p', { class: 'form-error' }, 'Los pagos aún no están conectados en este servidor (faltan las claves de Stripe). Escríbenos para activar tu plan.') : null,
     h('div', { class: 'grid-2' },
-      offer('barberia', 'Barbería', 'US$15 / mes', ['Hasta 5 barberos', 'Caja, comisiones e inventario', 'Reportes', '"Te toca corte", lista de espera y campañas', 'Anticipos', 'Roles de recepción y barbero']),
-      offer('cadena', 'Cadena', 'US$29 / mes', ['Barberos ilimitados', 'Todo lo de Barbería', 'Varias sucursales', 'WhatsApp automático'])),
+      offer('barberia', T().planLabel, 'US$15 / mes', [`Hasta 5 ${T().staffs}`, 'Caja, comisiones e inventario', 'Reportes', `"${T().rebook}", lista de espera y campañas`, 'Anticipos', `Roles de recepción y ${T().staff}`]),
+      offer('cadena', 'Cadena', 'US$29 / mes', [`${T().Staffs} ilimitados`, `Todo lo de ${T().planLabel}`, 'Varias sucursales', 'WhatsApp automático'])),
     h('p', { class: 'xs muted' }, 'Cancelas con un clic y sigues usando el plan hasta el fin del periodo pagado. Si no pagas al terminar la prueba, pasas a Gratis sin perder datos.')));
 }
 

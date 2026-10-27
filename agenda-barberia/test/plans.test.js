@@ -120,3 +120,21 @@ test('healthz y páginas legales', async () => {
   assert.equal(await (await fetch(`${srv.base}/healthz`)).text(), 'ok');
   for (const p of ['/privacidad', '/terminos']) assert.equal((await fetch(srv.base + p)).status, 200);
 });
+
+test('rubro: palabras, servicios y mensaje "te toca" según el negocio', async () => {
+  const { c, business } = await signup(srv.base, 108, { vertical: 'peluqueria' });
+  const me = (await c.get('/api/me')).data;
+  assert.equal(me.business.vertical, 'peluqueria');
+  assert.equal(me.terms.Staff, 'Estilista');
+  assert.ok((await c.get('/api/services')).data.some((s) => s.name === 'Mechas / balayage'));
+  const pub = (await client(srv.base).get(`/api/public/${business.slug}`)).data;
+  assert.equal(pub.terms.staffs, 'estilistas');
+  assert.ok(me.verticals.length >= 5);
+  // Cambiar de rubro desde Configuración.
+  assert.equal((await c.put('/api/business', { vertical: 'masajes' })).data.vertical, 'masajes');
+  assert.equal((await c.get('/api/me')).data.terms.Staff, 'Terapeuta');
+  assert.equal((await c.put('/api/business', { vertical: 'dentista' })).status, 400);
+  // Sin rubro: barbería.
+  const { c: c2 } = await signup(srv.base, 109);
+  assert.equal((await c2.get('/api/me')).data.terms.staff, 'barbero');
+});

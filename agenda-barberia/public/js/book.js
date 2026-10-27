@@ -71,21 +71,22 @@ async function bookingFlow(slug) {
   let info;
   try { info = await api('GET', `/api/public/${slug}`); } catch (e) {
     document.title = `No encontrado · ${APP_NAME}`;
-    return clear(root, h('div', { class: 'card stack' }, h('h1', {}, 'No encontramos esta barbería'), h('p', { class: 'muted' }, 'Revisa el enlace que te compartieron.')));
+    return clear(root, h('div', { class: 'card stack' }, h('h1', {}, 'No encontramos este negocio'), h('p', { class: 'muted' }, 'Revisa el enlace que te compartieron.')));
   }
   const b = info.business;
+  const T = info.terms;
   const tz = b.timezone;
   document.title = `Reserva en ${b.name}`;
   const st = { services: [], staffId: null, start: null };
   const totalPrice = () => st.services.reduce((x, s) => x + s.price, 0);
   const names = () => st.services.map((s) => s.name).join(' + ');
-  // Minutos de la visita con un barbero (cada uno puede tener su propia duración).
+  // Minutos de la visita con un profesional (cada uno puede tener su propia duración).
   const minutesWith = (staff) => st.services.reduce((x, s) => x + (staff?.durations?.[s.id] || s.duration_min), 0);
   const header = () => h('header', { class: 'book-head' },
     h('h1', {}, b.name),
     b.address ? h('p', { class: 'muted' }, b.address) : null,
     h('p', { class: 'xs muted' }, [b.instagram ? `@${b.instagram}` : null, b.phone].filter(Boolean).join(' · ')));
-  const steps = (n) => h('nav', { class: 'steps', 'aria-label': 'Pasos' }, ['Servicio', 'Barbero', 'Hora', 'Tus datos'].map((s, i) =>
+  const steps = (n) => h('nav', { class: 'steps', 'aria-label': 'Pasos' }, ['Servicio', T.Staff, 'Hora', 'Tus datos'].map((s, i) =>
     h('span', { 'aria-current': i === n ? 'step' : null }, `${i + 1}. ${s}`)));
   const back = (fn) => h('button', { class: 'btn btn-ghost btn-sm', type: 'button', onclick: fn }, '← Volver');
   const show = (...children) => { clear(root, header(), ...children); window.scrollTo(0, 0); };
@@ -124,7 +125,7 @@ async function bookingFlow(slug) {
   const stepStaff = () => {
     const team = info.staff.filter((x) => st.services.every((sv) => x.service_ids.includes(sv.id)));
     if (!team.length) {
-      return show(steps(1), h('section', { class: 'stack' }, back(stepService), h('div', { class: 'card' }, h('p', {}, 'Ningún barbero hace todos esos servicios en una misma visita. Quita alguno e intenta de nuevo.'))));
+      return show(steps(1), h('section', { class: 'stack' }, back(stepService), h('div', { class: 'card' }, h('p', {}, `Ningún ${T.staff} hace todos esos servicios en una misma visita. Quita alguno e intenta de nuevo.`))));
     }
     if (team.length === 1) { st.staffId = team[0].id; return stepTime(true); }
     show(steps(1), h('section', { class: 'stack' }, back(stepService), h('h2', {}, '¿Con quién?'),
@@ -254,7 +255,7 @@ async function manage(token) {
         h('button', { class: 'btn btn-sm', type: 'button', onclick: ics }, 'Descargar al calendario')) : null),
     active && a.deposit && a.deposit_status === 'pending' ? h('div', { class: 'card stack-sm' },
       h('strong', {}, `Anticipo pendiente: ${a.deposit_text}`),
-      h('p', { class: 'muted' }, 'Tu hora queda asegurada cuando la barbería confirme el anticipo.'),
+      h('p', { class: 'muted' }, `Tu hora queda asegurada cuando ${b.name} confirme el anticipo.`),
       r.deposit_instructions ? h('p', { class: 'card-flat' }, r.deposit_instructions) : null,
       r.payment_link ? h('a', { class: 'btn btn-primary', href: r.payment_link, target: '_blank', rel: 'noopener' }, 'Pagar anticipo en línea') : null)
       : active && a.deposit_status === 'paid' ? h('p', { class: 'badge badge-ok' }, `Anticipo recibido: ${a.deposit_text}`) : null,

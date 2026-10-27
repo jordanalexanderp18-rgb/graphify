@@ -13,6 +13,7 @@ import {
 } from './availability.js';
 import { scheduleForAppointment, dropPending, queue, waLink, money, baseUrl, fillTemplate } from './notify.js';
 import { seedBusiness } from './seed.js';
+import { VERTICALS, VERTICAL_OPTIONS, termsOf } from './verticals.js';
 
 const token = () => randomBytes(18).toString('base64url');
 const routes = [];
@@ -89,14 +90,14 @@ function apptContext(db, appt) {
 }
 
 const conflict = (reason) => new HttpError(409, reason === 'outside_hours'
-  ? 'Esa hora está fuera del horario del barbero.'
+  ? 'Esa hora está fuera del horario de ese profesional.'
   : 'Esa hora ya está ocupada. Elige otra.', { reason });
 
 // ---------------------------------------------------------------- auth
 
 on('POST', '/api/auth/signup', ({ db, body, ip, setCookie, secure }) => {
   rateLimit(`signup:${ip}`, 10, 3600000);
-  const businessName = str(body.business_name, 'business_name', { required: true, max: 80, label: 'el nombre de la barbería' });
+  const businessName = str(body.business_name, 'business_name', { required: true, max: 80, label: 'el nombre del negocio' });
   const name = str(body.name, 'name', { required: true, max: 80, label: 'tu nombre' });
   const mail = email(body.email, 'email', { required: true });
   const pw = str(body.password, 'password', { required: true, max: 200, label: 'la contraseña' });
@@ -109,8 +110,9 @@ on('POST', '/api/auth/signup', ({ db, body, ip, setCookie, secure }) => {
     let slug = slugify(businessName);
     for (let i = 2; db.get('select 1 from businesses where slug = ?', slug); i++) slug = `${slugify(businessName)}-${i}`;
     const plan = ['free', 'barberia', 'cadena'].includes(body.plan) ? body.plan : 'barberia';
+    const vertical = VERTICALS[body.vertical] ? body.vertical : 'barberia';
     const business = db.insert('businesses', {
-      id: uid(), name: businessName, slug, timezone: tz, currency, phone_prefix: prefix,
+      id: uid(), name: businessName, slug, timezone: tz, currency, phone_prefix: prefix, vertical,
       plan, plan_status: plan === 'free' ? 'active' : 'trialing', trial_ends_at: new Date(Date.now() + TRIAL_DAYS * 86400000).toISOString(),
     });
     const user = db.insert('users', { id: uid(), business_id: business.id, email: mail, name, password_hash: hashPassword(pw), role: 'owner' });
@@ -121,6 +123,8 @@ on('POST', '/api/auth/signup', ({ db, body, ip, setCookie, secure }) => {
     return { status: 201, data: { user: { id: user.id, name, email: mail, role: 'owner' }, business: biz(db, business.id) } };
   });
 });
+
+on('GET', '/api/verticals', () => VERTICAL_OPTIONS);
 
 on('POST', '/api/auth/login', ({ db, body, ip, setCookie, secure }) => {
   const mail = email(body.email, 'email', { required: true });
@@ -147,7 +151,7 @@ on('GET', '/api/me', ({ db, user }) => {
   const b = biz(db, user.business_id);
   const branches = db.all(`select b.id, b.name, b.slug from memberships m join businesses b on b.id = m.business_id
                            where m.user_id = ? order by b.created_at`, user.id);
-  return { user: u, business: b, plan: planInfo(db, b), branches };
+  return { user: u, business: b, plan: planInfo(db, b), branches, terms: termsOf(b), verticals: VERTICAL_OPTIONS };
 });
 
 // ---------------------------------------------------------------- negocio
@@ -159,7 +163,7 @@ on('PUT', '/api/business', ({ db, user, body }) => {
     slug: (v, k) => {
       const s = slugify(str(v, k, { required: true, max: 40, label: 'el enlace' }));
       if (db.get('select 1 from businesses where slug = ? and id <> ?', s, user.business_id)) {
-        throw new HttpError(409, 'Ese enlace ya lo usa otra barbería.', { field: 'slug' });
+        throw new HttpError(409, 'Ese enlace ya lo usa otro negocio.', { field: 'slug' });
       }
       return s;
     },
@@ -182,6 +186,7 @@ on('PUT', '/api/business', ({ db, user, body }) => {
       return u;
     },
     message_channel: (v, k) => oneOf(v, k, ['whatsapp', 'sms']),
+    vertical: (v, k) => oneOf(v, k, Object.keys(VERTICALS)),
   });
   db.update('businesses', user.business_id, null, { ...f, updated_at: nowIso() });
   return biz(db, user.business_id);
@@ -317,7 +322,7 @@ on('POST', '/api/staff', ({ db, user, body }) => {
 
 on('PUT', '/api/staff/:id', ({ db, user, body, params }) => {
   allow(user, 'catalog');
-  const current = owned(db, 'staff', params.id, user.business_id, 'Barbero');
+  const current = owned(db, 'staff', params.id, user.business_id, 'Profesional');
   const f = pick(body, staffSpec);
   if (f.active === 1 && !current.active) checkStaffLimit(db, biz(db, user.business_id));
   return db.tx(() => {
@@ -329,7 +334,7 @@ on('PUT', '/api/staff/:id', ({ db, user, body, params }) => {
 
 on('PUT', '/api/staff/:id/photo', ({ db, user, body, params }) => {
   allow(user, 'catalog');
-  owned(db, 'staff', params.id, user.business_id, 'Barbero');
+  owned(db, 'staff', params.id, user.business_id, 'Profesional');
   const data = String(body.data_url || '');
   if (data && !/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(data)) {
     throw new HttpError(400, 'La foto debe ser JPG, PNG o WebP.', { field: 'photo' });
@@ -341,7 +346,7 @@ on('PUT', '/api/staff/:id/photo', ({ db, user, body, params }) => {
 
 on('DELETE', '/api/staff/:id', ({ db, user, params }) => {
   allow(user, 'catalog');
-  owned(db, 'staff', params.id, user.business_id, 'Barbero');
+  owned(db, 'staff', params.id, user.business_id, 'Profesional');
   const future = db.get("select count(*) n from appointments where staff_id = ? and start_at > ? and status in ('booked','confirmed')", params.id, nowIso()).n;
   if (future) throw new HttpError(409, `Tiene ${future} cita(s) futuras. Muévelas o cancélalas antes de darlo de baja.`);
   db.update('staff', params.id, user.business_id, { active: 0 });
@@ -357,7 +362,7 @@ on('GET', '/api/time-off', ({ db, user, query }) => {
 
 on('POST', '/api/staff/:id/time-off', ({ db, user, body, params }) => {
   allow(user, 'operate');
-  owned(db, 'staff', params.id, user.business_id, 'Barbero');
+  owned(db, 'staff', params.id, user.business_id, 'Profesional');
   const b = biz(db, user.business_id);
   if (!isDate(body.date)) throw new HttpError(400, 'Indica la fecha.', { field: 'date' });
   const s = hhmmToMin(body.start ?? '00:00'), e = hhmmToMin(body.end ?? '24:00');
@@ -394,7 +399,7 @@ on('POST', '/api/users', ({ db, user, body }) => {
   requireFeature(db, biz(db, user.business_id), 'roles');
   let staffId = null;
   if (role === 'barber') {
-    staffId = owned(db, 'staff', body.staff_id, user.business_id, 'Barbero').id;
+    staffId = owned(db, 'staff', body.staff_id, user.business_id, 'Profesional').id;
   }
   if (db.get('select 1 from users where email = ?', mail)) throw new HttpError(409, 'Ya existe un usuario con ese correo.', { field: 'email' });
   const u = db.insert('users', {
@@ -440,7 +445,7 @@ on('GET', '/api/availability', ({ db, user, query }) => {
 on('POST', '/api/appointments', ({ db, user, body }) => {
   allow(user, 'operate');
   const b = biz(db, user.business_id);
-  const staff = owned(db, 'staff', body.staff_id, user.business_id, 'Barbero');
+  const staff = owned(db, 'staff', body.staff_id, user.business_id, 'Profesional');
   const service = owned(db, 'services', body.service_id, user.business_id, 'Servicio');
   const source = body.source === 'walkin' ? 'walkin' : 'panel';
   const start = source === 'walkin' && !body.start && !body.time ? Math.ceil(Date.now() / 60000) * 60000 : startFrom(body, b.timezone);
@@ -476,7 +481,7 @@ on('PUT', '/api/appointments/:id', ({ db, user, body, params }) => {
   if (['cancelled', 'done'].includes(appt.status) && (body.start || body.time || body.staff_id)) {
     throw new HttpError(409, 'No se puede mover una cita cancelada o ya atendida.');
   }
-  const staff = owned(db, 'staff', body.staff_id || appt.staff_id, user.business_id, 'Barbero');
+  const staff = owned(db, 'staff', body.staff_id || appt.staff_id, user.business_id, 'Profesional');
   const service = owned(db, 'services', body.service_id || appt.service_id, user.business_id, 'Servicio');
   const start = body.start || body.time ? startFrom(body, b.timezone) : Date.parse(appt.start_at);
   return db.tx(() => {
@@ -732,7 +737,7 @@ on('POST', '/api/sales', ({ db, user, body }) => {
       const kind = oneOf(it.kind, `items.${i}.kind`, ['service', 'product']);
       const qty = int(it.qty ?? 1, `items.${i}.qty`, { min: 1, max: 999, label: 'la cantidad' });
       const ref = owned(db, kind === 'service' ? 'services' : 'products', it.ref_id, b.id, kind === 'service' ? 'Servicio' : 'Producto');
-      const staffId = it.staff_id ? owned(db, 'staff', it.staff_id, b.id, 'Barbero').id : (appt?.staff_id ?? null);
+      const staffId = it.staff_id ? owned(db, 'staff', it.staff_id, b.id, 'Profesional').id : (appt?.staff_id ?? null);
       let unit = kind === 'service' && appt && appt.service_id === ref.id ? appt.price : ref.price;
       if (it.unit_price !== undefined && it.unit_price !== '') unit = int(it.unit_price, `items.${i}.unit_price`, { max: 1e10, label: 'el precio' });
       if (kind === 'product' && ref.stock < qty) throw new HttpError(409, `No hay stock suficiente de ${ref.name} (quedan ${ref.stock}).`);
@@ -751,7 +756,7 @@ on('POST', '/api/sales', ({ db, user, body }) => {
       assigned += l.lineTotal;
     });
     const clientId = appt?.client_id ?? (body.client_id ? owned(db, 'clients', body.client_id, b.id, 'Cliente').id : null);
-    const tipStaff = tip ? (body.tip_staff_id ? owned(db, 'staff', body.tip_staff_id, b.id, 'Barbero').id : appt?.staff_id ?? lines.find((l) => l.staffId)?.staffId ?? null) : null;
+    const tipStaff = tip ? (body.tip_staff_id ? owned(db, 'staff', body.tip_staff_id, b.id, 'Profesional').id : appt?.staff_id ?? lines.find((l) => l.staffId)?.staffId ?? null) : null;
     const sale = db.insert('sales', {
       id: uid(), business_id: b.id, register_id: register?.id ?? null, client_id: clientId, appointment_id: appt?.id ?? null,
       subtotal, discount, tip, tip_staff_id: tipStaff, prepaid, total: net + tip - prepaid, payment_method: method, created_by: user.id,
@@ -950,7 +955,7 @@ on('POST', '/api/waitlist/:id/status', ({ db, user, body, params }) => {
 
 function publicBiz(db, slug) {
   const b = db.get('select * from businesses where slug = ?', String(slug).toLowerCase());
-  if (!b) throw notFound('Barbería');
+  if (!b) throw notFound('Negocio');
   return b;
 }
 
@@ -985,7 +990,7 @@ on('GET', '/api/public/:slug', ({ db, params }) => {
         durations: Object.fromEntries(links.filter((r) => r.duration_min).map((r) => [r.service_id, r.duration_min])),
       };
     });
-  return { business: publicBusiness(b), services, staff, today: todayIn(b.timezone), waitlist: has(db, b, 'waitlist'), deposits: has(db, b, 'anticipos') };
+  return { business: publicBusiness(b), services, staff, today: todayIn(b.timezone), waitlist: has(db, b, 'waitlist'), deposits: has(db, b, 'anticipos'), terms: termsOf(b) };
 });
 
 on('GET', '/api/public/:slug/days', ({ db, params, query }) => {
@@ -1083,7 +1088,7 @@ on('POST', '/api/public/:slug/waitlist', ({ db, params, body, ip }) => {
   requireFeature(db, b, 'waitlist');
   const service = publicServices(db, b, body)[0];
   if (!isDate(body.day) || !withinPolicyWindow(b, body.day)) throw new HttpError(400, 'Fecha no válida.', { field: 'day' });
-  const staffId = body.staff_id && body.staff_id !== 'any' ? owned(db, 'staff', body.staff_id, b.id, 'Barbero').id : null;
+  const staffId = body.staff_id && body.staff_id !== 'any' ? owned(db, 'staff', body.staff_id, b.id, 'Profesional').id : null;
   const client = findOrCreateClient(db, b, {
     name: str(body.name, 'name', { required: true, max: 80, label: 'tu nombre' }),
     phone: phone(body.phone, b.phone_prefix, 'phone', { required: true }),
@@ -1132,7 +1137,7 @@ on('GET', '/api/public/r/:token', ({ db, params }) => {
 on('POST', '/api/public/r/:token/cancel', ({ db, params, ip }) => {
   rateLimit(`manage:${ip}`, 20, 600000);
   const { a, visit, canChange } = publicAppt(db, params.token);
-  if (!canChange) throw new HttpError(409, 'Ya no se puede cancelar en línea. Escríbele directo a la barbería.');
+  if (!canChange) throw new HttpError(409, 'Ya no se puede cancelar en línea. Escríbele directo al negocio.');
   db.tx(() => {
     for (const x of visit) {
       db.update('appointments', x.id, a.business_id, { status: 'cancelled', updated_at: nowIso() });
@@ -1145,7 +1150,7 @@ on('POST', '/api/public/r/:token/cancel', ({ db, params, ip }) => {
 on('POST', '/api/public/r/:token/reschedule', ({ db, params, body, ip }) => {
   rateLimit(`manage:${ip}`, 20, 600000);
   const { a, b, visit, canChange } = publicAppt(db, params.token);
-  if (!canChange) throw new HttpError(409, 'Ya no se puede cambiar en línea. Escríbele directo a la barbería.');
+  if (!canChange) throw new HttpError(409, 'Ya no se puede cambiar en línea. Escríbele directo al negocio.');
   const services = visit.map((x) => db.get('select * from services where id = ?', x.service_id));
   return db.tx(() => {
     const ids = visit.map((x) => x.id);

@@ -5,6 +5,7 @@ import { uid, nowIso } from './db.js';
 import { localParts, iso } from './time.js';
 import { minToHHMM } from './availability.js';
 import { has } from './plans.js';
+import { termsOf } from './verticals.js';
 
 const DAYS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
 const MONTHS = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
@@ -41,7 +42,7 @@ function body(kind, { business, client, service, staff, appt }) {
     case 'cancelled':
       return `${first}, tu hora del ${when} en ${business.name} fue cancelada. Cuando quieras, reservas otra aquí: ${link}`;
     case 'rebook':
-      return `${first}, ya va siendo hora del próximo corte. Elige tu hora en ${business.name}: ${link}`;
+      return `${first}, ${termsOf(business).rebookNext}. Elige tu hora en ${business.name}: ${link}`;
     default:
       return '';
   }
@@ -127,6 +128,7 @@ async function sendEmail(to, subject, text) {
 }
 
 const SUBJECT = { confirmation: 'Tu hora está reservada', reminder: 'Recordatorio de tu hora', cancelled: 'Tu hora fue cancelada', rebook: 'Te toca corte', campaign: 'Novedades' };
+const subjectFor = (kind, business) => (kind === 'rebook' ? termsOf(business).rebook : SUBJECT[kind] || 'Mensaje');
 
 export async function deliver(db, r) {
   const client = db.get('select phone, email from clients where id = ?', r.client_id);
@@ -138,7 +140,7 @@ export async function deliver(db, r) {
     const out = r.channel === 'whatsapp'
       ? (has(db, business, 'whatsapp_auto') ? await sendWhatsApp(client.phone, r.body) : { status: 'manual' })
       : r.channel === 'sms' ? await sendSms(client.phone, r.body)
-        : await sendEmail(client.email, SUBJECT[r.kind] || 'Mensaje', r.body);
+        : await sendEmail(client.email, subjectFor(r.kind, business), r.body);
     db.run('update reminders set status = ?, sent_at = ?, error = ? where id = ?',
       out.status, out.status === 'sent' ? nowIso() : null, '', r.id);
   } catch (e) {

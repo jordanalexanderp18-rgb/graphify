@@ -37,7 +37,7 @@ export function checkStaffLimit(db, b, extra = 1) {
   const limit = PLANS[effectivePlan(db, b)].staff;
   const n = db.get('select count(*) n from staff where business_id = ? and active = 1', b.id).n;
   if (n + extra > limit) {
-    throw new HttpError(402, `Tu plan permite ${limit} barbero${limit === 1 ? '' : 's'} activo${limit === 1 ? '' : 's'}. Sube de plan para agregar más.`, { feature: 'staff' });
+    throw new HttpError(402, `Tu plan permite ${limit} profesional${limit === 1 ? '' : 'es'} activo${limit === 1 ? '' : 's'}. Sube de plan para agregar más.`, { feature: 'staff' });
   }
 }
 

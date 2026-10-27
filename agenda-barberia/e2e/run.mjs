@@ -52,7 +52,7 @@ try {
   await step('F08 registro del dueño con datos de ejemplo', async () => {
     await page.goto(`${BASE}/app#/registro`);
     await shot(page, 'S01');
-    await page.getByLabel('Nombre de la barbería').fill('Barbería El Bigote');
+    await page.getByLabel('Nombre del negocio').fill('Barbería El Bigote');
     await page.getByLabel('Tu nombre').fill('Jordan');
     await page.getByLabel('Correo').fill('jordan@example.com');
     await page.getByLabel('Contraseña').fill('una-clave-segura');
@@ -376,6 +376,29 @@ try {
     await k.close();
   });
 
+  await step('rubro: una peluquería ve "estilista" en vez de "barbero"', async () => {
+    const ctxP = await browser.newContext({ viewport: { width: 1280, height: 800 }, locale: 'es-CL', timezoneId: 'America/Santiago' });
+    const pp = await ctxP.newPage();
+    watch(pp, 'peluqueria');
+    await pp.goto(`${BASE}/app?rubro=peluqueria#/registro`);
+    await pp.getByLabel('Tipo de negocio').waitFor();
+    if (await pp.getByLabel('Tipo de negocio').inputValue() !== 'peluqueria') throw new Error('no toma el rubro del enlace');
+    await pp.getByLabel('Nombre del negocio').fill('Salón Aurora');
+    await pp.getByLabel('Tu nombre').fill('Aurora');
+    await pp.getByLabel('Correo').fill('aurora@example.com');
+    await pp.getByLabel('Contraseña').fill('otra-clave-segura');
+    await pp.getByRole('button', { name: 'Crear mi cuenta' }).click();
+    await pp.getByText('Valentina Ríos').first().waitFor();
+    await pp.goto(`${BASE}/app#/config?tab=equipo`);
+    await pp.getByRole('button', { name: 'Estilista', exact: true }).waitFor();
+    if (await pp.getByText(/barbero/i).count()) throw new Error('quedó la palabra barbero');
+    await shot(pp, 'S23-peluqueria');
+    const g = await ctxP.newPage();
+    await g.goto(`${BASE}/b/salon-aurora`);
+    await g.getByText('2. Estilista').waitFor();
+    await ctxP.close();
+  });
+
   await step('página de inicio sin errores, en escritorio y celular', async () => {
     for (const vp of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
       const l = await browser.newPage({ viewport: vp });
@@ -387,7 +410,7 @@ try {
       if (await l.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1)) throw new Error(`scroll horizontal a ${vp.width}px`);
       await l.screenshot({ path: `${SHOTS}landing-${vp.width}.png`, fullPage: true });
       await l.getByRole('link', { name: 'Crear mi barbería gratis' }).first().click();
-      await l.getByRole('heading', { name: 'Crea tu barbería' }).waitFor();
+      await l.getByRole('heading', { name: 'Crea tu negocio' }).waitFor();
       await l.close();
     }
   });

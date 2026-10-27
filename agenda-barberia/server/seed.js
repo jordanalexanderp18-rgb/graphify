@@ -2,38 +2,22 @@
 import { uid } from './db.js';
 import { zonedToUtc, todayIn, addDays, weekdayOf, iso } from './time.js';
 import { randomBytes } from 'node:crypto';
+import { verticalOf } from './verticals.js';
 
-const SERVICES = [
-  ['Corte clásico', 'Cortes', 30, 10000],
-  ['Degradado (fade)', 'Cortes', 40, 12000],
-  ['Corte + barba', 'Combos', 60, 18000],
-  ['Perfilado de barba', 'Barba', 20, 7000],
-  ['Afeitado con toalla caliente', 'Barba', 30, 9000],
-  ['Corte niño (hasta 12)', 'Cortes', 30, 8000],
-  ['Cejas', 'Extras', 10, 3000],
-];
-const STAFF = [
-  ['Matías Rojas', 'Degradados y diseños', 'c1', 45],
-  ['Camila Soto', 'Cortes clásicos y barba', 'c2', 40],
-  ['Diego Fuentes', 'Afeitado tradicional', 'c3', 40],
-];
-const PRODUCTS = [
-  ['Cera mate', 'CER-01', 9000, 4000, 12],
-  ['Aceite para barba', 'ACE-01', 11000, 5000, 6],
-  ['Pomada brillo', 'POM-01', 9500, 4200, 2],
-  ['Shampoo anticaspa', 'SHA-01', 8000, 3500, 9],
-];
 const CLIENTS = [
   ['Tomás Herrera', '912345601'], ['Benjamín Muñoz', '912345602'], ['Joaquín Pérez', '912345603'],
   ['Vicente Castro', '912345604'], ['Martín Silva', '912345605'], ['Agustín Morales', '912345606'],
   ['Lucas Navarro', '912345607'], ['Sebastián Vega', '912345608'],
 ];
 
-export function seedBusiness(db, business, { withAppointments = true, maxStaff = STAFF.length } = {}) {
-  const services = SERVICES.map(([name, category, duration, price], i) =>
+const COLORS = ['c1', 'c2', 'c3'];
+
+export function seedBusiness(db, business, { withAppointments = true, maxStaff = 3 } = {}) {
+  const v = verticalOf(business);
+  const services = v.services.map(([name, category, duration, price], i) =>
     db.insert('services', { id: uid(), business_id: business.id, name, category, duration_min: duration, price, sort: i }));
-  const staff = STAFF.slice(0, maxStaff).map(([name, specialty, color, pct], i) =>
-    db.insert('staff', { id: uid(), business_id: business.id, name, specialty, color, commission_service_pct: pct, commission_product_pct: 10, sort: i }));
+  const staff = v.staff.slice(0, maxStaff).map(([name, specialty], i) =>
+    db.insert('staff', { id: uid(), business_id: business.id, name, specialty, color: COLORS[i % 3], commission_service_pct: 40, commission_product_pct: 10, sort: i }));
   for (const st of staff) {
     for (const wd of [1, 2, 3, 4, 5, 6]) {
       // Lunes a viernes 10-14 y 15-20 (almuerzo 14-15); sábado corrido 10-15.
@@ -46,7 +30,7 @@ export function seedBusiness(db, business, { withAppointments = true, maxStaff =
     }
     for (const sv of services) db.insert('staff_services', { staff_id: st.id, service_id: sv.id });
   }
-  for (const [name, sku, price, cost, stock] of PRODUCTS) {
+  for (const [name, sku, price, cost, stock] of v.products) {
     db.insert('products', { id: uid(), business_id: business.id, name, sku, price, cost, stock });
   }
   const clients = CLIENTS.map(([name, phone]) =>
@@ -62,6 +46,7 @@ export function seedBusiness(db, business, { withAppointments = true, maxStaff =
         const sv = services[(k + si) % 3];
         const st = staff[si % staff.length];
         const start = zonedToUtc(date, startMin, business.timezone);
+        if (sv.duration_min > 120) continue;
         db.insert('appointments', {
           id: uid(), business_id: business.id, staff_id: st.id, client_id: clients[k % clients.length].id,
           service_id: sv.id, start_at: iso(start), end_at: iso(start + sv.duration_min * 60000),

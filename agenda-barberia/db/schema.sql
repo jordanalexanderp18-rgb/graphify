@@ -10,6 +10,7 @@ create table if not exists businesses (
   id text primary key,
   name text not null,
   slug text not null unique,
+  vertical text not null default 'barberia',  -- rubro (server/verticals.js)
   timezone text not null default 'America/Santiago',
   currency text not null default 'CLP',
   phone_prefix text not null default '56',   -- código de país para WhatsApp
