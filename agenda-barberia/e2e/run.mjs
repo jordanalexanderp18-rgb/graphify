@@ -2,6 +2,7 @@
 // Uso: npm run e2e   — falla con errores de consola, respuestas 5xx o pasos rotos.
 import { createRequire } from 'node:module';
 import { mkdirSync, rmSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { openDb } from '../server/db.js';
 import { createApp } from '../server/app.js';
 
@@ -40,6 +41,11 @@ const pickServices = async (page, ...names) => {
   for (const n of names) await page.getByRole('button', { name: n }).click();
   await page.getByRole('button', { name: /^Continuar · / }).click();
 };
+// La landing usa WebP con PNG de respaldo; si hay ffmpeg, se regeneran juntos.
+const toWebp = (name) => {
+  const img = new URL(`../public/img/${name}`, import.meta.url).pathname;
+  try { execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', `${img}.png`, '-c:v', 'libwebp', '-quality', '80', `${img}.webp`]); } catch { /* sin ffmpeg queda el WebP anterior */ }
+};
 const shot = (page, id) => page.screenshot({ path: `${SHOTS}${id}.png`, fullPage: false });
 
 const browser = await chromium.launch();
@@ -64,6 +70,7 @@ try {
     await page.getByText('Matías Rojas').first().waitFor();
     await shot(page, 'S02');
     await page.screenshot({ path: new URL('../public/img/agenda.png', import.meta.url).pathname });
+    toWebp('agenda');
   });
 
   await step('S03 vista semanal', async () => {
@@ -122,6 +129,7 @@ try {
     await guest.getByRole('button', { name: '11:00', exact: true }).click();
     await shot(guest, 'S16');
     await guest.screenshot({ path: new URL('../public/img/reserva.png', import.meta.url).pathname });
+    toWebp('reserva');
     await guest.getByRole('button', { name: 'Continuar' }).click();
     await guest.getByLabel('Nombre y apellido').fill('Ana María Núñez');
     await guest.getByLabel('WhatsApp').fill('9 8765 4321');

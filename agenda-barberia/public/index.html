@@ -35,7 +35,7 @@
         <p class="xs muted">Sin tarjeta. Cancelas cuando quieras, con un clic.</p>
       </div>
       <figure class="lp-shot">
-        <img src="/img/agenda.png" alt="Agenda del día con una columna por barbero y las citas reservadas" width="1440" height="900">
+        <picture><source srcset="/img/agenda.webp" type="image/webp"><img src="/img/agenda.png" alt="Agenda del día con una columna por profesional y las citas reservadas" width="1440" height="900" fetchpriority="high"></picture>
       </figure>
     </section>
 
@@ -81,7 +81,7 @@
         <h2 class="lp-h2">Reservar toma menos de un minuto</h2>
         <p class="muted">Tus clientes eligen servicio, barbero (o “me da igual”), día y hora desde el celular. Sin descargar nada ni crear cuenta. Pueden cambiar o cancelar desde el mismo enlace, y agregar la cita a su calendario.</p>
       </div>
-      <figure class="lp-phone"><img src="/img/reserva.png" alt="Página de reservas en el celular mostrando días y horas libres" width="390" height="844"></figure>
+      <figure class="lp-phone"><picture><source srcset="/img/reserva.webp" type="image/webp"><img src="/img/reserva.png" alt="Página de reservas en el celular mostrando días y horas libres" width="390" height="844" loading="lazy"></picture></figure>
     </section>
 
     <section class="lp-band" id="precios">
@@ -132,6 +132,14 @@
     </section>
   </main>
 
+  <nav class="lp-wrap lp-rubros xs" aria-label="Silla Llena por rubro">
+    <span class="muted">Silla Llena para:</span>
+    <a href="/">Barberías</a>
+    <a href="/para/peluquerias">Peluquerías y salones</a>
+    <a href="/para/unas-y-pestanas">Uñas y pestañas</a>
+    <a href="/para/tatuajes">Estudios de tatuaje</a>
+    <a href="/para/masajes-y-spa">Masajes y spa</a>
+  </nav>
   <footer class="lp-foot xs muted">
     <span>© 2026 Silla Llena</span>
     <span class="row"><a href="/privacidad">Privacidad</a><a href="/terminos">Términos</a><a href="/app">Entrar</a></span>

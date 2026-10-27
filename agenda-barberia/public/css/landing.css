@@ -41,3 +41,5 @@ details.card p { margin-top: var(--s-3); }
 .legal { max-width: 760px; }
 .legal h2 { margin-top: var(--s-4); }
 .legal ul { padding-left: var(--s-5); display: flex; flex-direction: column; gap: var(--s-1); }
+.lp-rubros { display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-4); padding-top: var(--s-5); padding-bottom: 0; }
+.lp-shot picture, .lp-phone picture { display: block; }

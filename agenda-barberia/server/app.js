@@ -6,6 +6,9 @@ import { fileURLToPath } from 'node:url';
 import { HttpError } from './db.js';
 import { match } from './api.js';
 import { COOKIE, parseCookies, sessionUser } from './auth.js';
+import { renderLanding, renderBooking, robots, sitemap } from './seo.js';
+import { verticalBySeoSlug } from './verticals.js';
+import { baseUrl } from './notify.js';
 
 const PUBLIC = fileURLToPath(new URL('../public/', import.meta.url));
 const TYPES = {
@@ -30,6 +33,30 @@ function pageFor(pathname) {
   return null;
 }
 
+// Páginas con SEO generado en el servidor. Devuelve true si respondió.
+function seoPage(db, req, res, pathname) {
+  const base = baseUrl();
+  const html = (status, body, extra = {}) => {
+    res.writeHead(status, { ...SECURITY, 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-cache', ...extra });
+    res.end(req.method === 'HEAD' ? undefined : body);
+    return true;
+  };
+  if (pathname === '/') return html(200, renderLanding(base));
+  const para = /^\/para\/([a-z-]+)\/?$/.exec(pathname);
+  if (para) {
+    const found = verticalBySeoSlug(para[1]);
+    if (!found) return false;
+    // /para/barberias es la portada: una sola URL por contenido.
+    if (found[0] === 'barberia') { res.writeHead(301, { location: '/' }); res.end(); return true; }
+    return html(200, renderLanding(base, found[0]));
+  }
+  const b = /^\/b\/([^/]+)\/?$/.exec(pathname);
+  if (b) { const r = renderBooking(db, base, decodeURIComponent(b[1])); return html(r.status, r.html); }
+  if (pathname === '/robots.txt') return html(200, robots(base), { 'content-type': 'text/plain; charset=utf-8' });
+  if (pathname === '/sitemap.xml') return html(200, sitemap(db, base), { 'content-type': 'application/xml; charset=utf-8' });
+  return false;
+}
+
 async function serveStatic(req, res, pathname) {
   const page = pageFor(pathname);
   const rel = page || decodeURIComponent(pathname).replace(/^\/+/, '');
@@ -43,6 +70,8 @@ async function serveStatic(req, res, pathname) {
       ...SECURITY,
       'content-type': TYPES[extname(file)] || 'application/octet-stream',
       'cache-control': page ? 'no-cache' : 'public, max-age=300',
+      // El panel y los enlaces privados de reserva no van a buscadores.
+      ...(page === 'app.html' || pathname.startsWith('/r/') ? { 'x-robots-tag': 'noindex, nofollow' } : {}),
     });
     res.end(req.method === 'HEAD' ? undefined : body);
   } catch {
@@ -91,7 +120,7 @@ export function createApp(db, { trustProxy = false } = {}) {
     }
     if (!pathname.startsWith('/api/')) {
       if (req.method !== 'GET' && req.method !== 'HEAD') return send(res, 405, 'Método no permitido');
-      return serveStatic(req, res, pathname);
+      return seoPage(db, req, res, pathname) || serveStatic(req, res, pathname);
     }
     const cookies = [];
     try {

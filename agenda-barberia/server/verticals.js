@@ -3,6 +3,7 @@
 
 export const VERTICALS = {
   barberia: {
+    seo: { slug: 'barberias', schemaType: 'HairSalon', title: 'Software para barberías: agenda online | Silla Llena', description: 'Agenda online para barberías: reservas 24/7, recordatorios por WhatsApp sin límite, caja con cuadre y comisiones por barbero. Prueba 30 días gratis.', eyebrow: 'Para barberías', h1: 'Tu silla llena, sin pagar por cada WhatsApp.' },
     label: 'Barbería',
     terms: {
       staff: 'barbero', Staff: 'Barbero', staffs: 'barberos', Staffs: 'Barberos',
@@ -18,6 +19,7 @@ export const VERTICALS = {
     products: [['Cera mate', 'CER-01', 9000, 4000, 12], ['Aceite para barba', 'ACE-01', 11000, 5000, 6], ['Pomada brillo', 'POM-01', 9500, 4200, 2], ['Shampoo anticaspa', 'SHA-01', 8000, 3500, 9]],
   },
   peluqueria: {
+    seo: { slug: 'peluquerias', schemaType: 'HairSalon', title: 'Sistema de reservas para peluquerías y salones | Silla Llena', description: 'Agenda online para peluquerías y salones: reservas 24/7, recordatorios por WhatsApp sin límite, caja y comisiones por estilista. Prueba 30 días gratis.', eyebrow: 'Para peluquerías y salones', h1: 'Tu agenda llena, sin pagar por cada WhatsApp.' },
     label: 'Peluquería / salón de belleza',
     terms: {
       staff: 'estilista', Staff: 'Estilista', staffs: 'estilistas', Staffs: 'Estilistas',
@@ -32,6 +34,7 @@ export const VERTICALS = {
     products: [['Shampoo reparador', 'SHA-01', 14000, 6000, 10], ['Acondicionador', 'ACO-01', 14000, 6000, 8], ['Sérum de puntas', 'SER-01', 16000, 7000, 2], ['Protector térmico', 'PRT-01', 12000, 5000, 6]],
   },
   unas: {
+    seo: { slug: 'unas-y-pestanas', schemaType: 'NailSalon', title: 'Agenda online para uñas, pestañas y cejas | Silla Llena', description: 'Reservas online para estudios de uñas, pestañas y cejas: agenda por profesional, anticipos, recordatorios por WhatsApp sin límite y caja. Prueba 30 días gratis.', eyebrow: 'Para estudios de uñas y pestañas', h1: 'Tus clientas reservan solas, sin pagar por cada WhatsApp.' },
     label: 'Uñas, pestañas y cejas',
     terms: {
       staff: 'profesional', Staff: 'Profesional', staffs: 'profesionales', Staffs: 'Profesionales',
@@ -46,6 +49,7 @@ export const VERTICALS = {
     products: [['Aceite de cutícula', 'CUT-01', 6000, 2500, 12], ['Crema de manos', 'CRE-01', 8000, 3500, 6], ['Sérum de pestañas', 'PES-01', 18000, 8000, 2]],
   },
   tatuajes: {
+    seo: { slug: 'tatuajes', schemaType: 'HealthAndBeautyBusiness', title: 'Agenda y reservas para estudios de tatuaje | Silla Llena', description: 'Agenda online para estudios de tatuaje y piercing: reservas con anticipo, sesiones largas por artista, recordatorios por WhatsApp y caja. Prueba 30 días gratis.', eyebrow: 'Para estudios de tatuaje', h1: 'Tu estudio con la agenda llena y anticipos asegurados.' },
     label: 'Tatuajes y piercing',
     terms: {
       staff: 'artista', Staff: 'Artista', staffs: 'artistas', Staffs: 'Artistas',
@@ -60,6 +64,7 @@ export const VERTICALS = {
     products: [['Crema de cuidado', 'CUI-01', 9000, 4000, 15], ['Film protector', 'FIL-01', 5000, 2000, 20], ['Joya de titanio', 'JOY-01', 15000, 6000, 3]],
   },
   masajes: {
+    seo: { slug: 'masajes-y-spa', schemaType: 'DaySpa', title: 'Sistema de reservas para masajes y spa | Silla Llena', description: 'Agenda online para centros de masajes y spa: reservas 24/7 por terapeuta, recordatorios por WhatsApp sin límite, caja y comisiones. Prueba 30 días gratis.', eyebrow: 'Para centros de masajes y spa', h1: 'Tus camillas ocupadas, sin pagar por cada WhatsApp.' },
     label: 'Masajes y spa',
     terms: {
       staff: 'terapeuta', Staff: 'Terapeuta', staffs: 'terapeutas', Staffs: 'Terapeutas',
@@ -78,3 +83,4 @@ export const VERTICALS = {
 export const verticalOf = (b) => VERTICALS[b?.vertical] || VERTICALS.barberia;
 export const termsOf = (b) => verticalOf(b).terms;
 export const VERTICAL_OPTIONS = Object.entries(VERTICALS).map(([id, v]) => ({ id, label: v.label }));
+export const verticalBySeoSlug = (slug) => Object.entries(VERTICALS).find(([, v]) => v.seo.slug === slug);
